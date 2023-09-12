@@ -1,0 +1,57 @@
+.appShell {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  max-width: var(--container-max-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page {
+  flex: 1;
+}
+
+.topNav {
+  min-height: 48px;
+  display: grid;
+  align-items: center;
+  grid-template-columns: 1fr auto 1fr;
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-weight: bold;
+}
+
+.bottomNav {
+  display: flex;
+  background-color: #fff;
+  border-top: 1px solid #ccc;
+  justify-content: center;
+  min-width: 0;
+}
+
+.bottomNav .item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+  align-items: center;
+  text-align: center;
+  padding: 8px 0;
+  min-width: 0;
+  color: inherit;
+}
+
+.bottomNav .icon {
+  color: #666;
+}
+
+.bottomNav .item .label {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.bottomNav .item.active,
+.bottomNav .item.active .icon {
+  color: var(--color-link);
+}
