@@ -1,5 +1,9 @@
 import { NavbarTitleContext } from '@/components/app/TopNavbar';
+import { Card, Container, Divider, Flex, Space, Text } from '@mantine/core';
+import { IconChevronRight, IconMessage, IconShield, IconUser } from '@tabler/icons-react';
 import Head from 'next/head';
+import Link from 'next/link';
+import React from 'react';
 import { useContext, useEffect } from 'react';
 
 export default function MorePage() {
@@ -16,7 +20,38 @@ export default function MorePage() {
       <Head>
         <title>{title}</title>
       </Head>
-      <main>數據與更多（審核、資料管理什麼的）</main>
+      <main>
+        <Container m="lg">
+          <Link href="/signin">
+            <Card p="xl" bg="#edfdff" radius="md">
+              <Flex gap="xl">
+                <IconUser />
+                <Text fw={500}>登入/註冊</Text>
+                <IconChevronRight style={{ marginLeft: 'auto' }} />
+              </Flex>
+            </Card>
+          </Link>
+          <Text size="sm" my="sm">
+            登入後即可參與論壇討論及使用配對交友功能！
+          </Text>
+        </Container>
+        <Space h="xl" />
+        {[
+          [IconShield, '隱私權政策', '/privacy'],
+          [IconMessage, '聯絡我們', '/contact'],
+        ].map(([Icon, label, href], i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <Divider />}
+            <Card component={Link} href={href as string} radius={0}>
+              <Flex gap="xl">
+                <Icon />
+                <Text fw={500}>{label as string}</Text>
+                <IconChevronRight style={{ marginLeft: 'auto' }} />
+              </Flex>
+            </Card>
+          </React.Fragment>
+        ))}
+      </main>
     </>
   );
 }
