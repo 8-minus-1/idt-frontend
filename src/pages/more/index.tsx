@@ -1,19 +1,13 @@
-import { NavbarTitleContext } from '@/components/app/TopNavbar';
+import { useNavbarTitle } from '@/hooks';
 import { Card, Container, Divider, Flex, Space, Text } from '@mantine/core';
 import { IconChevronRight, IconMessage, IconShield, IconUser } from '@tabler/icons-react';
 import Head from 'next/head';
 import Link from 'next/link';
 import React from 'react';
-import { useContext, useEffect } from 'react';
 
 export default function MorePage() {
-  let title = '數據與更多';
-
-  let [setTitle] = useContext(NavbarTitleContext);
-
-  useEffect(() => {
-    setTitle(title);
-  }, [setTitle, title]);
+  const title = '數據與更多';
+  useNavbarTitle(title);
 
   return (
     <>

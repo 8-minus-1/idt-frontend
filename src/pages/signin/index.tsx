@@ -1,14 +1,10 @@
-import { NavbarTitleContext } from '@/components/app/TopNavbar';
+import { useNavbarTitle } from '@/hooks';
 import Head from 'next/head';
-import { useContext, useEffect } from 'react';
 
 export default function SignInPage() {
-  let [setTitle] = useContext(NavbarTitleContext);
-  let title = '登入/註冊';
+  const title = '登入/註冊';
+  useNavbarTitle(title);
 
-  useEffect(() => {
-    setTitle(title);
-  }, [setTitle, title]);
   return (
     <>
       <Head>

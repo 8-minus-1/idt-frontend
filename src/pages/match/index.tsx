@@ -1,15 +1,9 @@
-import { NavbarTitleContext } from '@/components/app/TopNavbar';
+import { useNavbarTitle } from '@/hooks';
 import Head from 'next/head';
-import { useContext, useEffect } from 'react';
 
 export default function MatchPage() {
-  let title = '夥伴配對';
-
-  let [setTitle] = useContext(NavbarTitleContext);
-
-  useEffect(() => {
-    setTitle(title);
-  }, [setTitle, title]);
+  const title = '夥伴配對';
+  useNavbarTitle(title);
 
   return (
     <>
