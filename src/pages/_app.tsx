@@ -10,6 +10,7 @@ import { MantineProvider, createTheme } from '@mantine/core';
 import { SWRConfig } from 'swr';
 import { client } from '@/apis/common';
 import { Options as KyOptions } from 'ky';
+import { useUser } from '@/hooks';
 
 const theme = createTheme({});
 
@@ -25,6 +26,8 @@ function AppInner({ Component, pageProps }: AppProps) {
   let [navbarTitle, setNavbarTitle] = useState('');
   let navbarTitleContextValue: NavbarTitleContextValue = [setNavbarTitle, navbarTitle];
   let shouldHideBottomNav = !!(Component as any).hideBottomNav;
+  // Preload
+  let user = useUser();
 
   return (
     <NavbarTitleContext.Provider value={navbarTitleContextValue}>
