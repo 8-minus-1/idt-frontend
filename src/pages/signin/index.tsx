@@ -128,9 +128,10 @@ function SignUpForm({ email, onChangeEmail }: SignUpFormProps) {
 type SignInFormProps = {
   email: string;
   onChangeEmail: () => void;
+  showResetPasswordForm: () => void;
 };
 
-function SignInForm({ email, onChangeEmail }: SignInFormProps) {
+function SignInForm({ email, onChangeEmail, showResetPasswordForm }: SignInFormProps) {
   const form = useForm({
     initialValues: {
       password: '',
@@ -184,6 +185,65 @@ function SignInForm({ email, onChangeEmail }: SignInFormProps) {
       <Button type="submit" loading={loading} my="md">
         登入
       </Button>
+      <Text size="sm" my="md">
+        <a onClick={showResetPasswordForm}>忘記密碼？</a>
+      </Text>
+    </Box>
+  );
+}
+
+type ResetPasswordFormProps = {
+  email: string;
+  onChangeEmail: () => void;
+};
+
+function ResetPasswordForm({ email, onChangeEmail }: ResetPasswordFormProps) {
+  let { trigger, loading, error } = useAsyncFunction(sendVerficationEmail);
+
+  let [emailSent, setEmailSent] = useState(false);
+
+  async function handleSendEmail() {
+    if (loading) return;
+    let { error } = await trigger(email, 'recaptcha');
+    if (error) return console.error(error);
+    setEmailSent(true);
+  }
+
+  let rateLimited = error instanceof HTTPError && error.response.status === 429;
+  let errorMessage = rateLimited
+    ? '驗證信寄送太過頻繁，請稍後再試。'
+    : '無法與伺服器聯繫，請稍後再試。';
+
+  return (
+    <Box m="xl">
+      {!emailSent && (
+        <>
+          <Text size="md" my="md">
+            <a onClick={onChangeEmail}>← 取消</a>
+          </Text>
+          <Text size="sm" my="md">
+            點選「寄送重設密碼驗證信」後，系統將傳送一封含有密碼重設連結的郵件至{' '}
+            <Code>{email}</Code>。
+          </Text>
+          {error && (
+            <Alert variant="light" color="red" my="md">
+              {errorMessage}
+            </Alert>
+          )}
+          <Button loading={loading} onClick={handleSendEmail}>
+            寄送重設密碼驗證信
+          </Button>
+        </>
+      )}
+      {emailSent && (
+        <>
+          <Alert color="green" my="md">
+            系統已傳送一封含有密碼重設連結的郵件至 <Code>{email}</Code>
+            ，請點選信中連結以設定新密碼。
+          </Alert>
+          <Link href="/">回首頁</Link>
+        </>
+      )}
     </Box>
   );
 }
@@ -192,6 +252,7 @@ enum FormType {
   EmailForm,
   SignUpForm,
   SignInForm,
+  ResetPasswordForm,
 }
 
 export default function SignInPage() {
@@ -200,6 +261,7 @@ export default function SignInPage() {
     [FormType.EmailForm]: '登入/註冊',
     [FormType.SignUpForm]: '註冊新帳號',
     [FormType.SignInForm]: '登入',
+    [FormType.ResetPasswordForm]: '重設密碼',
   };
   const title = titles[formToShow];
   useNavbarTitle(title);
@@ -232,7 +294,17 @@ export default function SignInPage() {
           <SignUpForm email={email!} onChangeEmail={resetPage} />
         )}
         {formToShow === FormType.SignInForm && (
-          <SignInForm email={email!} onChangeEmail={resetPage} />
+          <SignInForm
+            email={email!}
+            onChangeEmail={resetPage}
+            showResetPasswordForm={() => setFormToShow(FormType.ResetPasswordForm)}
+          />
+        )}
+        {formToShow === FormType.ResetPasswordForm && (
+          <ResetPasswordForm
+            email={email!}
+            onChangeEmail={() => setFormToShow(FormType.SignInForm)}
+          />
         )}
       </main>
     </>
