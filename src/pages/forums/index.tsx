@@ -18,17 +18,12 @@ import { IconDots, IconUser, IconTrash, IconChevronRight } from '@tabler/icons-r
 import useSWR from 'swr';
 import { Alert } from '@mantine/core';
 
-// mantine: xs, sm, md lg, xl
+// mantine: xs, sm, md, lg, xl
 
-// TODO: 下拉選單選Type (sp_type)
 // TODO: 點擊進入某一個問題（displayState = 1, setQ_id）
 // TODO: 顯示單一問題 ！！！或是Dynamic Routing！！！
 // TODO: 新增問題
-
-
-type QListPage = {
-  displayByQ_id: (q_id: number) => void
-};
+// TODO: 顯示日期時間
 
 type q = {
   user_id: number
@@ -37,15 +32,15 @@ type q = {
   q_content: string,
   timestamp: bigint,
   last_edit: bigint,
-  q_id: 3
+  q_id: number
 }
 
-function QListPage({displayByQ_id}: QListPage)
+function QListPage()
 {
-  const [sp_type, setSp_type] = useState<string|null>('0');
+  const [sp_type, setSp_type] = useState<string>('0');
 
-  let { data, error } = useSWR(['qa/questions?sp_type='+sp_type, { throwHttpErrors: false }]);
-  if(data && data.length) console.log(data[0].q_title);
+  let { data, error } = useSWR(['qa/questions?sp_type='+sp_type, { throwHttpErrors: true }]);
+  //if(data && data.length) console.log(data[0].q_title);
   if(error) console.log("error: ",error);
 
   console.log(sp_type);
@@ -79,11 +74,18 @@ function QListPage({displayByQ_id}: QListPage)
             defaultValue={sports[0].label}
             pb='xl'
             value={sp_type}
-            onChange={(value)=>(setSp_type(value))}
+            onChange={(value:string)=>(setSp_type(value))}
+            allowDeselect={false}
           />
-          {data && data.map((question:q)=>
-            <Link href={"question/"+question.q_id} key={question.q_id}>
-              <Card padding="lg" pb='xl' bg="#edfdff" radius="lg" mb='xl' shadow='sm'>
+          { error &&
+            <Alert variant="light" color="red" my="md">
+              暫時無法取得資料
+            </Alert>
+          }
+          {data &&
+            data.map((question:q)=>
+            <Link href={"forums/questions/"+question.q_id} key={question.q_id}>
+              <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm'>
                 <Group justify='space-between'>
                   <Group>
                     <IconUser />
@@ -92,7 +94,7 @@ function QListPage({displayByQ_id}: QListPage)
                 </Group>
                 <Text size="lg" m='md' fw='600'>Q: {question.q_title}</Text>
                 <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={3}>{question.q_content}</Text>
-                <Link href={"question/"+question.q_id}>
+                <Link href={"forums/questions/"+question.q_id}>
                   <Flex mt='md' justify='right'>
                     <Text fw={600} size='md'>查看詳細內容</Text>
                     <IconChevronRight/>
@@ -101,9 +103,9 @@ function QListPage({displayByQ_id}: QListPage)
               </Card>
             </Link>
           )}
-          { error &&
-            <Alert variant="light" color="red" my="md">
-            錯誤
+          { data && !data.length &&
+            <Alert variant="light" color="yellow" my="md">
+              目前沒有可以顯示的東西QQ
             </Alert>
           }
         </Container>
@@ -114,7 +116,6 @@ function QListPage({displayByQ_id}: QListPage)
 
 export default function ForumsPage(){
   const [displayState, setDisplayState] = useState(0);
-  const [q_id, setQ_id] = useState<number|null>(null);
   const title = '運動論壇';
 
   useNavbarTitle(title);
@@ -126,14 +127,8 @@ export default function ForumsPage(){
       </Head>
       <main>
         { displayState === 0 && (
-          <QListPage
-            displayByQ_id = {(q_id) =>  {
-               setQ_id(q_id);
-               setDisplayState(1);
-            }}
-          />
-          )
-        }
+          <QListPage />
+        )}
       </main>
     </>
   );
