@@ -104,6 +104,11 @@ function AddAnswerPage({setPageStatus, q_id ,refreshAnswer}:any)
     if(loading) return;
     let {error} = await trigger(q_id, a_content);
     if(error) return console.error(error);
+    notifications.show({
+      color: "green",
+      title: '你成功回答了這個問題～',
+      message: '謝謝您在社群做出貢獻！',
+    })
     refreshAnswer()
     setPageStatus(0);
   }
