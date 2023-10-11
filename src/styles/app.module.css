@@ -1,6 +1,6 @@
 .appShell {
   display: flex;
-  height: 100%;
+  min-height: 100%;
   flex-direction: column;
   max-width: var(--container-max-width);
   margin-left: auto;
@@ -13,6 +13,9 @@
 }
 
 .topNav {
+  position: sticky;
+  z-index: 999;
+  top: 0;
   min-height: 48px;
   display: grid;
   align-items: center;
@@ -28,6 +31,8 @@
   border-top: 1px solid #ccc;
   justify-content: center;
   min-width: 0;
+  position: sticky;
+  bottom: 0;
 }
 
 .bottomNav .item {
