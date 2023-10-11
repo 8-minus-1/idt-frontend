@@ -32,6 +32,7 @@
   min-width: 0;
   position: sticky;
   bottom: 0;
+  height: 64px;
 }
 
 .bottomNav .item {
