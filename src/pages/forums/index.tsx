@@ -1,4 +1,4 @@
-import { useNavbarTitle } from '@/hooks';
+import { useAsyncFunction, useNavbarTitle } from '@/hooks';
 import Head from 'next/head';
 import React, { useState } from 'react';
 import {
@@ -11,12 +11,14 @@ import {
   rem,
   Flex,
   Box,
-  Select
+  Select, Button, Textarea, TextInput,
 } from '@mantine/core';
 import Link from 'next/link';
-import { IconDots, IconUser, IconTrash, IconChevronRight } from '@tabler/icons-react';
+import { IconDots, IconUser, IconTrash, IconChevronRight, IconEdit } from '@tabler/icons-react';
 import useSWR from 'swr';
 import { Alert } from '@mantine/core';
+import { useForm } from '@mantine/form';
+import { addAnswer } from '@/apis/qa';
 
 // mantine: xs, sm, md, lg, xl
 
@@ -114,9 +116,78 @@ function QListPage()
   );
 }
 
+function PostQuestion({setDisplayState, refreshQuestion}:any){
+  let {trigger, error, loading} = useAsyncFunction(addAnswer);
+  const [q_title, set_q_title]=useState("");
+  const [q_content, set_q_content]=useState("");
+
+  // const QForm = useForm({
+  //   initialValues: {
+  //     sp_type:'',
+  //     q_title:'',
+  //     q_content:'',
+  //   },
+  // });
+
+  async function ifSuccess(q_title: string, q_content: string) {
+    //let {sp_type, q_title, q_content} = QForm.values
+    if(true)//到時要在加條件
+    {
+      if(loading) return;
+      alert("新增問題成功!")
+      refreshQuestion()
+      setDisplayState(0)
+    }
+  }
+
+  return(
+    <>
+      <main>
+        <Box m = "xl" component="form">
+          <Select
+            label="類別"
+            data={['籃球', '排球', '網球','游泳', '直排輪', '足球', '桌球','棒球', '壘球', '躲避球', '跆拳道','巧固球', '保齡球', '其他']}
+            placeholder="請挑選問題類別"
+            mt="md"
+            comboboxProps={{ withinPortal: true }}
+            //{...QForm.getInputProps('sp_type')}
+          />
+          <TextInput
+            label="標題"
+            placeholder="請輸入問題標題"
+            mt="md"
+            withAsterisk
+            required value = {q_title}
+            onChange={(event)=>(set_q_title(event.currentTarget.value))}
+            //{...QForm.getInputProps('q_title')}
+          />
+          <Textarea
+            label="內容"
+            placeholder="請輸入問題內容"
+            mt="md"
+            withAsterisk
+            required value = {q_content}
+            onChange={(event)=>(set_q_content(event.currentTarget.value))}
+            //{...QForm.getInputProps('q_content')}
+          />
+          <Group justify="flex-end" mt="md">
+            <Button onClick={()=>(setDisplayState(0))}>
+              取消
+            </Button>
+            <Button onClick={()=>ifSuccess(q_title, q_content)} loading={loading}>
+              確定
+            </Button>
+          </Group>
+        </Box>
+      </main>
+    </>
+  );
+}
+
 export default function ForumsPage(){
   const [displayState, setDisplayState] = useState(0);
   const title = '運動論壇';
+  let {mutate: refreshQuestion}=useSWR([{ throwHttpErrors: true }])
 
   useNavbarTitle(title);
 
@@ -126,8 +197,16 @@ export default function ForumsPage(){
         <title>{title}</title>
       </Head>
       <main>
-        { displayState === 0 && (
-          <QListPage />
+        { displayState === 0 &&
+          <>
+            <QListPage />
+            <Button leftSection={<IconEdit size={20}/>} ml="xl" mb="xl" onClick={()=>(setDisplayState(1))}>
+              新增問題
+            </Button>
+          </>
+        }
+        { displayState === 1 &&(
+          <PostQuestion setDisplayState={setDisplayState} refreshQuestion={refreshQuestion}/>
         )}
       </main>
     </>
