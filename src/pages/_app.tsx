@@ -11,6 +11,7 @@ import { SWRConfig } from 'swr';
 import { client } from '@/apis/common';
 import { Options as KyOptions } from 'ky';
 import { useUser } from '@/hooks';
+import { FABContainerContext } from '@/contexts/FABContainerContext';
 
 const theme = createTheme({});
 
@@ -26,19 +27,24 @@ function AppInner({ Component, pageProps }: AppProps) {
   let [navbarTitle, setNavbarTitle] = useState('');
   let navbarTitleContextValue: NavbarTitleContextValue = [setNavbarTitle, navbarTitle];
   let shouldHideBottomNav = !!(Component as any).hideBottomNav;
+  let [fabContainer, setFabContainer] = useState<HTMLDivElement | null>(null);
+
   // Preload
   let user = useUser();
 
   return (
-    <NavbarTitleContext.Provider value={navbarTitleContextValue}>
-      <div className={styles.appShell}>
-        <TopNavbar />
-        <div className={styles.page}>
-          <Component {...pageProps} />
+    <FABContainerContext.Provider value={fabContainer}>
+      <NavbarTitleContext.Provider value={navbarTitleContextValue}>
+        <div className={styles.appShell}>
+          <TopNavbar />
+          <div className={styles.page}>
+            <Component {...pageProps} />
+          </div>
+          <div ref={(element) => setFabContainer(element)} className={styles.fabContainer} />
+          {!shouldHideBottomNav && <BottomNavbar />}
         </div>
-        {!shouldHideBottomNav && <BottomNavbar />}
-      </div>
-    </NavbarTitleContext.Provider>
+      </NavbarTitleContext.Provider>
+    </FABContainerContext.Provider>
   );
 }
 
