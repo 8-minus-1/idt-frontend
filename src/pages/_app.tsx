@@ -1,12 +1,14 @@
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import styles from '@/styles/app.module.css';
 import TopNavbar, { NavbarTitleContext, NavbarTitleContextValue } from '@/components/app/TopNavbar';
 import BottomNavbar from '@/components/app/BottomNavbar';
-import { useState } from 'react';
-import { MantineProvider, createTheme } from '@mantine/core';
+import React, { useState } from 'react';
+import { MantineProvider, createTheme, rem } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
 import { SWRConfig } from 'swr';
 import { client } from '@/apis/common';
 import { Options as KyOptions } from 'ky';
@@ -63,6 +65,7 @@ export default function App(appProps: AppProps) {
         >
           <AppInner {...appProps} />
         </SWRConfig>
+        <Notifications position={"bottom-center"} style={{position: 'relative', bottom: rem(150)}}/>
       </MantineProvider>
     </>
   );

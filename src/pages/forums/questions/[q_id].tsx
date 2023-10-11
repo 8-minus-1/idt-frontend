@@ -14,12 +14,13 @@ import {
   Select, Paper, Button, Textarea,
 } from '@mantine/core';
 import Link from 'next/link';
-import { IconDots, IconUser, IconTrash, IconChevronRight } from '@tabler/icons-react';
+import { IconDots, IconUser, IconTrash, IconChevronLeft, IconSend } from '@tabler/icons-react';
 import useSWR from 'swr';
 import { Alert } from '@mantine/core';
 import { useRouter } from 'next/router';
 import { HTTPError } from 'ky';
 import { addAnswer } from '@/apis/qa';
+import { notifications } from '@mantine/notifications';
 
 // pink F8D6D8
 // yellow FFE55B
@@ -70,7 +71,7 @@ function ShowAnswers({answers}:any)
                 <Text fw={500}>User{answer.user_id}</Text>
               </Group>
             </Group>
-            <Text ml={'xl'} mt={'lg'}>{answer.a_content}</Text>
+            <Text ml={'xl'} mt={'lg'} style={{whiteSpace: 'pre-wrap'}}>{answer.a_content}</Text>
           </Paper>
         )
       }
@@ -78,25 +79,60 @@ function ShowAnswers({answers}:any)
   )
 }
 
-function AddAnswerPage({setPageStatus}:any)
+function AddAnswerPage({setPageStatus, q_id ,refreshAnswer}:any)
 {
+  const [a_content, set_a_content] = useState("");
   let {trigger, error, loading} = useAsyncFunction(addAnswer);
 
-  function handleSendAnswer()
+  function validateLength(): boolean
   {
+    return a_content.length >= 10;
+  }
 
+  async function handleSendAnswer(q_id:number, a_content: string)
+  {
+    if(!validateLength())
+    {
+      console.log("error: too short")
+      notifications.show({
+        color: "red",
+        title: '至少要有10個字喔～',
+        message: '再新增一些內容，讓你的回答更豐富！',
+      })
+      return;
+    }
+    if(loading) return;
+    let {error} = await trigger(q_id, a_content);
+    if(error) return console.error(error);
+    refreshAnswer()
+    setPageStatus(0);
   }
 
   return(
     <>
       <Textarea
         minRows={6} radius={"lg"} mt={"xl"} mb={"sm"} autosize size={'lg'}
-        label={"輸入您的回答："}
+        label={"輸入您的回答（至少10字）："} required value={a_content} onChange={(event)=>(set_a_content(event.currentTarget.value))}
       ></Textarea>
-      <Flex>
-      <Button　onClick={()=>(setPageStatus(0))}>取消</Button>
-      <Button>送出</Button>
-      </Flex>
+
+      <Group justify={"space-evenly"}>
+        <Button
+          　onClick={()=>(setPageStatus(0))}
+            leftSection={<IconChevronLeft />}
+            w={"45%"}
+        >
+          取消
+        </Button>
+        <Button
+          onClick={()=>handleSendAnswer(q_id, a_content)}
+          variant="gradient"
+          gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
+          rightSection={<IconSend />}
+          w={"45%"} loading={loading}
+        >
+          送出
+        </Button>
+      </Group>
     </>
   )
 }
@@ -127,7 +163,7 @@ export default function QuestionPage(){
   // 0: display, 1: new, 2: edit
   const [pageStatus, setPageStatus] = useState(0);
 
-  let { data, error } = useSWR(['qa/questions/'+q_id+'/answers', { throwHttpErrors: true }]);
+  let { data, error, mutate: refreshAnswer } = useSWR(['qa/questions/'+q_id+'/answers', { throwHttpErrors: true }]);
   if(error instanceof HTTPError && error.response.status === 404)
   {
     router.replace('/error');
@@ -151,24 +187,39 @@ export default function QuestionPage(){
       </Head>
       <main>
         <Container p='lg'>
-          <QuestionCard question={question}></QuestionCard>
-          { pageStatus === 0 &&
-            <>
-            { !! user &&
-              <Button　fullWidth radius={'lg'} onClick={()=>(setPageStatus(1))}>新增回答</Button>
-            }
-            { !user &&
-              <Text size="md" my="xl" ta="center" fw={600}>
-                登入後即可回答！前往<Link style={{marginLeft: rem(5), textDecoration: "underline"}} href={"/signin"}>註冊/登入</Link>
-              </Text>
-            }
-            <ShowAnswers answers={answers}></ShowAnswers>
-            </>
+          { error &&
+            <Alert variant="light" color="red" my="md">
+              暫時無法取得資料
+            </Alert>
           }
-          {
-            pageStatus === 1 &&
+          { !error &&
             <>
-              <AddAnswerPage setPageStatus={setPageStatus}></AddAnswerPage>
+              <QuestionCard question={question}></QuestionCard>
+              { pageStatus === 0 &&
+                <>
+                  { !! user &&
+                    <Button
+                      variant="gradient"
+                      gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
+                      fullWidth radius={'md'} onClick={()=>(setPageStatus(1))}
+                    >
+                      新增回答
+                    </Button>
+                  }
+                  { !user &&
+                    <Text size="md" my="xl" ta="center" fw={600}>
+                      登入後即可回答！前往<Link style={{marginLeft: rem(5), textDecoration: "underline"}} href={"/signin"}>註冊/登入</Link>
+                    </Text>
+                  }
+                  <ShowAnswers answers={answers}></ShowAnswers>
+                </>
+              }
+              {
+                pageStatus === 1 &&
+                <>
+                  <AddAnswerPage setPageStatus={setPageStatus} q_id={q_id} refreshAnswer={refreshAnswer}></AddAnswerPage>
+                </>
+              }
             </>
           }
         </Container>
