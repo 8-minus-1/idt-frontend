@@ -1,15 +1,18 @@
 import { signOut } from '@/apis/auth';
+import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { useNavbarTitle, useUser } from '@/hooks';
 import { Button, Card, Container, Divider, Flex, Group, Space, Text } from '@mantine/core';
 import { IconChevronRight, IconMessage, IconShield, IconUser } from '@tabler/icons-react';
 import Head from 'next/head';
 import Link from 'next/link';
-import React from 'react';
+import React, { useContext } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function MorePage() {
   const title = '數據與更多';
   useNavbarTitle(title);
   const { user, mutate: refreshUser } = useUser();
+  let fabContainer = useContext(FABContainerContext);
 
   return (
     <>
@@ -58,6 +61,7 @@ export default function MorePage() {
           )}
         </Container>
         <Space h="xl" />
+        <Space h="30em" />
         {[
           [IconShield, '隱私權政策', '/privacy'],
           [IconMessage, '聯絡我們', '/contact'],
@@ -73,6 +77,7 @@ export default function MorePage() {
             </Card>
           </React.Fragment>
         ))}
+        {fabContainer && createPortal(<Button>新增東東</Button>, fabContainer)}
       </main>
     </>
   );
