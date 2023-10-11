@@ -2,13 +2,101 @@ import { useNavbarTitle } from '@/hooks';
 import '@mantine/dates/styles.css';
 import Head from 'next/head';
 import { tryParse } from '@/utils';
-import { Alert, Box, Button, Code, PasswordInput, Text, TextInput,Checkbox,  Group, Select,Notification } from '@mantine/core';
+import { Alert, Box, Button, Code, Container, PasswordInput, Text, TextInput,Checkbox,  Group, Select,Notification } from '@mantine/core';
 import { isEmail, useForm } from '@mantine/form';
 import { DateInput, DateInputProps } from '@mantine/dates';
 import { HTTPError } from 'ky';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { useState } from 'react';
+import useSWR from 'swr';
+
+type ListContestPage = {
+  displayByc_id: (c_id: number) =>  void
+};
+
+type Contests = {
+  User_id: number,
+  Name: string,
+  Place: string,
+  Constent: string,
+  sp_type: number,
+  StartDate: Date,
+  EndDate: Date,
+  Deadline: Date,
+  Url: string,
+  Other: string,
+  c_id: number
+}
+
+function ListContestPage({displayByc_id}: ListContestPage)
+{
+  const [sp_type, setSp_type] = useState<string|null>('0');
+
+  let { data, error } = useSWR(['contest/contests', { throwHttpErrors: false }]);
+  if(data && data.length) console.log(data[0].c_id);
+  if(error) console.log("error: ",error);
+
+  const sports = [
+    { value: "0", label: "顯示全部問題" },
+    { value: "1", label: "籃球" },
+    { value: "2", label: "排球" },
+    { value: "3", label: "羽球" },
+    { value: "4", label: "網球" },
+    { value: "5", label: "游泳" },
+    { value: "6", label: "直排輪" },
+    { value: "7", label: "足球" },
+    { value: "8", label: "桌球" },
+    { value: "9", label: "棒球" },
+    { value: "10", label: "壘球" },
+    { value: "11", label: "躲避球" },
+    { value: "12", label: "跆拳道" },
+    { value: "13", label: "巧固球" },
+    { value: "14", label: "保齡球" },
+    { value: "15", label: "其他" },
+  ];
+  data = [{  
+    User_id: 1,
+    Name: "123",
+    Place: "string",
+    Constent: "string",
+    sp_type: 8,
+    StartDate: 2023-10-10,
+    EndDate: 2023-10-10,
+    Deadline: 2023-10-10,
+    Url: "string",
+    Other: "string",
+    c_id: 1}];
+    error = 0;
+  console.log(data);
+
+  return(
+    <>
+      <main>
+        <Container p="lg">
+          <Select
+            label="運動類別篩選"
+            data={sports}
+            defaultValue={sports[0].label}
+            pb='xl'
+            value={sp_type}
+            onChange={(value)=>(setSp_type(value))}
+          />
+          {data && data.map((contest: Contests) =>
+            <Box>
+              <Text>{contest.Name}</Text>
+
+            </Box>
+          )}
+          {error &&
+            <Alert variant="light" color="red" my="md">
+            錯誤
+            </Alert>
+          }
+        </Container>
+      </main>
+    </>
+  );
+}
 
 
 enum FormType {
@@ -18,13 +106,15 @@ enum FormType {
   modifyContestForm,
 }
 export default function EventsPage() {
-  const [formToShow, setFormToShow] = useState(FormType.addContestForm);
+  const [formToShow, setFormToShow] = useState(FormType.showContestForm);
+
   const titles = {
     [FormType.showContestForm]: '全部比賽',
     [FormType.addContestForm]: '新增比賽',
     [FormType.modifyContestForm]: '更改比賽資訊',
     [FormType.unSignInForm]: '請先登入'
   };
+  const [c_id, setc_id] = useState<number|null>(null);
   const title = titles[formToShow];
   useNavbarTitle(title);
   
@@ -61,7 +151,14 @@ export default function EventsPage() {
         <title>{title}</title>
       </Head>
       <main>
-        {formToShow === FormType.showContestForm}
+        {formToShow === FormType.showContestForm && (
+          <ListContestPage 
+            displayByc_id = {(c_id) => {
+              setc_id(c_id);
+              
+            }}
+          />
+        )}
 
         {formToShow === FormType.addContestForm &&(
           <Box maw={340} mx="auto">
@@ -145,13 +242,13 @@ export default function EventsPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            height: '100vh',
+            height: '70vh',
           }}>
           {(
             <>
               <Alert color="blue">
                 未登入系統，請先登入後再新增比賽!
-              <Link href = '/more'>按此前往登入頁面</Link>
+              <Link href = '/signin'>按此前往登入頁面</Link>
               </Alert>
             </>
           )}
