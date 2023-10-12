@@ -2,14 +2,14 @@ import { useNavbarTitle } from '@/hooks';
 import '@mantine/dates/styles.css';
 import Head from 'next/head';
 import { tryParse } from '@/utils';
-import { Alert, Box, Button, Code, Container, PasswordInput, Text, TextInput,Checkbox,  Group, Select,Notification } from '@mantine/core';
+import { Alert, Box, Button, Code, Container, PasswordInput, Text, TextInput,Checkbox,  Group, Select,Notification ,Card, Flex, ActionIcon } from '@mantine/core';
 import { isEmail, useForm } from '@mantine/form';
 import { DateInput, DateInputProps } from '@mantine/dates';
 import { HTTPError } from 'ky';
 import Link from 'next/link';
 import { useState } from 'react';
 import useSWR from 'swr';
-
+import { IconDots, IconUser, IconTrash, IconChevronRight, IconEdit ,IconAdjustments, IconPlus} from '@tabler/icons-react';
 type ListContestPage = {
   displayByc_id: (c_id: number) =>  void
 };
@@ -18,22 +18,24 @@ type Contests = {
   User_id: number,
   Name: string,
   Place: string,
-  Constent: string,
+  Content: string,
   sp_type: number,
   StartDate: Date,
   EndDate: Date,
-  Deadline: Date,
+  Deadline: string,
   Url: string,
   Other: string,
   c_id: number
 }
 
+
+
 function ListContestPage({displayByc_id}: ListContestPage)
 {
   const [sp_type, setSp_type] = useState<string|null>('0');
 
-  let { data, error } = useSWR(['contest/contests', { throwHttpErrors: false }]);
-  if(data && data.length) console.log(data[0].c_id);
+  let { data, error } = useSWR(['cont/contests', { throwHttpErrors: true }]);
+  if(data && data.length) console.log(data[0]);
   if(error) console.log("error: ",error);
 
   const sports = [
@@ -54,20 +56,20 @@ function ListContestPage({displayByc_id}: ListContestPage)
     { value: "14", label: "保齡球" },
     { value: "15", label: "其他" },
   ];
-  data = [{  
-    User_id: 1,
-    Name: "123",
-    Place: "string",
-    Constent: "string",
-    sp_type: 8,
-    StartDate: 2023-10-10,
-    EndDate: 2023-10-10,
-    Deadline: 2023-10-10,
-    Url: "string",
-    Other: "string",
-    c_id: 1}];
-    error = 0;
-  console.log(data);
+  // data = [{  
+  //   User_id: 1,
+  //   Name: "123",
+  //   Place: "string",
+  //   Constent: "string",
+  //   sp_type: 8,
+  //   StartDate: 2023-10-10,
+  //   EndDate: 2023-10-10,
+  //   Deadline: 2023-10-10,
+  //   Url: "string",
+  //   Other: "string",
+  //   c_id: 1}];
+  //   error = 0;
+  // console.log(data);
 
   return(
     <>
@@ -82,11 +84,33 @@ function ListContestPage({displayByc_id}: ListContestPage)
             onChange={(value)=>(setSp_type(value))}
           />
           {data && data.map((contest: Contests) =>
-            <Box>
-              <Text>{contest.Name}</Text>
+            // <Box>
+            //   <Text>{contest.Name}</Text>
 
-            </Box>
+            // </Box>
+            <Link href={"events/contests/"+contest.c_id} key={contest.c_id}>
+              <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm'>
+                <Group justify='space-between'>
+                  <Group>
+                    <IconUser />
+                    <Text fw={500}>User{contest.User_id}</Text>
+                  </Group>
+                </Group>
+                <Text size="lg" m='md' fw='600'>{contest.Name}</Text>
+                <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={3}>{contest.Content}</Text>
+                <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3} >報名截止日期 : {contest.Deadline.split("T")[0]}</Text>
+                <Link href={contest.Url}>
+                  <Flex mt='md' justify='right'>
+                    <Text fw={600} size='md'>我要報名</Text>
+                    <IconChevronRight/>
+                  </Flex>
+                </Link>
+              </Card>
+              
+            </Link>
+            
           )}
+          
           {error &&
             <Alert variant="light" color="red" my="md">
             錯誤
@@ -127,6 +151,7 @@ export default function EventsPage() {
       sp_type:'',//前端送往後端時需處理
       StartDate:'',//前端送往後端時需處理
       EndDate:'',//前端送往後端時需處理
+      Deadline:'',
       Url:'',
       Other:''
     },
@@ -152,16 +177,23 @@ export default function EventsPage() {
       </Head>
       <main>
         {formToShow === FormType.showContestForm && (
-          <ListContestPage 
-            displayByc_id = {(c_id) => {
-              setc_id(c_id);
-              
-            }}
-          />
+          <Box mx="auto">
+            <ListContestPage 
+              displayByc_id = {(c_id) => {
+                setc_id(c_id);
+                
+              }}
+            />
+            <Flex mt='md' justify='right'>
+              <ActionIcon variant="filled" size="xl" radius="xl" aria-label="Settings" mt="md" onClick={()=>(setFormToShow(FormType.addContestForm))}>
+                <IconPlus />
+              </ActionIcon>
+            </Flex>
+          </Box>
         )}
 
         {formToShow === FormType.addContestForm &&(
-          <Box maw={340} mx="auto">
+          <Box maw={500} mx="auto">
             <form onSubmit={form.onSubmit((values) => console.log(values))}>
               <TextInput
               mt="md"
@@ -212,6 +244,16 @@ export default function EventsPage() {
                 label="結束日期"
                 placeholder="請選擇比賽結束日期"
                 {...form.getInputProps('EndDate')}
+              />
+              <DateInput
+              mt="md" 
+                withAsterisk
+                clearable defaultValue={new Date()}
+                dateParser={dateParser}
+                valueFormat="YYYY/MM/DD"
+                label="截止日期"
+                placeholder="請選擇比賽截止日期"
+                {...form.getInputProps('Endline')}
               />
               <TextInput
               mt="md"
