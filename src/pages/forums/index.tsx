@@ -14,7 +14,15 @@ import {
   Select, Button, Textarea, TextInput,
 } from '@mantine/core';
 import Link from 'next/link';
-import { IconDots, IconUser, IconTrash, IconChevronRight, IconEdit } from '@tabler/icons-react';
+import {
+  IconDots,
+  IconUser,
+  IconTrash,
+  IconChevronRight,
+  IconEdit,
+  IconChevronLeft,
+  IconCheck, IconSend,
+} from '@tabler/icons-react';
 import useSWR from 'swr';
 import { Alert } from '@mantine/core';
 import { useForm } from '@mantine/form';
@@ -22,6 +30,7 @@ import { addAnswer, addQuestion } from '@/apis/qa';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
 import { router } from 'next/client';
+import { notifications } from '@mantine/notifications';
 
 // mantine: xs, sm, md, lg, xl
 
@@ -125,25 +134,33 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
   const [q_title, set_q_title]=useState("");
   const [q_content, set_q_content]=useState("");
 
-  // const QForm = useForm({
-  //   initialValues: {
-  //     sp_type:'',
-  //     q_title:'',
-  //     q_content:'',
-  //   },
-  // });
+  function validateLength(): boolean
+  {
+    return q_content.length >= 10;
+  }
 
   async function ifSuccess(sp_type: string, q_title: string, q_content: string) {
-    //let {sp_type, q_title, q_content} = QForm.values
-    //if(true)//到時要在加條件
-    //{
-      if(loading) return;
-      let {error} = await trigger(parseInt(sp_type), q_title, q_content);
-      if(error) return console.error(error);
-      alert("新增問題成功!")
-      refreshQuestion()
-      setDisplayState(0)
-    //}
+    if(!validateLength())
+    {
+      console.log("error: too short")
+      notifications.show({
+        color: "red",
+        title: '內容至少要有10個字喔～',
+        message: '再新增一些內容，讓他人更好理解你的問題吧！',
+      })
+      return;
+    }
+    if(loading) return;
+    let {error} = await trigger(parseInt(sp_type), q_title, q_content);
+    if(error) return console.error(error);
+    notifications.show({
+      color: "green",
+      title: '新增問題成功～',
+      message: '隨時關注，已獲得更多資訊！',
+    })
+    refreshQuestion()
+    setDisplayState(0)
+
   }
 
   const sports = [
@@ -169,39 +186,48 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
       <main>
         <Box m = "xl" component="form">
           <Select
-            label="類別"
+            label="類別 :"
             data={sports}
             defaultValue={""}
             placeholder="請挑選問題類別"
+            size={'md'}
+            required
             mt="md"
-            //comboboxProps={{ withinPortal: true }}
             value = {sp_type}
             onChange={(value:string)=>(set_sp_type(value))}
-            //{...QForm.getInputProps('sp_type')}
           />
-          <TextInput
-            label="標題"
+          <Textarea
+            label="標題 :"
             placeholder="請輸入問題標題"
+            autosize size={'md'}
             mt="md"
             withAsterisk
             required value = {q_title}
             onChange={(event)=>(set_q_title(event.currentTarget.value))}
-            //{...QForm.getInputProps('q_title')}
           />
           <Textarea
-            label="內容"
+            label="內容（至少10字）:"
             placeholder="請輸入問題內容"
+            minRows={6} autosize size={'md'}
             mt="md"
             withAsterisk
             required value = {q_content}
             onChange={(event)=>(set_q_content(event.currentTarget.value))}
-            //{...QForm.getInputProps('q_content')}
           />
-          <Group justify="flex-end" mt="md">
-            <Button onClick={()=>(setDisplayState(0))}>
+          <Group justify="space-evenly" mt="md">
+            <Button
+              onClick={()=>(setDisplayState(0))}
+              leftSection={<IconChevronLeft />}
+              w={"45%"}
+            >
               取消
             </Button>
-            <Button onClick={()=>ifSuccess(sp_type, q_title, q_content)} loading={loading}>
+            <Button
+              onClick={()=>ifSuccess(sp_type, q_title, q_content)}
+              variant="gradient"
+              gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
+              rightSection={<IconCheck />}
+              w={"45%"} loading={loading}>
               確定
             </Button>
           </Group>
