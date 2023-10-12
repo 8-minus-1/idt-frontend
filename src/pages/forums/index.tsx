@@ -18,9 +18,10 @@ import { IconDots, IconUser, IconTrash, IconChevronRight, IconEdit } from '@tabl
 import useSWR from 'swr';
 import { Alert } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { addAnswer } from '@/apis/qa';
+import { addAnswer, addQuestion } from '@/apis/qa';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
+import { router } from 'next/client';
 
 // mantine: xs, sm, md, lg, xl
 
@@ -119,7 +120,8 @@ function QListPage()
 }
 
 function PostQuestion({setDisplayState, refreshQuestion}:any){
-  let {trigger, error, loading} = useAsyncFunction(addAnswer);
+  let {trigger, error, loading} = useAsyncFunction(addQuestion);
+  const [sp_type, set_sp_type] = useState<string>('0');
   const [q_title, set_q_title]=useState("");
   const [q_content, set_q_content]=useState("");
 
@@ -131,16 +133,36 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
   //   },
   // });
 
-  async function ifSuccess(q_title: string, q_content: string) {
+  async function ifSuccess(sp_type: string, q_title: string, q_content: string) {
     //let {sp_type, q_title, q_content} = QForm.values
-    if(true)//到時要在加條件
-    {
+    //if(true)//到時要在加條件
+    //{
       if(loading) return;
+      let {error} = await trigger(sp_type, q_title, q_content);
+      if(error) return console.error(error);
       alert("新增問題成功!")
       refreshQuestion()
       setDisplayState(0)
-    }
+    //}
   }
+
+  const sports = [
+    { value: "1", label: "籃球" },
+    { value: "2", label: "排球" },
+    { value: "3", label: "羽球" },
+    { value: "4", label: "網球" },
+    { value: "5", label: "游泳" },
+    { value: "6", label: "直排輪" },
+    { value: "7", label: "足球" },
+    { value: "8", label: "桌球" },
+    { value: "9", label: "棒球" },
+    { value: "10", label: "壘球" },
+    { value: "11", label: "躲避球" },
+    { value: "12", label: "跆拳道" },
+    { value: "13", label: "巧固球" },
+    { value: "14", label: "保齡球" },
+    { value: "15", label: "其他" },
+  ];
 
   return(
     <>
@@ -148,10 +170,13 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
         <Box m = "xl" component="form">
           <Select
             label="類別"
-            data={['籃球', '排球', '網球','游泳', '直排輪', '足球', '桌球','棒球', '壘球', '躲避球', '跆拳道','巧固球', '保齡球', '其他']}
+            data={sports}
+            defaultValue={""}
             placeholder="請挑選問題類別"
             mt="md"
-            comboboxProps={{ withinPortal: true }}
+            //comboboxProps={{ withinPortal: true }}
+            value = {sp_type}
+            onChange={(value:string)=>(set_sp_type(value))}
             //{...QForm.getInputProps('sp_type')}
           />
           <TextInput
@@ -176,7 +201,7 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
             <Button onClick={()=>(setDisplayState(0))}>
               取消
             </Button>
-            <Button onClick={()=>ifSuccess(q_title, q_content)} loading={loading}>
+            <Button onClick={()=>ifSuccess(sp_type, q_title, q_content)} loading={loading}>
               確定
             </Button>
           </Group>
@@ -189,7 +214,7 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
 export default function ForumsPage(){
   const [displayState, setDisplayState] = useState(0);
   const title = '運動論壇';
-  let {mutate: refreshQuestion}=useSWR([{ throwHttpErrors: true }])
+  let {mutate: refreshQuestion}=useSWR(['qa/questions',{ throwHttpErrors: true }])
 
   let fabContainer = useContext(FABContainerContext);
 
