@@ -108,12 +108,12 @@ function QListPage()
                 </Group>
                 <Text size="lg" m='md' fw='600'>Q: {question.q_title}</Text>
                 <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={3}>{question.q_content}</Text>
-                <Link href={"forums/questions/"+question.q_id}>
-                  <Flex mt='md' justify='right'>
-                    <Text fw={600} size='md'>查看詳細內容</Text>
+
+                  <Flex c={'blue'} mt='md' justify='right'>
+                    <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>查看詳細內容</Text>
                     <IconChevronRight/>
                   </Flex>
-                </Link>
+
               </Card>
             </Link>
           )}
@@ -134,13 +134,28 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
   const [q_title, set_q_title]=useState("");
   const [q_content, set_q_content]=useState("");
 
-  function validateLength(): boolean
-  {
-    return q_content.length >= 10;
-  }
-
   async function ifSuccess(sp_type: string, q_title: string, q_content: string) {
-    if(!validateLength())
+    if(q_title.length < 5)
+    {
+      console.log("error: too short")
+      notifications.show({
+        color: "red",
+        title: '標題至少要有5個字喔～',
+        message: '把標題寫清楚，讓他人更好理解你的問題吧！',
+      })
+      return;
+    }
+    if(q_title.length > 30)
+    {
+      console.log("error: too short")
+      notifications.show({
+        color: "red",
+        title: '標題太長了！',
+        message: '標題要抓出重點，讓主旨一目了然～',
+      })
+      return;
+    }
+    if(q_content.length < 10)
     {
       console.log("error: too short")
       notifications.show({
@@ -150,13 +165,23 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
       })
       return;
     }
+    if(sp_type === '0')
+    {
+      console.log("error: too short")
+      notifications.show({
+        color: "red",
+        title: '沒有選擇問題類別！',
+        message: '選擇問題對應的運動，讓他人更快找到你的問題吧！',
+      })
+      return;
+    }
     if(loading) return;
     let {error} = await trigger(parseInt(sp_type), q_title, q_content);
     if(error) return console.error(error);
     notifications.show({
       color: "green",
       title: '新增問題成功～',
-      message: '隨時關注，已獲得更多資訊！',
+      message: '隨時關注，以獲得最新資訊！',
     })
     refreshQuestion()
     setDisplayState(0)
@@ -195,6 +220,7 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
             mt="md"
             value = {sp_type}
             onChange={(value:string)=>(set_sp_type(value))}
+            allowDeselect={false}
           />
           <Textarea
             label="標題 :"
@@ -257,7 +283,7 @@ export default function ForumsPage(){
             <QListPage />
             { fabContainer && createPortal(
               <Button leftSection={<IconEdit size={20} />} mr={'xl'} mb='xl'
-                      style={({ "box-shadow": 'silver 2px 2px 20px', })} size={'lg'} radius={'xl'} c={"black"} color={'#F8D6D8'} onClick={() => (setDisplayState(1))}>
+                      style={({ boxShadow: 'silver 2px 2px 20px', })} size={'lg'} radius={'xl'} c={"black"} color={'#F8D6D8'} onClick={() => (setDisplayState(1))}>
               新增問題
             </Button>, fabContainer)}
           </>
