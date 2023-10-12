@@ -7,9 +7,12 @@ import { isEmail, useForm } from '@mantine/form';
 import { DateInput, DateInputProps } from '@mantine/dates';
 import { HTTPError } from 'ky';
 import Link from 'next/link';
-import { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import useSWR from 'swr';
 import { IconDots, IconUser, IconTrash, IconChevronRight, IconEdit ,IconAdjustments, IconPlus} from '@tabler/icons-react';
+import { FABContainerContext } from '@/contexts/FABContainerContext';
+import { createPortal } from 'react-dom';
+
 type ListContestPage = {
   displayByc_id: (c_id: number) =>  void
 };
@@ -56,7 +59,7 @@ function ListContestPage({displayByc_id}: ListContestPage)
     { value: "14", label: "保齡球" },
     { value: "15", label: "其他" },
   ];
-  // data = [{  
+  // data = [{
   //   User_id: 1,
   //   Name: "123",
   //   Place: "string",
@@ -106,11 +109,11 @@ function ListContestPage({displayByc_id}: ListContestPage)
                   </Flex>
                 </Link>
               </Card>
-              
+
             </Link>
-            
+
           )}
-          
+
           {error &&
             <Alert variant="light" color="red" my="md">
             錯誤
@@ -141,7 +144,7 @@ export default function EventsPage() {
   const [c_id, setc_id] = useState<number|null>(null);
   const title = titles[formToShow];
   useNavbarTitle(title);
-  
+
 //add
   const form = useForm({
     initialValues: {
@@ -169,6 +172,9 @@ export default function EventsPage() {
     }
     return new Date(input);
   };
+
+  let fabContainer = useContext(FABContainerContext);
+
 //add
   return (
     <>
@@ -178,17 +184,19 @@ export default function EventsPage() {
       <main>
         {formToShow === FormType.showContestForm && (
           <Box mx="auto">
-            <ListContestPage 
+            <ListContestPage
               displayByc_id = {(c_id) => {
                 setc_id(c_id);
-                
+
               }}
             />
-            <Flex mt='md' justify='right'>
-              <ActionIcon variant="filled" size="xl" radius="xl" aria-label="Settings" mt="md" onClick={()=>(setFormToShow(FormType.addContestForm))}>
-                <IconPlus />
-              </ActionIcon>
-            </Flex>
+            { fabContainer && createPortal(
+              <Button leftSection={<IconPlus size={20} />} mr={'xl'} mb='xl'
+                      style={({ "box-shadow": 'silver 2px 2px 20px', })} size={'lg'} radius={'xl'} c={"black"} color={'#F8D6D8'} onClick={() => (setFormToShow(FormType.addContestForm))}>
+                新增活動
+              </Button>
+              , fabContainer)
+            }
           </Box>
         )}
 
@@ -222,11 +230,11 @@ export default function EventsPage() {
                 data={['ALL', '籃球', '排球', '網球','游泳', '直排輪', '足球', '桌球','棒球', '壘球', '躲避球', '跆拳道','巧固球', '保齡球', '其他']}
                 placeholder="請挑選比賽類別"
                 label="比賽類別"
-                
+
                 {...form.getInputProps('sp_type')}
               />
               <DateInput
-              mt="md" 
+              mt="md"
                 withAsterisk
                 clearable defaultValue={new Date()}
                 dateParser={dateParser}
@@ -235,7 +243,7 @@ export default function EventsPage() {
                 placeholder="請選擇比賽開始日期"
                 {...form.getInputProps('StartDate')}
               />
-              <DateInput 
+              <DateInput
               mt="md"
                 withAsterisk
                 clearable defaultValue={new Date()}
@@ -246,7 +254,7 @@ export default function EventsPage() {
                 {...form.getInputProps('EndDate')}
               />
               <DateInput
-              mt="md" 
+              mt="md"
                 withAsterisk
                 clearable defaultValue={new Date()}
                 dateParser={dateParser}
@@ -275,9 +283,9 @@ export default function EventsPage() {
             </form>
           </Box>
         )}
-        
+
         {formToShow === FormType.modifyContestForm}
-                
+
         {formToShow === FormType.unSignInForm && (
           <Box style={{
             textAlign: "center",

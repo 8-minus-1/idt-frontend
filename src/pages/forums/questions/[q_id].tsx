@@ -169,6 +169,7 @@ export default function QuestionPage(){
   const [pageStatus, setPageStatus] = useState(0);
 
   let { data, error, mutate: refreshAnswer } = useSWR(['qa/questions/'+q_id+'/answers', { throwHttpErrors: true }]);
+
   if(error instanceof HTTPError && error.response.status === 404)
   {
     router.replace('/error');

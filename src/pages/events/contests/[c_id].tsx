@@ -46,8 +46,9 @@ export default function ContestPage(){
   // 0: display, 1: new, 2: edit
   const [pageStatus, setPageStatus] = useState(0);
 
-  let { data, error} = useSWR(['cont/contests/'+c_id, { throwHttpErrors: true }]);
+  let { data, error } = useSWR(['cont/contests/'+c_id, { throwHttpErrors: true }]);
   console.log(data)
+
   if(error instanceof HTTPError && error.response.status === 404)
   {
     router.replace('/error');
@@ -61,7 +62,7 @@ export default function ContestPage(){
       <main>
         <Container p='lg'>
             {data && data.map((contest: Contests) =>
-                <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm'>
+                <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm' key={contest.c_id}>
                     <Group justify='space-between'>
                     <Group>
                         <IconUser />
@@ -78,7 +79,7 @@ export default function ContestPage(){
                     <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>地點 : {contest.Place}</Text>
                     <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>時間 : {contest.StartDate.split("T")[0] +" ~ "+ contest.EndDate.split("T")[0]}</Text>
                     <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3} >報名截止日期 : {contest.Deadline.split("T")[0]}</Text>
-                    
+
                     <Link href={contest.Url}>
                     <Flex mt='md' justify='right'>
                         <Text fw={600} size='md'>我要報名</Text>

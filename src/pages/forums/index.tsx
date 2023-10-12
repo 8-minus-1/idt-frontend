@@ -1,6 +1,6 @@
 import { useAsyncFunction, useNavbarTitle } from '@/hooks';
 import Head from 'next/head';
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   Card,
   Container,
@@ -19,6 +19,8 @@ import useSWR from 'swr';
 import { Alert } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { addAnswer } from '@/apis/qa';
+import { FABContainerContext } from '@/contexts/FABContainerContext';
+import { createPortal } from 'react-dom';
 
 // mantine: xs, sm, md, lg, xl
 
@@ -189,6 +191,8 @@ export default function ForumsPage(){
   const title = '運動論壇';
   let {mutate: refreshQuestion}=useSWR([{ throwHttpErrors: true }])
 
+  let fabContainer = useContext(FABContainerContext);
+
   useNavbarTitle(title);
 
   return (
@@ -200,9 +204,11 @@ export default function ForumsPage(){
         { displayState === 0 &&
           <>
             <QListPage />
-            <Button leftSection={<IconEdit size={20}/>} ml="xl" mb="xl" onClick={()=>(setDisplayState(1))}>
+            { fabContainer && createPortal(
+              <Button leftSection={<IconEdit size={20} />} mr={'xl'} mb='xl'
+                      style={({ "box-shadow": 'silver 2px 2px 20px', })} size={'lg'} radius={'xl'} c={"black"} color={'#F8D6D8'} onClick={() => (setDisplayState(1))}>
               新增問題
-            </Button>
+            </Button>, fabContainer)}
           </>
         }
         { displayState === 1 &&(
