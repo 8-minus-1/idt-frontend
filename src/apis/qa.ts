@@ -11,7 +11,7 @@ export async function addAnswer( q_id: number, a_content: string)
     });
 }
 
-export async function addQuestion(sp_type: string, q_title: string, q_content: string)
+export async function addQuestion(sp_type: number, q_title: string, q_content: string)
 {
   await client.post("qa/questions",{
     json:{

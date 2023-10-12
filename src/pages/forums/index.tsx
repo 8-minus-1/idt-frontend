@@ -138,7 +138,7 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
     //if(true)//到時要在加條件
     //{
       if(loading) return;
-      let {error} = await trigger(sp_type, q_title, q_content);
+      let {error} = await trigger(parseInt(sp_type), q_title, q_content);
       if(error) return console.error(error);
       alert("新增問題成功!")
       refreshQuestion()
