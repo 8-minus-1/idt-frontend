@@ -21,7 +21,7 @@ import {
   Textarea,
 } from '@mantine/core';
 import { isEmail, useForm } from '@mantine/form';
-import { DateInput, DateInputProps } from '@mantine/dates';
+import { DateInput, DateInputProps, DatePickerInput } from '@mantine/dates';
 import { HTTPError } from 'ky';
 import Link from 'next/link';
 import React, { useContext, useState } from 'react';
@@ -51,7 +51,7 @@ type Contests = {
   Place: string,
   Content: string,
   sp_type: number,
-  StartDate: Date,
+  StartDate: any,
   EndDate: Date,
   Deadline: string,
   Url: string,
@@ -85,7 +85,7 @@ function AddContestPage({setFormToShow}: any)
       Content:'',
       Place:'',
       sp_type:'',//前端送往後端時需處理
-      StartDate:'',//前端送往後端時需處理
+      StartDate: new Date(),//前端送往後端時需處理
       EndDate:'',//前端送往後端時需處理
       Deadline:'',
       Url:'',
@@ -100,15 +100,16 @@ function AddContestPage({setFormToShow}: any)
     return new Date(input);
   };
 
-  async function ifSuccess() {
-    if(true)//到時要在加條件
-      alert("比賽新增成功!")
+  function handleSubmit(values: any)
+  {
+    let stDate = ''+values.StartDate.getFullYear()+'-'+(values.StartDate.getMonth()+1)+'-'+values.StartDate.getDay();
+    console.log(stDate)
     setFormToShow(FormType.showContestForm)
   }
 
   return(
     <Box m="xl">
-      <form onSubmit={form.onSubmit((values) => console.log(values))}>
+      <form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
         <Select size={'md'}
           mt="md"
           comboboxProps={{ withinPortal: true }}
@@ -131,11 +132,10 @@ function AddContestPage({setFormToShow}: any)
           placeholder="請輸入活動地點"
           {...form.getInputProps('Place')}
         />
-        <DateInput size={'md'}
+        <DatePickerInput size={'md'}
           mt="md"
           withAsterisk
-          clearable defaultValue={new Date()}
-          dateParser={dateParser}
+          clearable required
           valueFormat="YYYY/MM/DD"
           label="活動開始日期"
           placeholder="請選擇活動開始日期"
