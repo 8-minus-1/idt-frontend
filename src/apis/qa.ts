@@ -21,3 +21,8 @@ export async function addQuestion(sp_type: number, q_title: string, q_content: s
     },
   });
 }
+
+export async function deleteQuestion(q_id:number)
+{
+  await client.delete("qa/questions/"+q_id);
+}

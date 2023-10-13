@@ -96,7 +96,7 @@ function QListPage()
               暫時無法取得資料
             </Alert>
           }
-          {data &&
+          { data &&
             data.map((question:q)=>
             <Link href={"forums/questions/"+question.q_id} key={question.q_id}>
               <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm'>
@@ -135,7 +135,7 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
   const [q_title, set_q_title]=useState("");
   const [q_content, set_q_content]=useState("");
 
-  async function ifSuccess(sp_type: string, q_title: string, q_content: string) {
+  async function handlePostQuestion(sp_type: string, q_title: string, q_content: string) {
     if(q_title.length < 5)
     {
       console.log("error: too short")
@@ -251,7 +251,7 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
                 取消
               </Button>
               <Button
-                onClick={()=>ifSuccess(sp_type, q_title, q_content)}
+                onClick={()=>handlePostQuestion(sp_type, q_title, q_content)}
                 variant="gradient"
                 gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
                 rightSection={<IconCheck />}

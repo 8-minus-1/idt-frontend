@@ -7,7 +7,8 @@ import styles from '@/styles/app.module.css';
 import TopNavbar, { NavbarTitleContext, NavbarTitleContextValue } from '@/components/app/TopNavbar';
 import BottomNavbar from '@/components/app/BottomNavbar';
 import React, { useState } from 'react';
-import { MantineProvider, createTheme, rem } from '@mantine/core';
+import { MantineProvider, createTheme, rem  } from '@mantine/core';
+import {ModalsProvider} from '@mantine/modals'
 import { Notifications } from '@mantine/notifications';
 import { SWRConfig } from 'swr';
 import { client } from '@/apis/common';
@@ -57,6 +58,7 @@ export default function App(appProps: AppProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <MantineProvider theme={theme}>
+        <ModalsProvider>
         <SWRConfig
           value={{
             shouldRetryOnError: false,
@@ -66,6 +68,7 @@ export default function App(appProps: AppProps) {
           <AppInner {...appProps} />
         </SWRConfig>
         <Notifications position={"bottom-center"} style={{position: 'relative', bottom: rem(150)}}/>
+        </ModalsProvider>
       </MantineProvider>
     </>
   );

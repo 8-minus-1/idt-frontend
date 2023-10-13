@@ -19,8 +19,9 @@ import useSWR from 'swr';
 import { Alert } from '@mantine/core';
 import { useRouter } from 'next/router';
 import { HTTPError } from 'ky';
-import { addAnswer } from '@/apis/qa';
+import { addAnswer, deleteQuestion } from '@/apis/qa';
 import { notifications } from '@mantine/notifications';
+import { modals } from '@mantine/modals';
 
 // pink F8D6D8
 // yellow FFE55B
@@ -144,6 +145,36 @@ function AddAnswerPage({setPageStatus, q_id ,refreshAnswer}:any)
 
 function QuestionCard({question}: questionCardProps)
 {
+  let {user} = useUser();
+  let router = useRouter();
+
+  let {trigger, loading} = useAsyncFunction(deleteQuestion);
+
+  async function handleDelete(q_id:number)
+  {
+    if(loading) return;
+    modals.openConfirmModal({
+      title: '您確定要刪除這個問題嗎？',
+      centered: true,
+      children: (
+        <Text size="sm">
+          請注意，以上動作沒有辦法復原
+        </Text>
+      ),
+      labels: { confirm: '是的，我非常確定', cancel: "不，請返回" },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+          await trigger(q_id);
+          router.replace('/forums');
+          notifications.show({
+            color: "green",
+            title: '已成功刪除您的問題～',
+            message: '隨時歡迎您再次提問！',
+          })
+      },
+    });
+  }
+
   return(
     <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xs' shadow='sm'>
       <Group justify='space-between'>
@@ -151,6 +182,25 @@ function QuestionCard({question}: questionCardProps)
           <IconUser />
           <Text fw={500}>User{question.user_id}</Text>
         </Group>
+
+        { question.user_id === user?.id &&
+          <Menu withinPortal position="bottom-end" shadow="sm">
+            <Menu.Target>
+              <ActionIcon variant="subtle" color="gray">
+                <IconDots style={{ width: rem(16), height: rem(16) }} />
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item
+                leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
+                color="red"
+                onClick={()=>handleDelete(question.q_id)}
+              >
+                刪除此問題
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        }
       </Group>
       <Text size="lg" m='md' fw='600'>Q: {question.q_title}</Text>
       <Text ml="xl" mr='lg' size='md' fw={500} style={{whiteSpace: 'pre-wrap'}}>{question.q_content}</Text>
