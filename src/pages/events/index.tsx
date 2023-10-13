@@ -2,16 +2,44 @@ import { useNavbarTitle } from '@/hooks';
 import '@mantine/dates/styles.css';
 import Head from 'next/head';
 import { tryParse } from '@/utils';
-import { Alert, Box, Button, Code, Container, PasswordInput, Text, TextInput,Checkbox,  Group, Select,Notification ,Card, Flex, ActionIcon } from '@mantine/core';
+import {
+  Alert,
+  Box,
+  Button,
+  Code,
+  Container,
+  PasswordInput,
+  Text,
+  TextInput,
+  Checkbox,
+  Group,
+  Select,
+  Notification,
+  Card,
+  Flex,
+  ActionIcon,
+  Textarea,
+} from '@mantine/core';
 import { isEmail, useForm } from '@mantine/form';
 import { DateInput, DateInputProps } from '@mantine/dates';
 import { HTTPError } from 'ky';
 import Link from 'next/link';
 import React, { useContext, useState } from 'react';
 import useSWR from 'swr';
-import { IconDots, IconUser, IconTrash, IconChevronRight, IconEdit ,IconAdjustments, IconPlus} from '@tabler/icons-react';
+import {
+  IconDots,
+  IconUser,
+  IconTrash,
+  IconChevronRight,
+  IconEdit,
+  IconAdjustments,
+  IconPlus,
+  IconChevronLeft, IconSend,
+} from '@tabler/icons-react';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
+import { Simulate } from 'react-dom/test-utils';
+import submit = Simulate.submit;
 
 type ListContestPage = {
   displayByc_id: (c_id: number) =>  void
@@ -31,18 +59,9 @@ type Contests = {
   c_id: number
 }
 
-
-
-function ListContestPage({displayByc_id}: ListContestPage)
+function AddContestPage({setFormToShow}: any)
 {
-  const [sp_type, setSp_type] = useState<string|null>('0');
-
-  let { data, error } = useSWR(['cont/contests', { throwHttpErrors: true }]);
-  if(data && data.length) console.log(data[0]);
-  if(error) console.log("error: ",error);
-
   const sports = [
-    { value: "0", label: "顯示全部問題" },
     { value: "1", label: "籃球" },
     { value: "2", label: "排球" },
     { value: "3", label: "羽球" },
@@ -59,6 +78,161 @@ function ListContestPage({displayByc_id}: ListContestPage)
     { value: "14", label: "保齡球" },
     { value: "15", label: "其他" },
   ];
+
+  const form = useForm({
+    initialValues: {
+      Name: '',
+      Content:'',
+      Place:'',
+      sp_type:'',//前端送往後端時需處理
+      StartDate:'',//前端送往後端時需處理
+      EndDate:'',//前端送往後端時需處理
+      Deadline:'',
+      Url:'',
+      Other:''
+    },
+  });
+
+  const dateParser: DateInputProps['dateParser'] = (input) => {
+    if (input === 'WW2') {
+      return new Date(1939, 8, 1);
+    }
+    return new Date(input);
+  };
+
+  async function ifSuccess() {
+    if(true)//到時要在加條件
+      alert("比賽新增成功!")
+    setFormToShow(FormType.showContestForm)
+  }
+
+  return(
+    <Box m="xl">
+      <form onSubmit={form.onSubmit((values) => console.log(values))}>
+        <Select size={'md'}
+          mt="md"
+          comboboxProps={{ withinPortal: true }}
+          data={sports}
+          placeholder="請挑選運動類別"
+          label="運動類別"
+          {...form.getInputProps('sp_type')}
+        />
+        <TextInput size={'md'}
+          mt="md"
+          withAsterisk
+          label="活動名稱"
+          placeholder="請輸入活動名稱"
+          {...form.getInputProps('Name')}
+        />
+        <TextInput size={'md'}
+          mt="md"
+          withAsterisk
+          label="地點"
+          placeholder="請輸入活動地點"
+          {...form.getInputProps('Place')}
+        />
+        <DateInput size={'md'}
+          mt="md"
+          withAsterisk
+          clearable defaultValue={new Date()}
+          dateParser={dateParser}
+          valueFormat="YYYY/MM/DD"
+          label="活動開始日期"
+          placeholder="請選擇活動開始日期"
+          {...form.getInputProps('StartDate')}
+        />
+        <DateInput size={'md'}
+          mt="md"
+          withAsterisk
+          clearable
+          dateParser={dateParser}
+          valueFormat="YYYY/MM/DD"
+          label="活動結束日期"
+          placeholder="請選擇活動結束日期"
+          {...form.getInputProps('EndDate')}
+        />
+        <DateInput size={'md'}
+          mt="md"
+          withAsterisk
+          clearable
+          dateParser={dateParser}
+          valueFormat="YYYY/MM/DD"
+          label="報名截止日期"
+          placeholder="請選擇報名截止日期"
+          {...form.getInputProps('Deadline')}
+        />
+        <Textarea size={'md'}
+          mt="md" radius={'md'}
+          withAsterisk
+          label="詳細說明"
+          placeholder="關於這個活動詳情"
+          {...form.getInputProps('Content')}
+          minRows={8} autosize
+        ></Textarea>
+        <TextInput size={'md'}
+          mt="md"
+          withAsterisk
+          label="官網網址"
+          placeholder="請輸入官方網站網址"
+          {...form.getInputProps('Url')}
+        />
+        <TextInput size={'md'}
+          mt="md"
+          withAsterisk
+          label="其他"
+          placeholder="關於這個活動的其他資訊"
+          {...form.getInputProps('Other')}
+        />
+        <Group justify={"space-evenly"} my={'lg'}>
+          <Button
+            onClick={()=>setFormToShow(FormType.showContestForm)}
+            leftSection={<IconChevronLeft />}
+            w={"45%"}
+          >
+            取消
+          </Button>
+          <Button
+            type={'submit'}
+            variant="gradient"
+            gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
+            rightSection={<IconSend />}
+            w={"45%"} /*loading={loading}*/
+          >
+            送出
+          </Button>
+        </Group>
+      </form>
+    </Box>
+  )
+}
+
+function ListContestPage({displayByc_id}: ListContestPage)
+{
+  const [sp_type, setSp_type] = useState<string|null>('0');
+
+  let { data, error } = useSWR(['cont/contests', { throwHttpErrors: true }]);
+  if(data && data.length) console.log(data[0]);
+  if(error) console.log("error: ",error);
+
+  const sports = [
+    { value: "0", label: "顯示全部活動" },
+    { value: "1", label: "籃球" },
+    { value: "2", label: "排球" },
+    { value: "3", label: "羽球" },
+    { value: "4", label: "網球" },
+    { value: "5", label: "游泳" },
+    { value: "6", label: "直排輪" },
+    { value: "7", label: "足球" },
+    { value: "8", label: "桌球" },
+    { value: "9", label: "棒球" },
+    { value: "10", label: "壘球" },
+    { value: "11", label: "躲避球" },
+    { value: "12", label: "跆拳道" },
+    { value: "13", label: "巧固球" },
+    { value: "14", label: "保齡球" },
+    { value: "15", label: "其他" },
+  ];
+
   // data = [{
   //   User_id: 1,
   //   Name: "123",
@@ -104,16 +278,13 @@ function ListContestPage({displayByc_id}: ListContestPage)
                 <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3} >報名截止日期 : {contest.Deadline.split("T")[0]}</Text>
                 <Link href={contest.Url}>
                   <Flex mt='md' justify='right'>
-                    <Text fw={600} size='md'>我要報名</Text>
+                    <Text fw={600} size='md'>查看詳細內容</Text>
                     <IconChevronRight/>
                   </Flex>
                 </Link>
               </Card>
-
             </Link>
-
           )}
-
           {error &&
             <Alert variant="light" color="red" my="md">
             錯誤
@@ -136,46 +307,18 @@ export default function EventsPage() {
   const [formToShow, setFormToShow] = useState(FormType.showContestForm);
 
   const titles = {
-    [FormType.showContestForm]: '全部比賽',
-    [FormType.addContestForm]: '新增比賽',
-    [FormType.modifyContestForm]: '更改比賽資訊',
+    [FormType.showContestForm]: '全部活動',
+    [FormType.addContestForm]: '新增活動',
+    [FormType.modifyContestForm]: '更改活動資訊',
     [FormType.unSignInForm]: '請先登入'
   };
+
   const [c_id, setc_id] = useState<number|null>(null);
   const title = titles[formToShow];
   useNavbarTitle(title);
 
-//add
-  const form = useForm({
-    initialValues: {
-      Name: '',
-      Content:'',
-      Place:'',
-      sp_type:'',//前端送往後端時需處理
-      StartDate:'',//前端送往後端時需處理
-      EndDate:'',//前端送往後端時需處理
-      Deadline:'',
-      Url:'',
-      Other:''
-    },
-  });
-
-  async function ifSuccess() {
-    if(true)//到時要在加條件
-      alert("比賽新增成功!")
-    setFormToShow(FormType.showContestForm)
-  }
-
-  const dateParser: DateInputProps['dateParser'] = (input) => {
-    if (input === 'WW2') {
-      return new Date(1939, 8, 1);
-    }
-    return new Date(input);
-  };
-
   let fabContainer = useContext(FABContainerContext);
 
-//add
   return (
     <>
       <Head>
@@ -187,7 +330,6 @@ export default function EventsPage() {
             <ListContestPage
               displayByc_id = {(c_id) => {
                 setc_id(c_id);
-
               }}
             />
             { fabContainer && createPortal(
@@ -201,87 +343,7 @@ export default function EventsPage() {
         )}
 
         {formToShow === FormType.addContestForm &&(
-          <Box maw={500} mx="auto">
-            <form onSubmit={form.onSubmit((values) => console.log(values))}>
-              <TextInput
-              mt="md"
-                withAsterisk
-                label="賽事名稱"
-                placeholder="請輸入賽事名稱"
-                {...form.getInputProps('Name')}
-              />
-              <TextInput
-              mt="md"
-                withAsterisk
-                label="內容"
-                placeholder="請輸入相關內容"
-                {...form.getInputProps('Content')}
-              />
-              <TextInput
-              mt="md"
-                withAsterisk
-                label="地點"
-                placeholder="請輸入比賽地點"
-                {...form.getInputProps('Place')}
-              />
-              <Select
-                mt="md"
-                comboboxProps={{ withinPortal: true }}
-                data={['ALL', '籃球', '排球', '網球','游泳', '直排輪', '足球', '桌球','棒球', '壘球', '躲避球', '跆拳道','巧固球', '保齡球', '其他']}
-                placeholder="請挑選比賽類別"
-                label="比賽類別"
-
-                {...form.getInputProps('sp_type')}
-              />
-              <DateInput
-              mt="md"
-                withAsterisk
-                clearable defaultValue={new Date()}
-                dateParser={dateParser}
-                valueFormat="YYYY/MM/DD"
-                label="開始日期"
-                placeholder="請選擇比賽開始日期"
-                {...form.getInputProps('StartDate')}
-              />
-              <DateInput
-              mt="md"
-                withAsterisk
-                clearable defaultValue={new Date()}
-                dateParser={dateParser}
-                valueFormat="YYYY/MM/DD"
-                label="結束日期"
-                placeholder="請選擇比賽結束日期"
-                {...form.getInputProps('EndDate')}
-              />
-              <DateInput
-              mt="md"
-                withAsterisk
-                clearable defaultValue={new Date()}
-                dateParser={dateParser}
-                valueFormat="YYYY/MM/DD"
-                label="截止日期"
-                placeholder="請選擇比賽截止日期"
-                {...form.getInputProps('Endline')}
-              />
-              <TextInput
-              mt="md"
-                withAsterisk
-                label="報名連結"
-                placeholder="請輸入報名連結"
-                {...form.getInputProps('Url')}
-              />
-              <TextInput
-              mt="md"
-                withAsterisk
-                label="其他"
-                placeholder="其他資訊"
-                {...form.getInputProps('Other')}
-              />
-              <Group justify="flex-end" mt="md">
-                <Button type="submit" onClick={ifSuccess}>確定</Button>
-              </Group>
-            </form>
-          </Box>
+          <AddContestPage setFormToShow={setFormToShow}></AddContestPage>
         )}
 
         {formToShow === FormType.modifyContestForm}
@@ -294,14 +356,12 @@ export default function EventsPage() {
             justifyContent: 'center',
             height: '70vh',
           }}>
-          {(
-            <>
-              <Alert color="blue">
-                未登入系統，請先登入後再新增比賽!
-              <Link href = '/signin'>按此前往登入頁面</Link>
-              </Alert>
-            </>
-          )}
+          <>
+            <Alert color="blue">
+              未登入系統，請先登入後再新增活動！
+            <Link href = '/signin'>按此前往登入頁面</Link>
+            </Alert>
+          </>
           </Box>
         )}
       </main>
