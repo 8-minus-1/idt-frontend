@@ -67,7 +67,7 @@ export default function App(appProps: AppProps) {
         >
           <AppInner {...appProps} />
         </SWRConfig>
-        <Notifications position={"bottom-center"} style={{position: 'relative', bottom: rem(150)}}/>
+        <Notifications position={"bottom-center"} style={{position: 'absolute', bottom: rem(100)}}/>
         </ModalsProvider>
       </MantineProvider>
     </>
