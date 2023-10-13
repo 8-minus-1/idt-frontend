@@ -26,3 +26,8 @@ export async function deleteQuestion(q_id:number)
 {
   await client.delete("qa/questions/"+q_id);
 }
+
+export async function deleteAnswer(a_id:number)
+{
+  await client.delete("qa/answers/"+a_id);
+}

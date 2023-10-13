@@ -19,7 +19,7 @@ import useSWR from 'swr';
 import { Alert } from '@mantine/core';
 import { useRouter } from 'next/router';
 import { HTTPError } from 'ky';
-import { addAnswer, deleteQuestion } from '@/apis/qa';
+import { addAnswer, deleteAnswer, deleteQuestion } from '@/apis/qa';
 import { notifications } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
 
@@ -49,8 +49,37 @@ type questionCardProps = {
   question: q
 }
 
-function ShowAnswers({answers}:any)
+function ShowAnswers({answers, refreshAnswer}:any)
 {
+  let {user} = useUser();
+
+  let {trigger, loading} = useAsyncFunction(deleteAnswer);
+
+  async function handleDelete(q_id:number)
+  {
+    if(loading) return;
+    modals.openConfirmModal({
+      title: '您確定要刪除這個回答嗎？',
+      centered: true,
+      children: (
+        <Text size="sm">
+          請注意，以上動作沒有辦法復原
+        </Text>
+      ),
+      labels: { confirm: '是的，我非常確定', cancel: "不，請返回" },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        await trigger(q_id);
+        notifications.show({
+          color: "green",
+          title: '已成功刪除您的回答～',
+          message: '期待您隨時來幫助他人解惑！',
+        });
+        refreshAnswer();
+      },
+    });
+  }
+
   return(
     <>
       { !answers.length &&
@@ -71,6 +100,26 @@ function ShowAnswers({answers}:any)
                 <IconUser />
                 <Text fw={500}>User{answer.user_id}</Text>
               </Group>
+
+              { answer.user_id === user?.id &&
+                <Menu withinPortal position="bottom-end" shadow="sm">
+                  <Menu.Target>
+                    <ActionIcon variant="subtle" color="gray">
+                      <IconDots style={{ width: rem(16), height: rem(16) }} />
+                    </ActionIcon>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item
+                      leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
+                      color="red"
+                      onClick={()=>handleDelete(answer.a_id)}
+                    >
+                      刪除此回答
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              }
+
             </Group>
             <Text ml={'xl'} mt={'lg'} style={{whiteSpace: 'pre-wrap'}}>{answer.a_content}</Text>
           </Paper>
@@ -267,7 +316,7 @@ export default function QuestionPage(){
                       登入後即可回答！前往<Link style={{marginLeft: rem(5), textDecoration: "underline"}} href={"/signin"}>註冊/登入</Link>
                     </Text>
                   }
-                  <ShowAnswers answers={answers}></ShowAnswers>
+                  <ShowAnswers answers={answers} refreshAnswer={refreshAnswer}></ShowAnswers>
                 </>
               }
               {
