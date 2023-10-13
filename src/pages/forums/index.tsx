@@ -1,4 +1,4 @@
-import { useAsyncFunction, useNavbarTitle } from '@/hooks';
+import { useAsyncFunction, useNavbarTitle, useUser } from '@/hooks';
 import Head from 'next/head';
 import React, { useState, useContext } from 'react';
 import {
@@ -129,6 +129,7 @@ function QListPage()
 }
 
 function PostQuestion({setDisplayState, refreshQuestion}:any){
+  const {user, mutate: refreshUser}=useUser();
   let {trigger, error, loading} = useAsyncFunction(addQuestion);
   const [sp_type, set_sp_type] = useState<string>('0');
   const [q_title, set_q_title]=useState("");
@@ -209,55 +210,75 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
   return(
     <>
       <main>
-        <Box m = "xl" component="form">
-          <Select
-            label="類別 :"
-            data={sports}
-            defaultValue={""}
-            placeholder="請挑選問題類別"
-            size={'md'}
-            required
-            mt="md"
-            value = {sp_type}
-            onChange={(value:string)=>(set_sp_type(value))}
-            allowDeselect={false}
-          />
-          <Textarea
-            label="標題 :"
-            placeholder="請輸入問題標題"
-            autosize size={'md'}
-            mt="md"
-            withAsterisk
-            required value = {q_title}
-            onChange={(event)=>(set_q_title(event.currentTarget.value))}
-          />
-          <Textarea
-            label="內容（至少10字）:"
-            placeholder="請輸入問題內容"
-            minRows={6} autosize size={'md'}
-            mt="md"
-            withAsterisk
-            required value = {q_content}
-            onChange={(event)=>(set_q_content(event.currentTarget.value))}
-          />
-          <Group justify="space-evenly" mt="md">
-            <Button
-              onClick={()=>(setDisplayState(0))}
-              leftSection={<IconChevronLeft />}
-              w={"45%"}
-            >
-              取消
-            </Button>
-            <Button
-              onClick={()=>ifSuccess(sp_type, q_title, q_content)}
-              variant="gradient"
-              gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
-              rightSection={<IconCheck />}
-              w={"45%"} loading={loading}>
-              確定
-            </Button>
-          </Group>
-        </Box>
+        { !!user &&
+          <Box m = "xl" component="form">
+            <Select
+              label="類別 :"
+              data={sports}
+              defaultValue={""}
+              placeholder="請挑選問題類別"
+              size={'md'}
+              required
+              mt="md"
+              value = {sp_type}
+              onChange={(value:string)=>(set_sp_type(value))}
+              allowDeselect={false}
+            />
+            <Textarea
+              label="標題 :"
+              placeholder="請輸入問題標題"
+              autosize size={'md'}
+              mt="md"
+              withAsterisk
+              required value = {q_title}
+              onChange={(event)=>(set_q_title(event.currentTarget.value))}
+            />
+            <Textarea
+              label="內容（至少10字）:"
+              placeholder="請輸入問題內容"
+              minRows={6} autosize size={'md'}
+              mt="md"
+              withAsterisk
+              required value = {q_content}
+              onChange={(event)=>(set_q_content(event.currentTarget.value))}
+            />
+            <Group justify="space-evenly" mt="md">
+              <Button
+                onClick={()=>(setDisplayState(0))}
+                leftSection={<IconChevronLeft />}
+                w={"45%"}
+              >
+                取消
+              </Button>
+              <Button
+                onClick={()=>ifSuccess(sp_type, q_title, q_content)}
+                variant="gradient"
+                gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
+                rightSection={<IconCheck />}
+                w={"45%"} loading={loading}>
+                確定
+              </Button>
+            </Group>
+          </Box>
+        }
+        {!user &&
+          <Box style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '70vh',
+          }}>
+            {(
+              <>
+                <Alert
+                  color="red" fw={600}>
+                  登入後即可發問！前往
+                  <Link href = '/signin'>註冊/登入</Link>
+                </Alert>
+              </>
+            )}
+          </Box>
+        }
       </main>
     </>
   );
