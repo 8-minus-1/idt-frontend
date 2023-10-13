@@ -271,9 +271,9 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
             {(
               <>
                 <Alert
-                  color="red" fw={600}>
+                  color="blue" fw={500}>
                   登入後即可發問！前往
-                  <Link href = '/signin'>註冊/登入</Link>
+                  <Link href = '/signin'> 註冊/登入</Link>
                 </Alert>
               </>
             )}
