@@ -45,6 +45,12 @@ import {addQuestion} from "@/apis/qa";
 import {notifications} from "@mantine/notifications";
 import isUrl from "is-url";
 
+type searchData = {
+  Name: string,
+  Address: string,
+  ID: number
+}
+
 function AddContestPage({setFormToShow}: any)
 {
   const {user, mutate: refreshUser}=useUser();
@@ -74,15 +80,25 @@ function AddContestPage({setFormToShow}: any)
     { value: "3", label: "元智大學室外排球場" },
   ];
 
+  const [searchInput, setSearchInput] = useState<string>('');
+  const [placeValue, setPlaceValue] = useState<string>('')
+
+  let {data, mutate: updateItems} = useSWR<searchData[]>(['map/search/'+searchInput, { throwHttpErrors: true }]);
+
+  let selectData;
+  if(data)
+  {
+    selectData = data.map(({ ID, Name }) => ({ value: ID.toString(), label: Name}));
+  }
+
   const form = useForm({
     initialValues: {
       Name: '',
       Content:'',
-      Place:'',
-      sp_type:'',//前端送往後端時需處理
-      StartDate: new Date(),//前端送往後端時需處理
-      EndDate: new Date(),//前端送往後端時需處理
-      Deadline: new Date(),
+      sp_type: '',//前端送往後端時需處理
+      StartDate: null,//前端送往後端時需處理
+      EndDate: null,//前端送往後端時需處理
+      Deadline: null,
       Url:'',
       Other:''
     },
@@ -97,17 +113,51 @@ function AddContestPage({setFormToShow}: any)
 
   async function handleSubmit(values: any)
   {
-    let stDate = values.StartDate.getFullYear()+'-'+(values.StartDate.getMonth()+1)+'-'+values.StartDate.getDate();
-    let enDate = values.EndDate.getFullYear()+'-'+(values.EndDate.getMonth()+1)+'-'+values.EndDate.getDate();
-    let deadline = values.Deadline.getFullYear()+'-'+(values.Deadline.getMonth()+1)+'-'+values.Deadline.getDate();
-    //console.log(values,stDate,enDate,deadline)
-    if(values.Name.length < 2)
+    if(values.sp_type == '')
+    {
+      notifications.show({
+        color: "red",
+        title: '沒有選擇運動類別！',
+        message: '選擇活動對應的運動，讓他人更快找到你的活動吧！',
+      })
+      return;
+    }
+    if(values.Name.length < 5)
     {
       console.log("error: too short")
       notifications.show({
         color: "red",
-        title: '比賽名稱至少要有2個字喔～',
-        message: '比賽名稱只有一個字是只有盃嗎????',
+        title: '比賽名稱至少要有5個字喔～',
+        message: '名稱太短大家會不知道這是什麼活動！',
+      })
+      return;
+    }
+    if(placeValue == '')
+    {
+      notifications.show({
+        color: "red",
+        title: '沒有選擇活動地點！',
+        message: '搜尋並選擇活動地點，讓他人更快找到你的活動吧！',
+      })
+      return;
+    }
+    //console.log(values,stDate,enDate,deadline)
+    if(!values.StartDate || !values.Deadline || !values.EndDate)
+    {
+      console.log("error: error")
+      notifications.show({
+        color: "red",
+        title: '記得確實填寫日期～',
+        message: '讓大家更清楚活動時程！',
+      })
+      return;
+    }
+    if(values.Deadline < Date.now())
+    {
+      notifications.show({
+        color: "red",
+        title: '歐不！再檢查一次日期～',
+        message: 'Oh, no! 報名已經截止了嗎？',
       })
       return;
     }
@@ -116,8 +166,8 @@ function AddContestPage({setFormToShow}: any)
       console.log("error: error")
       notifications.show({
         color: "red",
-        title: '時間錯誤',
-        message: '開始比了還可以報名是怎麼樣????',
+        title: '歐不！再檢查一次日期～',
+        message: '報名截止日不可以比活動開始日還晚！',
       })
       return;
     }
@@ -126,8 +176,8 @@ function AddContestPage({setFormToShow}: any)
       console.log("error: error")
       notifications.show({
         color: "red",
-        title: '時間錯誤',
-        message: '開始時間怎麼會比結束時間長，時間旅行嗎????',
+        title: '歐不！再檢查一次日期～',
+        message: '活動開始日不可以比結束日還要晚！大家不會時空旅行',
       })
       return;
     }
@@ -136,14 +186,18 @@ function AddContestPage({setFormToShow}: any)
       console.log("error: error")
       notifications.show({
         color: "red",
-        title: '報名連結錯誤',
-        message: '報名網址錯誤喔，請確認清楚否則沒人會報名你的比賽，可憐!!',
+        title: '請確實填寫報名連結！',
+        message: '要有正確的報名連結才會有人報名你的活動喔～',
       })
       return;
     }
 
+    let stDate = values.StartDate.getFullYear()+'-'+(values.StartDate.getMonth()+1)+'-'+values.StartDate.getDate();
+    let enDate = values.EndDate.getFullYear()+'-'+(values.EndDate.getMonth()+1)+'-'+values.EndDate.getDate();
+    let deadline = values.Deadline.getFullYear()+'-'+(values.Deadline.getMonth()+1)+'-'+values.Deadline.getDate();
+
     if(loading) return;
-    let {error} = await trigger(values.Name,values.Content, parseInt(values.Place),parseInt(values.sp_type),stDate, enDate,deadline,values.Url,values.Other);
+    let {error} = await trigger(values.Name, values.Content, parseInt(placeValue), parseInt(values.sp_type), stDate, enDate, deadline, values.Url, values.Other);
     if(error) return console.error(error);
     notifications.show({
       color: "green",
@@ -159,78 +213,83 @@ function AddContestPage({setFormToShow}: any)
         <Box m="xl">
           <form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
             <Select size={'md'}
-              mt="md"
-              comboboxProps={{ withinPortal: true }}
-              data={sports}
-              placeholder="請挑選運動類別"
-              label="運動類別"
-              {...form.getInputProps('sp_type')}
+                    mt="md" required
+                    comboboxProps={{ withinPortal: true }}
+                    data={sports}
+                    placeholder="請挑選運動類別"
+                    label="運動類別"
+                    allowDeselect={false}
+                    {...form.getInputProps('sp_type')}
             />
             <TextInput size={'md'}
-              mt="md"
-              withAsterisk
-              label="活動名稱"
-              placeholder="請輸入活動名稱"
-              {...form.getInputProps('Name')}
+                       mt="md" required
+                       label="活動名稱"
+                       placeholder="請輸入活動名稱"
+                       {...form.getInputProps('Name')}
             />
             <Select size={'md'}
-              mt="md"
-              comboboxProps={{ withinPortal: true }}
-              data={places}
-              placeholder="請挑選地點"
-              label="地點選擇"
-              {...form.getInputProps('Place')}
+                    mt="md" required
+                    label="活動地點"
+                    placeholder="請搜尋並選擇活動地點"
+                    data={selectData} clearable
+                    searchable nothingFoundMessage={"查無地點"}
+                    searchValue={searchInput}
+                    onSearchChange={(value)=>{
+                      console.log(value.length , searchInput.length - 1)
+                      if(value.length === searchInput.length - 1)
+                      {
+                        setPlaceValue('');
+                      }
+                      setSearchInput(value);
+                    }}
+                    value={placeValue} onChange={(value:string)=>setPlaceValue((value)? value: '')}
             />
             <DatePickerInput size={'md'}
-              mt="md"
-              withAsterisk
-              clearable required
-              valueFormat="YYYY/MM/DD"
-              label="活動開始日期"
-              placeholder="請選擇活動開始日期"
-              {...form.getInputProps('StartDate')}
+                             mt="md" required
+                             clearable
+                             valueFormat="YYYY/MM/DD"
+                             label="報名截止日期"
+                             placeholder="請選擇報名截止日期"
+                             {...form.getInputProps('Deadline')}
             />
-            <DateInput size={'md'}
-              mt="md"
-              withAsterisk
-              clearable
-              dateParser={dateParser}
-              valueFormat="YYYY/MM/DD"
-              label="活動結束日期"
-              placeholder="請選擇活動結束日期"
-              {...form.getInputProps('EndDate')}
+            <DatePickerInput size={'md'}
+                             mt="md"
+                             clearable required
+                             valueFormat="YYYY/MM/DD"
+                             label="活動開始日期"
+                             placeholder="請選擇活動開始日期"
+                             {...form.getInputProps('StartDate')}
             />
-            <DateInput size={'md'}
-              mt="md"
-              withAsterisk
-              clearable
-              dateParser={dateParser}
-              valueFormat="YYYY/MM/DD"
-              label="報名截止日期"
-              placeholder="請選擇報名截止日期"
-              {...form.getInputProps('Deadline')}
+            <DatePickerInput size={'md'}
+                             mt="md" required
+                             clearable
+                             valueFormat="YYYY/MM/DD"
+                             label="活動結束日期"
+                             placeholder="請選擇活動結束日期"
+                             {...form.getInputProps('EndDate')}
             />
             <Textarea size={'md'}
-              mt="md" radius={'md'}
-              withAsterisk
-              label="詳細說明"
-              placeholder="關於這個活動詳情"
-              {...form.getInputProps('Content')}
-              minRows={8} autosize
+                      mt="md" radius={'md'}
+                      required
+                      label="詳細說明"
+                      placeholder="關於這個活動詳情"
+                      {...form.getInputProps('Content')}
+                      minRows={8} autosize
             ></Textarea>
             <TextInput size={'md'}
-              mt="md"
-              withAsterisk
-              label="官網網址"
-              placeholder="請輸入官方網站網址"
-              {...form.getInputProps('Url')}
+                       mt="md"
+                       required
+                       label="官網網址"
+                       placeholder="請輸入官方網站網址"
+                       {...form.getInputProps('Url')}
             />
-            <TextInput size={'md'}
-              mt="md"
-              withAsterisk
-              label="其他"
-              placeholder="關於這個活動的其他資訊"
-              {...form.getInputProps('Other')}
+            <Textarea size={'md'}
+                      mt="md"
+                      required
+                      minRows={3} autosize
+                      label="其他"
+                      placeholder="關於這個活動的其他資訊"
+                      {...form.getInputProps('Other')}
             />
             <Group justify={"space-evenly"} my={'lg'}>
               <Button
@@ -253,23 +312,23 @@ function AddContestPage({setFormToShow}: any)
           </form>
         </Box>
       }{!user &&
-        <Box style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '70vh',
-        }}>
-          {(
-            <>
-              <Alert
-                color="blue" fw={500}>
-                登入後即可發問！前往
-                <Link href = '/signin'> 註冊/登入</Link>
-              </Alert>
-            </>
-          )}
-        </Box>
-      }
+      <Box style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '70vh',
+      }}>
+        {(
+          <>
+            <Alert
+              color="blue" fw={500}>
+              登入後即可新增活動！前往
+              <Link href = '/signin'> 註冊/登入</Link>
+            </Alert>
+          </>
+        )}
+      </Box>
+    }
     </main>
   )
 }
@@ -277,6 +336,7 @@ function AddContestPage({setFormToShow}: any)
 type ListContestPage = {
   displayByc_id: (c_id: number) =>  void
   setFormToShow: (FormType: number) => void
+  setc_id: any
 };
 
 type Contests = {
@@ -341,12 +401,12 @@ function ListContestPage({displayByc_id, setFormToShow, setc_id}: ListContestPag
                     <Text fw={500} >User{contest.User_id}</Text>
                   </Group>
 
-                    <Flex mt='md' justify='right'>
-                      <Button fw={600}
-                              style={{fontSize: '25px'}}
-                              bg='#D6EAF8'
-                              onClick={()=>(setFormToShow(3), displayByc_id(contest.c_id))}>...</Button>
-                    </Flex>
+                  <Flex mt='md' justify='right'>
+                    <Button fw={600}
+                            style={{fontSize: '25px'}}
+                            bg='#D6EAF8'
+                            onClick={()=>(setFormToShow(3), displayByc_id(contest.c_id))}>...</Button>
+                  </Flex>
 
                 </Group>
                 <Text size="lg" m='md' fw='600'>{contest.Name}</Text>
@@ -363,7 +423,7 @@ function ListContestPage({displayByc_id, setFormToShow, setc_id}: ListContestPag
           )}
           {error &&
             <Alert variant="light" color="red" my="md">
-            錯誤
+              錯誤
             </Alert>
           }
         </Container>
@@ -429,92 +489,92 @@ function ModifyContestPage({setContestByc_id}: ModifyContestPage)
   return(
     <>
       <main>
-      <Box maw={500} mx="auto">
-        <form onSubmit={data}>
-          <Select
-            mt="md"
-            comboboxProps={{ withinPortal: true }}
-            label="運動類別"
-            data={sports}
-            {...form.getInputProps('sp_type')}
-          />
-          <TextInput
-            mt="md"
-            withAsterisk
-            label="活動名稱"
-            {...form.getInputProps('Name')}
-          />
-          <TextInput
-          mt="md"
-            withAsterisk
-            label="地點"
-            {...form.getInputProps('Place')}
-          />
-          <DateInput
-            mt="md"
-            withAsterisk
-            clearable defaultValue={new Date()}
-            dateParser={data.StartDate}
-            valueFormat="YYYY/MM/DD"
-            label="開始日期"
-            {...form.getInputProps('StartDate')}
-          />
-          <DateInput
-            mt="md"
-            withAsterisk
-            clearable defaultValue={new Date()}
-            dateParser={data.EndDate}
-            valueFormat="YYYY/MM/DD"
-            label="結束日期"
-            {...form.getInputProps('EndData')}
-          />
-          <DateInput
-            mt="md"
-            withAsterisk
-            clearable defaultValue={new Date()}
-            dateParser={data.Deadline}
-            valueFormat="YYYY/MM/DD"
-            label="截止日期"
-            {...form.getInputProps('Deadline')}
-          />
-          <TextInput
-            mt="md"
-            withAsterisk
-            label="內容"
-            {...form.getInputProps('Content')}
-          />
-          <TextInput
-            mt="md"
-            withAsterisk
-            label="報名連結"
-            {...form.getInputProps('Url')}
-          />
-          <TextInput
-            mt="md"
-            withAsterisk
-            label="其他"
-            {...form.getInputProps('Other')}
-          />
-        <Group justify={"space-evenly"} my={'lg'}>
-          <Button
-            onClick={()=>{window.location.href='/event'}}
-            leftSection={<IconChevronLeft />}
-            w={"45%"}
-          >
-            取消
-          </Button>
-          <Button
-            type={'submit'}
-            variant="gradient"
-            gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
-            rightSection={<IconSend />}
-            w={"45%"} /*loading={loading}*/
-          >
-            送出
-          </Button>
-        </Group>
-        </form>
-          </Box>
+        <Box maw={500} mx="auto">
+          <form onSubmit={data}>
+            <Select
+              mt="md"
+              comboboxProps={{ withinPortal: true }}
+              label="運動類別"
+              data={sports}
+              {...form.getInputProps('sp_type')}
+            />
+            <TextInput
+              mt="md"
+              withAsterisk
+              label="活動名稱"
+              {...form.getInputProps('Name')}
+            />
+            <TextInput
+              mt="md"
+              withAsterisk
+              label="地點"
+              {...form.getInputProps('Place')}
+            />
+            <DateInput
+              mt="md"
+              withAsterisk
+              clearable defaultValue={new Date()}
+              dateParser={data.StartDate}
+              valueFormat="YYYY/MM/DD"
+              label="開始日期"
+              {...form.getInputProps('StartDate')}
+            />
+            <DateInput
+              mt="md"
+              withAsterisk
+              clearable defaultValue={new Date()}
+              dateParser={data.EndDate}
+              valueFormat="YYYY/MM/DD"
+              label="結束日期"
+              {...form.getInputProps('EndData')}
+            />
+            <DateInput
+              mt="md"
+              withAsterisk
+              clearable defaultValue={new Date()}
+              dateParser={data.Deadline}
+              valueFormat="YYYY/MM/DD"
+              label="截止日期"
+              {...form.getInputProps('Deadline')}
+            />
+            <TextInput
+              mt="md"
+              withAsterisk
+              label="內容"
+              {...form.getInputProps('Content')}
+            />
+            <TextInput
+              mt="md"
+              withAsterisk
+              label="報名連結"
+              {...form.getInputProps('Url')}
+            />
+            <TextInput
+              mt="md"
+              withAsterisk
+              label="其他"
+              {...form.getInputProps('Other')}
+            />
+            <Group justify={"space-evenly"} my={'lg'}>
+              <Button
+                onClick={()=>{window.location.href='/event'}}
+                leftSection={<IconChevronLeft />}
+                w={"45%"}
+              >
+                取消
+              </Button>
+              <Button
+                type={'submit'}
+                variant="gradient"
+                gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
+                rightSection={<IconSend />}
+                w={"45%"} /*loading={loading}*/
+              >
+                送出
+              </Button>
+            </Group>
+          </form>
+        </Box>
       </main>
     </>
   )
@@ -556,8 +616,9 @@ export default function EventsPage() {
                 setc_id(c_id);
               }}
               setFormToShow = {(FormType) => {
-                  setFormToShow(FormType);
+                setFormToShow(FormType);
               }}
+              setc_id = {setc_id}
             />
             { fabContainer && createPortal(
               <Button leftSection={<IconPlus size={20} />} mr={'xl'} mb='xl'
@@ -584,12 +645,12 @@ export default function EventsPage() {
             justifyContent: 'center',
             height: '70vh',
           }}>
-          <>
-            <Alert color="blue">
-              未登入系統，請先登入後再新增活動！
-            <Link href = '/signin'>按此前往登入頁面</Link>
-            </Alert>
-          </>
+            <>
+              <Alert color="blue">
+                未登入系統，請先登入後再新增活動！
+                <Link href = '/signin'>按此前往登入頁面</Link>
+              </Alert>
+            </>
           </Box>
         )}
       </main>

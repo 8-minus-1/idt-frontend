@@ -168,7 +168,6 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
     }
     if(sp_type === '0')
     {
-      console.log("error: too short")
       notifications.show({
         color: "red",
         title: '沒有選擇問題類別！',
