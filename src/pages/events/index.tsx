@@ -1,4 +1,4 @@
-import { useNavbarTitle } from '@/hooks';
+import { useAsyncFunction, useNavbarTitle, useUser } from '@/hooks';
 import '@mantine/dates/styles.css';
 import Head from 'next/head';
 import { tryParse } from '@/utils';
@@ -8,6 +8,7 @@ import {
   Button,
   Code,
   Container,
+  Menu,
   PasswordInput,
   Text,
   TextInput,
@@ -41,8 +42,7 @@ import { createPortal } from 'react-dom';
 import { Simulate } from 'react-dom/test-utils';
 import submit = Simulate.submit;
 
-function AddContestPage({setFormToShow}: any)
-{
+function AddContestPage({ setFormToShow }: any) {
   const sports = [
     { value: "1", label: "籃球" },
     { value: "2", label: "排球" },
@@ -64,14 +64,14 @@ function AddContestPage({setFormToShow}: any)
   const form = useForm({
     initialValues: {
       Name: '',
-      Content:'',
-      Place:'',
-      sp_type:'',//前端送往後端時需處理
+      Content: '',
+      Place: '',
+      sp_type: '',//前端送往後端時需處理
       StartDate: new Date(),//前端送往後端時需處理
-      EndDate:'',//前端送往後端時需處理
-      Deadline:'',
-      Url:'',
-      Other:''
+      EndDate: '',//前端送往後端時需處理
+      Deadline: '',
+      Url: '',
+      Other: ''
     },
   });
 
@@ -82,14 +82,13 @@ function AddContestPage({setFormToShow}: any)
     return new Date(input);
   };
 
-  function handleSubmit(values: any)
-  {
-    let stDate = ''+values.StartDate.getFullYear()+'-'+(values.StartDate.getMonth()+1)+'-'+values.StartDate.getDay();
+  function handleSubmit(values: any) {
+    let stDate = '' + values.StartDate.getFullYear() + '-' + (values.StartDate.getMonth() + 1) + '-' + values.StartDate.getDay();
     console.log(stDate)
     setFormToShow(FormType.showContestForm)
   }
 
-  return(
+  return (
     <Box m="xl">
       <form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
         <Select size={'md'}
@@ -167,7 +166,7 @@ function AddContestPage({setFormToShow}: any)
         />
         <Group justify={"space-evenly"} my={'lg'}>
           <Button
-            onClick={()=>setFormToShow(FormType.showContestForm)}
+            onClick={() => setFormToShow(FormType.showContestForm)}
             leftSection={<IconChevronLeft />}
             w={"45%"}
           >
@@ -189,7 +188,7 @@ function AddContestPage({setFormToShow}: any)
 }
 
 type ListContestPage = {
-  displayByc_id: (c_id: number) =>  void
+  displayByc_id: (c_id: number) => void
   setFormToShow: (FormType: number) => void
 };
 
@@ -207,13 +206,39 @@ type Contests = {
   c_id: number
 }
 
-function ListContestPage({displayByc_id, setFormToShow, setc_id}: ListContestPage)
-{
-  const [sp_type, setSp_type] = useState<string|null>('0');
+function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
+  const [sp_type, setSp_type] = useState<string | null>('0');
   let str = (sp_type === '0') ? 'cont/contests' : 'cont/contests/SelectType?sp_type=' + sp_type;
   let { data, error } = useSWR([str, { throwHttpErrors: true }]);
-  if(data && data.length) console.log(data[0]);
-  if(error) console.log("error: ",error);
+  if (data && data.length) console.log(data[0]);
+  if (error) console.log("error: ", error);
+  let {user} = useUser();
+
+  let {trigger, loading} = useAsyncFunction(deleteAnswer);
+  async function handleDelete(q_id:number)
+  {
+    if(loading) return;
+    modals.openConfirmModal({
+      title: '您確定要刪除這個回答嗎？',
+      centered: true,
+      children: (
+        <Text size="sm">
+          請注意，以上動作沒有辦法復原
+        </Text>
+      ),
+      labels: { confirm: '是的，我非常確定', cancel: "不，請返回" },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        await trigger(q_id);
+        notifications.show({
+          color: "green",
+          title: '已成功刪除您的回答～',
+          message: '期待您隨時來幫助他人解惑！',
+        });
+        refreshAnswer();
+      },
+    });
+  }
 
   const sports = [
     { value: "0", label: "顯示全部活動" },
@@ -234,7 +259,7 @@ function ListContestPage({displayByc_id, setFormToShow, setc_id}: ListContestPag
     { value: "15", label: "其他" },
   ];
 
-  return(
+  return (
     <>
       <main>
         <Container p="lg">
@@ -244,23 +269,35 @@ function ListContestPage({displayByc_id, setFormToShow, setc_id}: ListContestPag
             defaultValue={sports[0].label}
             pb='xl'
             value={sp_type}
-            onChange={(value)=>(setSp_type(value))}
+            onChange={(value) => (setSp_type(value))}
           />
           {data && data.map((contest: Contests) =>
-            <Link href={"events/contests/"+contest.c_id} key={contest.c_id}>
+            <Link href={"events/contests/" + contest.c_id} key={contest.c_id}>
               <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm'>
                 <Group justify='space-between'>
                   <Group>
                     <IconUser />
-                    <Text fw={500} >User{contest.User_id}</Text>                     
+                    <Text fw={500} >User{contest.User_id}</Text>
                   </Group>
 
-                    <Flex mt='md' justify='right'>
-                      <Button fw={600} 
-                              style={{fontSize: '25px'}} 
-                              bg='#D6EAF8' 
-                              onClick={()=>(setFormToShow(3), displayByc_id(contest.c_id))}>...</Button>
-                    </Flex>
+              { contest.User_id === user?.id &&
+                <Menu withinPortal position="bottom-end" shadow="sm">
+                  <Menu.Target>
+                    <ActionIcon variant="subtle" color="gray">
+                      <IconDots style={{ width: rem(16), height: rem(16) }} />
+                    </ActionIcon>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item
+                      leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
+                      color="red"
+                      onClick={()=>handleDelete(answer.a_id)}
+                    >
+                      刪除此回答
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              }
 
                 </Group>
                 <Text size="lg" m='md' fw='600'>{contest.Name}</Text>
@@ -269,7 +306,7 @@ function ListContestPage({displayByc_id, setFormToShow, setc_id}: ListContestPag
                 <Link href={contest.Url}>
                   <Flex mt='md' justify='right'>
                     <Text fw={600} size='md'>查看詳細內容</Text>
-                    <IconChevronRight/>
+                    <IconChevronRight />
                   </Flex>
                 </Link>
               </Card>
@@ -277,7 +314,7 @@ function ListContestPage({displayByc_id, setFormToShow, setc_id}: ListContestPag
           )}
           {error &&
             <Alert variant="light" color="red" my="md">
-            錯誤
+              錯誤
             </Alert>
           }
         </Container>
@@ -286,17 +323,16 @@ function ListContestPage({displayByc_id, setFormToShow, setc_id}: ListContestPag
   );
 }
 
-type ModifyContestPage ={
-  setContestByc_id: (c_id: number) =>  void
+type ModifyContestPage = {
+  setContestByc_id: (c_id: number) => void
 }
 
-function ModifyContestPage({setContestByc_id}: ModifyContestPage)
-{
-  const [c_id, setc_id] = useState<number|null>(0);
+
+function ModifyContestPage({ setContestByc_id }: ModifyContestPage) {
+  const [c_id, setc_id] = useState<number | null>(0);
   let { data, error } = useSWR(['cont/contests/'+c_id, { throwHttpErrors: true }]);
-  if(error) console.log("error: ",error);
-  console.log(typeof(data));
-  
+  if (error) console.log("error: ", error);
+
   const sports = [
     { value: "0", label: "顯示全部活動" },
     { value: "1", label: "籃球" },
@@ -315,120 +351,121 @@ function ModifyContestPage({setContestByc_id}: ModifyContestPage)
     { value: "14", label: "保齡球" },
     { value: "15", label: "其他" },
   ];
-  
-  const form = useForm({
+
+  let form = useForm({
     initialValues: {
       Name: '',
-      Content:'',
-      Place:'',
-      sp_type:'',//前端送往後端時需處理
+      Content: '',
+      Place: '',
+      sp_type: '',//前端送往後端時需處理
       StartDate: new Date(),//前端送往後端時需處理
-      EndDate:'',//前端送往後端時需處理
-      Deadline:'',
-      Url:'',
-      Other:''
+      EndDate: '',//前端送往後端時需處理
+      Deadline: '',
+      Url: '',
+      Other: ''
     },
   });
-    
-  form.setFieldValue('Name', data.Name);
-  form.setFieldValue('Content', data.Content);
-  form.setFieldValue('Place', data.Place);
-  form.setFieldValue('sp_type', data.sp_type);
-  form.setFieldValue('StartDate', data.StartDate);
-  form.setFieldValue('EndDate', data.EndDate);
-  form.setFieldValue('Deadline', data.Deadline);
-  form.setFieldValue('Url', data.Url);
-  form.setFieldValue('Other', data.Other);
 
-  return(
+  return (
     <>
       <main>
-      <Box maw={500} mx="auto">
-        <form onSubmit={data}>
-          <Select
-            mt="md"
-            comboboxProps={{ withinPortal: true }}
-            label="運動類別"
-            data={sports}
-            {...form.getInputProps('sp_type')}
-          />
-          <TextInput
-            mt="md"
-            withAsterisk
-            label="活動名稱"
-            {...form.getInputProps('Name')}
-          />
-          <TextInput
-          mt="md"
-            withAsterisk
-            label="地點"
-            {...form.getInputProps('Place')}
-          />
-          <DateInput
-            mt="md"
-            withAsterisk
-            clearable defaultValue={new Date()}
-            dateParser={data.StartDate}
-            valueFormat="YYYY/MM/DD"
-            label="開始日期"
-            {...form.getInputProps('StartDate')}
-          />
-          <DateInput
-            mt="md"
-            withAsterisk
-            clearable defaultValue={new Date()}
-            dateParser={data.EndDate}
-            valueFormat="YYYY/MM/DD"
-            label="結束日期"
-            {...form.getInputProps('EndData')}
-          />
-          <DateInput
-            mt="md"
-            withAsterisk
-            clearable defaultValue={new Date()}
-            dateParser={data.Deadline}
-            valueFormat="YYYY/MM/DD"
-            label="截止日期"
-            {...form.getInputProps('Deadline')}
-          />
-          <TextInput
-            mt="md"
-            withAsterisk
-            label="內容"
-            {...form.getInputProps('Content')}
-          />
-          <TextInput
-            mt="md"
-            withAsterisk
-            label="報名連結"
-            {...form.getInputProps('Url')}
-          />
-          <TextInput
-            mt="md"
-            withAsterisk
-            label="其他"
-            {...form.getInputProps('Other')}
-          />
-        <Group justify={"space-evenly"} my={'lg'}>
-          <Button
-            onClick={()=>{window.location.href='/event'}}
-            leftSection={<IconChevronLeft />}
-            w={"45%"}
-          >
-            取消
-          </Button>
-          <Button
-            type={'submit'}
-            variant="gradient"
-            gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
-            rightSection={<IconSend />}
-            w={"45%"} /*loading={loading}*/
-          >
-            送出
-          </Button>
-        </Group>
-        </form>
+        {data && (
+          <Box maw={500} mx="auto">
+            <form onSubmit={data}>
+              <Select
+                mt="md"
+                comboboxProps={{ withinPortal: true }}
+                label="運動類別"
+                data={sports}
+                defaultValue={data.sp_type}
+                {...form.getInputProps('sp_type')}
+              />
+              <TextInput
+                mt="md"
+                withAsterisk
+                label="活動名稱"
+                defaultValue={data.Name}
+                {...form.getInputProps('Name')}
+              />
+              <TextInput
+                mt="md"
+                withAsterisk
+                label="地點"
+                defaultValue={data.Place}
+                {...form.getInputProps('Place')}
+              />
+              <DateInput
+                mt="md"
+                withAsterisk
+                clearable defaultValue={new Date()}
+                dateParser={data.StartDate}
+                valueFormat="YYYY/MM/DD"
+                label="開始日期"
+                defaultDate={data.StartDate}
+                {...form.getInputProps('StartDate')}
+              />
+              <DateInput
+                mt="md"
+                withAsterisk
+                clearable defaultValue={new Date()}
+                dateParser={data.EndDate}
+                valueFormat="YYYY/MM/DD"
+                label="結束日期"
+                defaultDate={data.EndDate}
+                {...form.getInputProps('EndData')}
+              />
+              <DateInput
+                mt="md"
+                withAsterisk
+                clearable defaultValue={new Date()}
+                dateParser={data.Deadline}
+                valueFormat="YYYY/MM/DD"
+                label="截止日期"
+                defaultDate={data.Deadline}
+                {...form.getInputProps('Deadline')}
+              />
+              <TextInput
+                mt="md"
+                withAsterisk
+                label="內容"
+                defaultValue={data.Content}
+                {...form.getInputProps('Content')}
+              />
+              <TextInput
+                mt="md"
+                withAsterisk
+                label="報名連結"
+                defaultValue={data.Url}
+                {...form.getInputProps('Url')}
+              />
+              <TextInput
+                mt="md"
+                withAsterisk
+                label="其他"
+                defaultValue={data.Other}
+                {...form.getInputProps('Other')}
+              />
+              <Group justify={"space-evenly"} my={'lg'}>
+                <Button
+                  onClick={() => { window.location.href = '/event' }}
+                  leftSection={<IconChevronLeft />}
+                  w={"45%"}
+                >
+                  取消
+                </Button>
+                <Button
+                  type={'submit'}
+                  variant="gradient"
+                  gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
+                  rightSection={<IconSend />}
+                  w={"45%"} /*loading={loading}*/
+                >
+                  送出
+                </Button>
+              </Group>
+            </form>
           </Box>
+        )}
       </main>
     </>
   )
@@ -451,7 +488,7 @@ export default function EventsPage() {
     [FormType.unSignInForm]: '請先登入'
   };
 
-  const [c_id, setc_id] = useState<number|null>(null);
+  const [c_id, setc_id] = useState<number | null>(null);
   const title = titles[formToShow];
   useNavbarTitle(title);
 
@@ -466,16 +503,16 @@ export default function EventsPage() {
         {formToShow === FormType.showContestForm && (
           <Box mx="auto">
             <ListContestPage
-              displayByc_id = {(c_id) => {
+              displayByc_id={(c_id) => {
                 setc_id(c_id);
               }}
-              setFormToShow = {(FormType) => {
-                  setFormToShow(FormType);
+              setFormToShow={(FormType) => {
+                setFormToShow(FormType);
               }}
             />
-            { fabContainer && createPortal(
+            {fabContainer && createPortal(
               <Button leftSection={<IconPlus size={20} />} mr={'xl'} mb='xl'
-                      style={({ "box-shadow": 'silver 2px 2px 20px', })} size={'lg'} radius={'xl'} c={"black"} color={'#F8D6D8'} onClick={() => (setFormToShow(FormType.addContestForm))}>
+                style={({ "box-shadow": 'silver 2px 2px 20px', })} size={'lg'} radius={'xl'} c={"black"} color={'#F8D6D8'} onClick={() => (setFormToShow(FormType.addContestForm))}>
                 新增活動
               </Button>
               , fabContainer)
@@ -483,7 +520,7 @@ export default function EventsPage() {
           </Box>
         )}
 
-        {formToShow === FormType.addContestForm &&(
+        {formToShow === FormType.addContestForm && (
           <AddContestPage setFormToShow={setFormToShow}></AddContestPage>
         )}
 
@@ -498,12 +535,12 @@ export default function EventsPage() {
             justifyContent: 'center',
             height: '70vh',
           }}>
-          <>
-            <Alert color="blue">
-              未登入系統，請先登入後再新增活動！
-            <Link href = '/signin'>按此前往登入頁面</Link>
-            </Alert>
-          </>
+            <>
+              <Alert color="blue">
+                未登入系統，請先登入後再新增活動！
+                <Link href='/signin'>按此前往登入頁面</Link>
+              </Alert>
+            </>
           </Box>
         )}
       </main>
