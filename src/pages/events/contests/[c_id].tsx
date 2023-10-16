@@ -19,7 +19,6 @@ import useSWR from 'swr';
 import { Alert } from '@mantine/core';
 import { useRouter } from 'next/router';
 import { HTTPError } from 'ky';
-import { addAnswer } from '@/apis/qa';
 import { notifications } from '@mantine/notifications';
 
 // pink F8D6D8
@@ -70,16 +69,11 @@ export default function ContestPage(){
                     </Group>
                     </Group>
                     <Text size="lg" m='md' fw='600'>{contest.Name}</Text>
-                    <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={contest.Content.split('\r\n').length}>{contest.Content.split('\r\n').map((o)=>
-                        <p>{o}<br/></p>
-                    )}</Text>
-                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={contest.Other.split('\r\n').length}>{contest.Other.split('\r\n').map((o)=>
-                        <p>{o}<br/></p>
-                    )}</Text>
+                    <Text ml="xl" mr='lg' size='md' fw={500} style={{whiteSpace: 'pre-wrap'}}>{contest.Content}</Text>
+                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" style={{whiteSpace: 'pre-wrap'}}>{contest.Other}</Text>
                     <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>地點 : {contest.Place}</Text>
                     <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>時間 : {contest.StartDate.split("T")[0] +" ~ "+ contest.EndDate.split("T")[0]}</Text>
-                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3} >報名截止日期 : {contest.Deadline.split("T")[0]}</Text>
-
+                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>報名截止日期 : {contest.Deadline.split("T")[0]}</Text>
                     <Link href={contest.Url}>
                     <Flex mt='md' justify='right'>
                         <Text fw={600} size='md'>我要報名</Text>
