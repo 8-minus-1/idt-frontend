@@ -381,8 +381,17 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
     { value: "15", label: "其他" },
   ];
 
+  let title = "全部"
+  if(sp_type !== "0")
+    title = sports[sp_type].label;
+  title += "活動"
+  useNavbarTitle(title);
+
   return (
     <>
+      <Head>
+        <title>{title}</title>
+      </Head>
       <main>
         <Container p="lg">
           <Select
@@ -402,9 +411,10 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
                     <Text fw={500} >User{contest.User_id}</Text>
                   </Group>
                   </Group>         
-                <Text size="lg" m='md' fw='600'>{contest.Name}</Text>
-                <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={3}>{contest.Content}</Text>
-                <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3} >報名截止日期 : {contest.Deadline.split("T")[0]}</Text>
+                <Text size="lg" m='md' fw='600'>活動名稱: {contest.Name}</Text>
+                <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={4}>活動種類 : {sports[contest.sp_type].label}</Text>
+                <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={4}>活動內容 : {contest.Content}</Text>
+                <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={4} >報名截止日期 : {contest.Deadline.split("T")[0]}</Text>
                   <Flex mt='md' justify='right' c={'blue'}>
                     <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>查看詳細內容</Text>
                     <IconChevronRight />

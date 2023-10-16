@@ -24,19 +24,133 @@ import { modals } from '@mantine/modals';
 import { deleteContest, editContest } from '@/apis/cont';
 import { DateInput, DateInputProps, DatePickerInput } from '@mantine/dates';
 import { isEmail, useForm } from '@mantine/form';
+import { router } from 'next/client';
+import isUrl from "is-url";
 
 // pink F8D6D8
 // yellow FFE55B
 
 type ModifyContestPage = {
-
+  setFormToShow: (FormType: number) => void
 }
 
-
-function ModifyContestPage() {
-  const [c_id, setc_id] = useState<number | null>(0);
+function ModifyContestPage({setFormToShow}: ModifyContestPage) {
+  let c_id = router.query.c_id;
   let { data, error } = useSWR(['cont/contests/'+c_id, { throwHttpErrors: true }]);
   if(error) console.log("error: ",error);
+  let {trigger, loading} = useAsyncFunction(editContest);
+
+  const form = useForm({
+    initialValues: {
+      Name: '',
+      Content: '',
+      Place: '',
+      sp_type: '',//前端送往後端時需處理
+      StartDate: new Date(),//前端送往後端時需處理
+      EndDate: '',//前端送往後端時需處理
+      Deadline: '',
+      Url: '',
+      Other: ''
+    },
+  });
+  
+  const [placeValue, setPlaceValue] = useState<string>('')
+  
+  async function handleSubmit(values: any)
+  {
+    if(values.sp_type == '')
+    {
+      notifications.show({
+        color: "red",
+        title: '沒有選擇運動類別！',
+        message: '選擇活動對應的運動，讓他人更快找到你的活動吧！',
+      })
+      return;
+    }
+    if(values.Name.length < 5)
+    {
+      console.log("error: too short")
+      notifications.show({
+        color: "red",
+        title: '比賽名稱至少要有5個字喔～',
+        message: '名稱太短大家會不知道這是什麼活動！',
+      })
+      return;
+    }
+    if(placeValue == '')
+    {
+      notifications.show({
+        color: "red",
+        title: '沒有選擇活動地點！',
+        message: '搜尋並選擇活動地點，讓他人更快找到你的活動吧！',
+      })
+      return;
+    }
+    //console.log(values,stDate,enDate,deadline)
+    if(!values.StartDate || !values.Deadline || !values.EndDate)
+    {
+      console.log("error: error")
+      notifications.show({
+        color: "red",
+        title: '記得確實填寫日期～',
+        message: '讓大家更清楚活動時程！',
+      })
+      return;
+    }
+    if(values.Deadline < Date.now())
+    {
+      notifications.show({
+        color: "red",
+        title: '歐不！再檢查一次日期～',
+        message: 'Oh, no! 報名已經截止了嗎？',
+      })
+      return;
+    }
+    if(values.StartDate < values.Deadline)
+    {
+      console.log("error: error")
+      notifications.show({
+        color: "red",
+        title: '歐不！再檢查一次日期～',
+        message: '報名截止日不可以比活動開始日還晚！',
+      })
+      return;
+    }
+    if(values.StartDate > values.EndDate)
+    {
+      console.log("error: error")
+      notifications.show({
+        color: "red",
+        title: '歐不！再檢查一次日期～',
+        message: '活動開始日不可以比結束日還要晚！大家不會時空旅行',
+      })
+      return;
+    }
+    if(!isUrl(values.Url))
+    {
+      console.log("error: error")
+      notifications.show({
+        color: "red",
+        title: '請確實填寫報名連結！',
+        message: '要有正確的報名連結才會有人報名你的活動喔～',
+      })
+      return;
+    }
+
+    let stDate = values.StartDate.getFullYear()+'-'+(values.StartDate.getMonth()+1)+'-'+values.StartDate.getDate();
+    let enDate = values.EndDate.getFullYear()+'-'+(values.EndDate.getMonth()+1)+'-'+values.EndDate.getDate();
+    let deadline = values.Deadline.getFullYear()+'-'+(values.Deadline.getMonth()+1)+'-'+values.Deadline.getDate();
+    
+    if(loading) return;
+    let {error} = await trigger(c_id, values.Name, values.Content, parseInt(placeValue), parseInt(values.sp_type), stDate, enDate, deadline, values.Url, values.Other);
+    if(error) return console.error(error);
+    notifications.show({
+      color: "green",
+      title: '更新比賽成功～',
+      message: '隨時關注，以獲得最新資訊！',
+    })
+    setFormToShow(FormType.showContestForm);
+  }
 
   const sports = [
     { value: "0", label: "顯示全部活動" },
@@ -57,46 +171,32 @@ function ModifyContestPage() {
     { value: "15", label: "其他" },
   ];
 
-  const form = useForm({
-    initialValues: {
-      Name: '',
-      Content: '',
-      Place: '',
-      sp_type: '',//前端送往後端時需處理
-      StartDate: new Date(),//前端送往後端時需處理
-      EndDate: '',//前端送往後端時需處理
-      Deadline: '',
-      Url: '',
-      Other: ''
-    },
-  });
-
   return (
     <>
       <main>
         {data && (
           <Box maw={500} mx="auto">
-            <form onSubmit={data}>
+            <form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
               <Select
                 mt="md"
                 comboboxProps={{ withinPortal: true }}
                 label="運動類別"
                 data={sports}
-                defaultValue={data.sp_type}
+                defaultValue={data[0].sp_type}
                 {...form.getInputProps('sp_type')}
               />
               <TextInput
                 mt="md"
                 withAsterisk
                 label="活動名稱"
-                defaultValue={data.Name}
+                defaultValue={data[0].Name}
                 {...form.getInputProps('Name')}
               />
               <TextInput
                 mt="md"
                 withAsterisk
                 label="地點"
-                defaultValue={data.Place}
+                defaultValue={data[0].Place}
                 {...form.getInputProps('Place')}
               />
               <DateInput
@@ -106,7 +206,7 @@ function ModifyContestPage() {
                 dateParser={data.StartDate}
                 valueFormat="YYYY/MM/DD"
                 label="開始日期"
-                defaultDate={data.StartDate}
+                defaultDate={data[0].StartDate}
                 {...form.getInputProps('StartDate')}
               />
               <DateInput
@@ -123,7 +223,7 @@ function ModifyContestPage() {
                 mt="md"
                 withAsterisk
                 clearable defaultValue={new Date()}
-                dateParser={data.Deadline}
+                dateParser={data[0].Deadline}
                 valueFormat="YYYY/MM/DD"
                 label="截止日期"
                 defaultDate={data.Deadline}
@@ -133,26 +233,26 @@ function ModifyContestPage() {
                 mt="md"
                 withAsterisk
                 label="內容"
-                defaultValue={data.Content}
+                defaultValue={data[0].Content}
                 {...form.getInputProps('Content')}
               />
               <TextInput
                 mt="md"
                 withAsterisk
                 label="報名連結"
-                defaultValue={data.Url}
+                //defaultValue={}
                 {...form.getInputProps('Url')}
               />
               <TextInput
                 mt="md"
                 withAsterisk
                 label="其他"
-                defaultValue={data.Other}
+                defaultValue={data[0].Other}
                 {...form.getInputProps('Other')}
               />
               <Group justify={"space-evenly"} my={'lg'}>
                 <Button
-                  onClick={() => { window.location.href = '/event' }}
+                  onClick={() => { window.location.href = '/events' }}
                   leftSection={<IconChevronLeft />}
                   w={"45%"}
                 >
@@ -170,6 +270,9 @@ function ModifyContestPage() {
               </Group>
             </form>
           </Box>
+        )}
+        {error && (
+          <Alert color='red'>查無資料</Alert>
         )}
       </main>
     </>
@@ -198,11 +301,6 @@ export default function ContestPage(){
   const router = useRouter();
   const c_id = router.query.c_id;
   const [formToShow, setFormToShow] = useState(FormType.showContestForm);
-
-  const titles = {
-    [FormType.showContestForm]: '活動詳細資料',
-    [FormType.modifyContestForm]: '更改活動資訊',
-  };
 
   let { data, error } = useSWR(['cont/contests/'+c_id, { throwHttpErrors: true }]);
 
@@ -237,11 +335,17 @@ export default function ContestPage(){
       },
     });
   }
+  const titles = {
+    [FormType.showContestForm]: '活動詳細資料',
+    [FormType.modifyContestForm]: '更改活動資訊'
+  };
+  const title = titles[formToShow];
+  useNavbarTitle(title);
 
   return (
     <>
       <Head>
-        <title>{}</title>
+        <title>{title}</title>
       </Head>
       <main>
         <Container p='lg'>
@@ -278,12 +382,13 @@ export default function ContestPage(){
                     </Menu>
                   }
                     </Group>
-                    <Text size="lg" m='md' fw='600'>{contest.Name}</Text>
-                    <Text ml="xl" mr='lg' size='md' fw={500} style={{whiteSpace: 'pre-wrap'}}>{contest.Content}</Text>
-                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" style={{whiteSpace: 'pre-wrap'}}>{contest.Other}</Text>
-                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>地點 : {contest.Place}</Text>
-                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>時間 : {contest.StartDate.split("T")[0] +" ~ "+ contest.EndDate.split("T")[0]}</Text>
+                    <Text size="lg" m='md' fw='700'>活動名稱 : {contest.Name}</Text>
+                    <Text ml="xl" mr='lg' size='md' fw={500} style={{whiteSpace: 'pre-wrap'}}>活動內容 : {contest.Content}</Text>
+                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>活動地點 : {contest.Place}</Text>
                     <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>報名截止日期 : {contest.Deadline.split("T")[0]}</Text>
+                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>活動開始日期 : {contest.StartDate.split("T")[0]}</Text>
+                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>活動結束日期 : {contest.EndDate.split("T")[0]}</Text>
+                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" style={{whiteSpace: 'pre-wrap'}}>備註 : {contest.Other}</Text>
                     <Link href={contest.Url} target={'_blank'}>
                     <Flex mt='md' justify='right'>
                         <Text fw={600} size='md'>我要報名</Text>
@@ -293,7 +398,7 @@ export default function ContestPage(){
                 </Card>
             )}
             {formToShow === FormType.modifyContestForm && (
-              <ModifyContestPage></ModifyContestPage>
+              <ModifyContestPage setFormToShow={setFormToShow}></ModifyContestPage>
             )}
             { error &&
             <Alert variant="light" color="red" my="md">

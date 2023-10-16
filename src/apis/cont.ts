@@ -32,7 +32,7 @@ export async function deleteContest(c_id:number)
   await client.delete("cont/contests/"+c_id);
 }
 
-export async function editContest(c_id: number,
+export async function editContest(c_id: any,
   Name : string,
   Content : string,
   Place : number,
