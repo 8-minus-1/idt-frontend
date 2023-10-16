@@ -362,7 +362,7 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
   if (data && data.length) console.log(data[0]);
   if (error) console.log("error: ", error);
   let {user} = useUser();
-  
+
   let {trigger, loading} = useAsyncFunction(deleteContest);
   async function handleDelete(c_id:number)
   {
@@ -442,13 +442,14 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
         <Container p="lg">
           <Select
             label="運動類別篩選"
-            data={sports}
+            data={sports} allowDeselect={false}
             defaultValue={sports[0].label}
             pb='xl'
             value={sp_type}
             onChange={(value) => (setSp_type(value))}
           />
           {data && data.map((contest: Contests) =>
+            <Link href={"events/contests/" + contest.c_id} key={contest.c_id}>
               <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm'>
                 <Group justify='space-between'>
                   <Group>
@@ -480,22 +481,25 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
                       </Menu.Dropdown>
                     </Menu>
                   }
-                  </Group>         
+                  </Group>
                 <Text size="lg" m='md' fw='600'>{contest.Name}</Text>
                 <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={3}>{contest.Content}</Text>
                 <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3} >報名截止日期 : {contest.Deadline.split("T")[0]}</Text>
-                <Link href={"events/contests/" + contest.c_id} key={contest.c_id}>
-                  <Flex mt='md' justify='right'>
-                    <Text fw={600} size='md'>查看詳細內容</Text>
+                  <Flex mt='md' justify='right' c={'blue'}>
+                    <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>查看詳細內容</Text>
                     <IconChevronRight />
                   </Flex>
-                </Link>
               </Card>
-            
+            </Link>
           )}
           {error &&
             <Alert variant="light" color="red" my="md">
               錯誤
+            </Alert>
+          }
+          { data && !data.length &&
+            <Alert variant="light" color="yellow" my="md">
+              目前沒有可以顯示的東西QQ
             </Alert>
           }
         </Container>
@@ -507,7 +511,6 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
 type ModifyContestPage = {
   setContestByc_id: (c_id: number) => void
 }
-
 
 function ModifyContestPage({ setContestByc_id }: ModifyContestPage) {
   const [c_id, setc_id] = useState<number | null>(0);
