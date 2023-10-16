@@ -74,7 +74,7 @@ export default function ContestPage(){
                     <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>地點 : {contest.Place}</Text>
                     <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>時間 : {contest.StartDate.split("T")[0] +" ~ "+ contest.EndDate.split("T")[0]}</Text>
                     <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>報名截止日期 : {contest.Deadline.split("T")[0]}</Text>
-                    <Link href={contest.Url}>
+                    <Link href={contest.Url} target={'_blank'}>
                     <Flex mt='md' justify='right'>
                         <Text fw={600} size='md'>我要報名</Text>
                         <IconChevronRight/>
