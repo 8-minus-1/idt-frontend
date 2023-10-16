@@ -357,7 +357,7 @@ type Contests = {
 
 function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
   const [sp_type, setSp_type] = useState<string | null>('0');
-  let str = (sp_type === '0') ? 'cont/contests' : 'cont/contests/SelectType?sp_type=' + sp_type;
+  let str = 'cont/contests/SelectType?sp_type=' + sp_type;
   let { data, error, mutate:refreshList } = useSWR([str, { throwHttpErrors: true }]);
   if (data && data.length) console.log(data[0]);
   if (error) console.log("error: ", error);
@@ -387,13 +387,14 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
         <Container p="lg">
           <Select
             label="運動類別篩選"
-            data={sports}
+            data={sports} allowDeselect={false}
             defaultValue={sports[0].label}
             pb='xl'
             value={sp_type}
             onChange={(value) => (setSp_type(value))}
           />
           {data && data.map((contest: Contests) =>
+            <Link href={"events/contests/" + contest.c_id} key={contest.c_id}>
               <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm'>
                 <Group justify='space-between'>
                   <Group>
@@ -404,18 +405,21 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
                 <Text size="lg" m='md' fw='600'>{contest.Name}</Text>
                 <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={3}>{contest.Content}</Text>
                 <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3} >報名截止日期 : {contest.Deadline.split("T")[0]}</Text>
-                <Link href={"events/contests/" + contest.c_id} key={contest.c_id}>
-                  <Flex mt='md' justify='right'>
-                    <Text fw={600} size='md'>查看詳細內容</Text>
+                  <Flex mt='md' justify='right' c={'blue'}>
+                    <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>查看詳細內容</Text>
                     <IconChevronRight />
                   </Flex>
-                </Link>
               </Card>
-            
+            </Link>
           )}
           {error &&
             <Alert variant="light" color="red" my="md">
               錯誤
+            </Alert>
+          }
+          { data && !data.length &&
+            <Alert variant="light" color="yellow" my="md">
+              目前沒有可以顯示的東西QQ
             </Alert>
           }
         </Container>
@@ -428,7 +432,6 @@ enum FormType {
   showContestForm,
   unSignInForm,
   addContestForm,
-  modifyContestForm,
 }
 export default function EventsPage() {
   const [formToShow, setFormToShow] = useState(FormType.showContestForm);
@@ -436,7 +439,6 @@ export default function EventsPage() {
   const titles = {
     [FormType.showContestForm]: '全部活動',
     [FormType.addContestForm]: '新增活動',
-    [FormType.modifyContestForm]: '更改活動資訊',
     [FormType.unSignInForm]: '請先登入'
   };
 
@@ -475,10 +477,6 @@ export default function EventsPage() {
 
         {formToShow === FormType.addContestForm && (
           <AddContestPage setFormToShow={setFormToShow}></AddContestPage>
-        )}
-
-        {formToShow === FormType.modifyContestForm && (
-          <ModifyContestPage setContestByc_id={setc_id} ></ModifyContestPage>
         )}
         {formToShow === FormType.unSignInForm && (
           <Box style={{

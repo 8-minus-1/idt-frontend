@@ -33,7 +33,7 @@ export async function deleteContest(c_id:number)
 }
 
 export async function editContest(c_id: number,
-/*  Name : string,
+  Name : string,
   Content : string,
   Place : number,
   sp_type : number,
@@ -41,7 +41,7 @@ export async function editContest(c_id: number,
   EndDate:string,
   Deadline:string,
   Url:string,
-  Other:string*/)
+  Other:string)
 {
   await client.put("cont/contests/modify?c_id="+c_id,{
     json:{

@@ -59,15 +59,15 @@ function MListPage()
           <Group mt="md">
             <Select
               label="配對方式"
-              data={method}
-              defaultValue={method[0].label}
+              data={method} allowDeselect={false}
+              defaultValue={method[0].value}
               pb='xl'
               w={"30%"}
             />
             <Select
               label="運動類別篩選"
-              data={sports}
-              defaultValue={sports[0].label}
+              data={sports} allowDeselect={false}
+              defaultValue={sports[0].value}
               pb='xl'
               w={"30%"}
               value={sp_type}
@@ -102,7 +102,7 @@ function MListPage()
           }
           { data && !data.length &&
             <Alert variant="light" color="yellow" my="md">
-              目前沒有可以顯示的內容
+              目前沒有可以顯示的內容QQ
             </Alert>
           }
         </Container>
