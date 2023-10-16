@@ -357,7 +357,7 @@ type Contests = {
 
 function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
   const [sp_type, setSp_type] = useState<string | null>('0');
-  let str = (sp_type === '0') ? 'cont/contests' : 'cont/contests/SelectType?sp_type=' + sp_type;
+  let str = 'cont/contests/SelectType?sp_type=' + sp_type;
   let { data, error, mutate:refreshList } = useSWR([str, { throwHttpErrors: true }]);
   if (data && data.length) console.log(data[0]);
   if (error) console.log("error: ", error);
