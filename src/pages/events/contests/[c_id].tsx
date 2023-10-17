@@ -25,7 +25,7 @@ import {
   IconCalendarOff,
   IconCalendarCheck,
   IconCalendarX,
-  IconPinnedFilled, IconRun, IconFileDescription, IconBulb,
+  IconPinnedFilled, IconRun, IconFileDescription, IconBulb, IconMap, IconMap2,
 } from '@tabler/icons-react';
 import useSWR from 'swr';
 import { Alert } from '@mantine/core';
@@ -459,7 +459,7 @@ export default function ContestPage(){
                     <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>報名截止日期：{deadline}</Text>
                   </Flex>
                   <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-                    <IconPinnedFilled />
+                    <IconMap2 />
                     <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>活動地點：{place}</Text>
                   </Flex>
                   <Flex ml={'xl'} mt='md' justify={'flex-start'}>

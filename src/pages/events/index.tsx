@@ -37,7 +37,14 @@ import {
   IconEdit,
   IconAdjustments,
   IconPlus,
-  IconChevronLeft, IconSend,
+  IconChevronLeft,
+  IconSend,
+  IconCalendarCheck,
+  IconCalendarX,
+  IconCalendarOff,
+  IconPinnedFilled,
+  IconBallBasketball,
+  IconFileDescription,
 } from '@tabler/icons-react';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
@@ -382,6 +389,7 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
   title += "活動"
   useNavbarTitle(title);
 
+  let tz_offset = (new Date()).getTimezoneOffset() * 60000;
   return (
     <>
       <Head>
@@ -397,7 +405,7 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
             value={sp_type}
             onChange={(value) => (setSp_type(value))}
           />
-          {data && data.map((contest: Contests) =>
+          {data && data.map((contest: Contests) =>(
             <Link href={"events/contests/" + contest.c_id} key={contest.c_id}>
               <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm'>
                 <Group justify='space-between'>
@@ -406,16 +414,29 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
                     <Text fw={500} >User{contest.User_id}</Text>
                   </Group>
                   </Group>
-                <Text size="lg" m='md' fw='600'>{contest.Name}</Text>
-                <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={4}>活動種類 : {sports[contest.sp_type].label}</Text>
-                <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={4}>活動內容 : {contest.Content}</Text>
-                <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={4} >報名截止日期 : {contest.Deadline.split("T")[0]}</Text>
+                <Text size="xl" ml={'lg'} mt='lg' fw='600'>{contest.Name}</Text>
+                <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                  <IconBallBasketball />
+                  <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>運動類型：{sports[contest.sp_type].label}</Text>
+                </Flex>
+                <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                  <IconCalendarCheck />
+                  <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>活動開始日期：{new Date(new Date(contest.StartDate) as any - tz_offset).toISOString().split('T')[0]}</Text>
+                </Flex>
+                <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                  <IconCalendarX />
+                  <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>活動結束日期：{new Date(new Date(contest.EndDate) as any - tz_offset).toISOString().split('T')[0]}</Text>
+                </Flex>
+                <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                  <IconCalendarOff />
+                  <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>報名截止日期：{new Date(new Date(contest.Deadline) as any - tz_offset).toISOString().split('T')[0]}</Text>
+                </Flex>
                   <Flex mt='md' justify='right' c={'blue'}>
                     <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>查看詳細內容</Text>
                     <IconChevronRight />
                   </Flex>
               </Card>
-            </Link>
+            </Link>)
           )}
           {error &&
             <Alert variant="light" color="red" my="md">
