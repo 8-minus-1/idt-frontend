@@ -14,7 +14,19 @@ import {
   Select, Paper, Button, Textarea, TextInput
 } from '@mantine/core';
 import Link from 'next/link';
-import { IconDots, IconUser, IconTrash, IconEdit, IconChevronLeft, IconSend, IconChevronRight} from '@tabler/icons-react';
+import {
+  IconDots,
+  IconUser,
+  IconTrash,
+  IconEdit,
+  IconChevronLeft,
+  IconSend,
+  IconChevronRight,
+  IconCalendarOff,
+  IconCalendarCheck,
+  IconCalendarX,
+  IconPinnedFilled, IconRun, IconFileDescription, IconBulb,
+} from '@tabler/icons-react';
 import useSWR from 'swr';
 import { Alert } from '@mantine/core';
 import { useRouter } from 'next/router';
@@ -30,8 +42,25 @@ import isUrl from "is-url";
 // pink F8D6D8
 // yellow FFE55B
 
+type Contests = {
+  User_id: number,
+  Name: string,
+  Place: string,
+  Content: string,
+  sp_type: number,
+  StartDate: string,
+  EndDate: string,
+  Deadline: string,
+  Url: string,
+  Other: string,
+  c_id: number
+}
+
 type ModifyContestPage = {
+  data: Contests[]
+  c_id: string,
   setFormToShow: (FormType: number) => void
+  refresh: any
 }
 
 type searchData = {
@@ -40,10 +69,7 @@ type searchData = {
   ID: number
 }
 
-function ModifyContestPage({setFormToShow}: ModifyContestPage) {
-  let c_id = router.query.c_id;
-
-  let { data, error } = useSWR(['cont/contests/'+c_id, { throwHttpErrors: true }]);
+function ModifyContestPage({data, c_id, setFormToShow, refresh}: ModifyContestPage) {
   let { data: placeInfo, error:placeInfoError } = useSWR(['map/getInfo?id='+data[0].Place, { throwHttpErrors: true }]);
 
   const [placeValue, setPlaceValue] = useState<string>('');
@@ -51,7 +77,6 @@ function ModifyContestPage({setFormToShow}: ModifyContestPage) {
 
   let { data:s_data, mutate: updateItems} = useSWR<searchData[]>(['map/search/'+searchInput, { throwHttpErrors: true }]);
 
-  if(error) console.log("error: ",error);
   let {trigger, loading} = useAsyncFunction(editContest);
 
   const form = useForm({
@@ -162,9 +187,10 @@ function ModifyContestPage({setFormToShow}: ModifyContestPage) {
       return;
     }
 
-    let stDate = values.StartDate.getFullYear()+'-'+(values.StartDate.getMonth()+1)+'-'+values.StartDate.getDate();
-    let enDate = values.EndDate.getFullYear()+'-'+(values.EndDate.getMonth()+1)+'-'+values.EndDate.getDate();
-    let deadline = values.Deadline.getFullYear()+'-'+(values.Deadline.getMonth()+1)+'-'+values.Deadline.getDate();
+    let tz_offset = (new Date()).getTimezoneOffset() * 60000;
+    let stDate = (new Date(values.StartDate - tz_offset)).toISOString().split('T')[0];
+    let enDate = (new Date(values.EndDate - tz_offset)).toISOString().split('T')[0];
+    let deadline = (new Date(values.Deadline - tz_offset)).toISOString().split('T')[0];
 
     if(loading) return;
     let {error} = await trigger(c_id, values.Name, values.Content, parseInt(placeValue), parseInt(values.sp_type), stDate, enDate, deadline, values.Url, values.Other);
@@ -174,6 +200,7 @@ function ModifyContestPage({setFormToShow}: ModifyContestPage) {
       title: '更新比賽成功～',
       message: '隨時關注，以獲得最新資訊！',
     })
+    refresh();
     setFormToShow(FormType.showContestForm);
   }
 
@@ -302,27 +329,9 @@ function ModifyContestPage({setFormToShow}: ModifyContestPage) {
             </form>
           </Box>
         )}
-        {error && (
-          <Alert color='red'>查無資料</Alert>
-        )}
       </main>
     </>
   )}
-
-
-type Contests = {
-    User_id: number,
-    Name: string,
-    Place: string,
-    Content: string,
-    sp_type: number,
-    StartDate: string,
-    EndDate: string,
-    Deadline: string,
-    Url: string,
-    Other: string,
-    c_id: number
-  }
 
   enum FormType {
     showContestForm,
@@ -375,6 +384,26 @@ export default function ContestPage(){
   const title = titles[formToShow];
   useNavbarTitle(title);
 
+  let stDate = '', endDate = '', deadline = '', p_id = '';
+  if(data)
+  {
+    let date = new Date(data[0].StartDate);
+    stDate = date.getFullYear() +  ' / ' + (date.getMonth()+1) + ' / ' + date.getDate();
+    date = new Date(data[0].EndDate);
+    endDate = date.getFullYear() +  ' / ' + (date.getMonth()+1) + ' / ' + date.getDate();
+    date = new Date(data[0].Deadline);
+    deadline = date.getFullYear() +  ' / ' + (date.getMonth()+1) + ' / ' + date.getDate();
+    p_id = data[0].Place;
+  }
+
+  let { data: placeInfo, error: placeInfoError } = useSWR(['map/getInfo?id='+p_id, { throwHttpErrors: true }]);
+
+  let place = '';
+  if(placeInfo)
+  {
+    place = placeInfo[0].Name;
+  }
+
   return (
     <>
       <Head>
@@ -382,14 +411,15 @@ export default function ContestPage(){
       </Head>
       <main>
         <Container p='lg'>
-            { formToShow === FormType.showContestForm && data && data.map((contest: Contests) =>
-                <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm' key={contest.c_id}>
+            { formToShow === FormType.showContestForm && !!data &&
+              <>
+                <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='md' shadow='sm'>
                     <Group justify='space-between'>
                     <Group>
                         <IconUser />
-                        <Text fw={500}>User{contest.User_id}</Text>
+                        <Text fw={500}>User{data[0].User_id}</Text>
                     </Group>
-                    { contest.User_id == user?.id &&
+                    { data[0].User_id == user?.id &&
                     <Menu withinPortal position="bottom-end" shadow="sm">
                       <Menu.Target>
                         <ActionIcon variant="subtle" color="gray">
@@ -407,7 +437,7 @@ export default function ContestPage(){
                         <Menu.Item
                           leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
                           color="red"
-                          onClick={()=>handleDelete(contest.c_id)}
+                          onClick={()=>handleDelete(data[0].c_id)}
                         >
                           刪除此活動
                         </Menu.Item>
@@ -415,23 +445,47 @@ export default function ContestPage(){
                     </Menu>
                   }
                     </Group>
-                    <Text size="lg" m='md' fw='700'>活動名稱 : {contest.Name}</Text>
-                    <Text ml="xl" mr='lg' size='md' fw={500} style={{whiteSpace: 'pre-wrap'}}>活動內容 : {contest.Content}</Text>
-                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>活動地點 : {contest.Place}</Text>
-                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>報名截止日期 : {contest.Deadline.split("T")[0]}</Text>
-                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>活動開始日期 : {contest.StartDate.split("T")[0]}</Text>
-                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3}>活動結束日期 : {contest.EndDate.split("T")[0]}</Text>
-                    <Text ml="xl" mr='lg' size='md' fw={500} mt="md" style={{whiteSpace: 'pre-wrap'}}>備註 : {contest.Other}</Text>
-                    <Link href={contest.Url} target={'_blank'}>
-                    <Flex mt='md' justify='right'>
-                        <Text fw={600} size='md'>我要報名</Text>
-                        <IconChevronRight/>
-                    </Flex>
-                    </Link>
+                    <Text size="xl" ml={'lg'} mt='lg' fw='700'>{data[0].Name}</Text>
+                  <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                    <IconCalendarCheck />
+                    <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>活動開始日期：{stDate}</Text>
+                  </Flex>
+                  <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                    <IconCalendarX />
+                    <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>活動結束日期：{endDate}</Text>
+                  </Flex>
+                  <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                    <IconCalendarOff />
+                    <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>報名截止日期：{deadline}</Text>
+                  </Flex>
+                  <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                    <IconPinnedFilled />
+                    <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>活動地點：{place}</Text>
+                  </Flex>
+                  <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                    <IconFileDescription />
+                    <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>活動內容：</Text>
+                  </Flex>
+                  <Text mt={'sm'} ml={'xl'} pl={'xl'} size='md' fw={700} style={{whiteSpace: 'pre-wrap'}}>{data[0].Content}</Text>
+                  <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                    <IconBulb />
+                    <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>更多資訊：</Text>
+                  </Flex>
+                  <Text mt={'sm'} ml={'xl'} pl={'xl'} size='md' fw={700} style={{whiteSpace: 'pre-wrap'}}>{data[0].Other}</Text>
                 </Card>
-            )}
+                <Link href={data[0].Url} target={'_blank'}>
+                  <Button
+                    variant="gradient"
+                    gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
+                    fullWidth radius={'md'}
+                  >
+                    馬上帶我去報名！
+                  </Button>
+                </Link>
+              </>
+            }
             {formToShow === FormType.modifyContestForm && (
-              <ModifyContestPage setFormToShow={setFormToShow}></ModifyContestPage>
+              <ModifyContestPage data={data} c_id={c_id as string} refresh={refresh} setFormToShow={setFormToShow}></ModifyContestPage>
             )}
             { error &&
             <Alert variant="light" color="red" my="md">

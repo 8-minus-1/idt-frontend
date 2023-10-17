@@ -188,9 +188,10 @@ function AddContestPage({setFormToShow}: any)
       return;
     }
 
-    let stDate = values.StartDate.getFullYear()+'-'+(values.StartDate.getMonth()+1)+'-'+values.StartDate.getDate();
-    let enDate = values.EndDate.getFullYear()+'-'+(values.EndDate.getMonth()+1)+'-'+values.EndDate.getDate();
-    let deadline = values.Deadline.getFullYear()+'-'+(values.Deadline.getMonth()+1)+'-'+values.Deadline.getDate();
+    let tz_offset = (new Date()).getTimezoneOffset() * 60000;
+    let stDate = (new Date(values.StartDate - tz_offset)).toISOString().split('T')[0];
+    let enDate = (new Date(values.EndDate - tz_offset)).toISOString().split('T')[0];
+    let deadline = (new Date(values.Deadline - tz_offset)).toISOString().split('T')[0];
 
     if(loading) return;
     let {error} = await trigger(values.Name, values.Content, parseInt(placeValue), parseInt(values.sp_type), stDate, enDate, deadline, values.Url, values.Other);
@@ -405,7 +406,7 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
                     <Text fw={500} >User{contest.User_id}</Text>
                   </Group>
                   </Group>
-                <Text size="lg" m='md' fw='600'>活動名稱: {contest.Name}</Text>
+                <Text size="lg" m='md' fw='600'>{contest.Name}</Text>
                 <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={4}>活動種類 : {sports[contest.sp_type].label}</Text>
                 <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={4}>活動內容 : {contest.Content}</Text>
                 <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={4} >報名截止日期 : {contest.Deadline.split("T")[0]}</Text>
@@ -418,7 +419,7 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
           )}
           {error &&
             <Alert variant="light" color="red" my="md">
-              錯誤
+              錯誤：暫時無法取得資料
             </Alert>
           }
           { data && !data.length &&
