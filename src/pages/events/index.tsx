@@ -76,14 +76,8 @@ function AddContestPage({setFormToShow}: any)
     { value: "15", label: "其他" },
   ];
 
-  const places = [
-    { value: "1", label: "元智大學體育館" },
-    { value: "2", label: "中原大學體育館" },
-    { value: "3", label: "元智大學室外排球場" },
-  ];
-
   const [searchInput, setSearchInput] = useState<string>('');
-  const [placeValue, setPlaceValue] = useState<string>('')
+  const [placeValue, setPlaceValue] = useState<string>('');
 
   let {data, mutate: updateItems} = useSWR<searchData[]>(['map/search/'+searchInput, { throwHttpErrors: true }]);
 
@@ -382,8 +376,8 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
   ];
 
   let title = "全部"
-  if(sp_type !== "0")
-    title = sports[sp_type].label;
+  if(sp_type && sp_type !== "0")
+    title = sports[parseInt(sp_type)].label;
   title += "活動"
   useNavbarTitle(title);
 
@@ -410,7 +404,7 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
                     <IconUser />
                     <Text fw={500} >User{contest.User_id}</Text>
                   </Group>
-                  </Group>         
+                  </Group>
                 <Text size="lg" m='md' fw='600'>活動名稱: {contest.Name}</Text>
                 <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={4}>活動種類 : {sports[contest.sp_type].label}</Text>
                 <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={4}>活動內容 : {contest.Content}</Text>
