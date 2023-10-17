@@ -24,7 +24,7 @@ import { modals } from '@mantine/modals';
 import { deleteContest, editContest } from '@/apis/cont';
 import { DateInput, DateInputProps, DatePickerInput } from '@mantine/dates';
 import { isEmail, useForm } from '@mantine/form';
-import { router } from 'next/client';
+import { Router } from 'next/router';
 import isUrl from "is-url";
 
 // pink F8D6D8
@@ -34,28 +34,53 @@ type ModifyContestPage = {
   setFormToShow: (FormType: number) => void
 }
 
+type searchData = {
+  Name: string,
+  Address: string,
+  ID: number
+}
+
 function ModifyContestPage({setFormToShow}: ModifyContestPage) {
   let c_id = router.query.c_id;
+
   let { data, error } = useSWR(['cont/contests/'+c_id, { throwHttpErrors: true }]);
+  let { data: placeInfo, error:placeInfoError } = useSWR(['map/getInfo?id='+data[0].Place, { throwHttpErrors: true }]);
+
+  const [placeValue, setPlaceValue] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>('');
+
+  let { data:s_data, mutate: updateItems} = useSWR<searchData[]>(['map/search/'+searchInput, { throwHttpErrors: true }]);
+
   if(error) console.log("error: ",error);
   let {trigger, loading} = useAsyncFunction(editContest);
 
   const form = useForm({
     initialValues: {
-      Name: '',
-      Content: '',
-      Place: '',
-      sp_type: '',//前端送往後端時需處理
-      StartDate: new Date(),//前端送往後端時需處理
-      EndDate: '',//前端送往後端時需處理
-      Deadline: '',
-      Url: '',
-      Other: ''
+      Name: data[0].Name,
+      Content: data[0].Content,
+      sp_type: data[0].sp_type,//前端送往後端時需處理
+      StartDate: new Date(data[0].StartDate),//前端送往後端時需處理
+      EndDate: new Date(data[0].EndDate),//前端送往後端時需處理
+      Deadline: new Date(data[0].Deadline),
+      Url: data[0].Url,
+      Other: data[0].Other
     },
   });
-  
-  const [placeValue, setPlaceValue] = useState<string>('')
-  
+
+  let selectData: any[] = [];
+  if(s_data)
+  {
+    selectData = s_data.map(({ ID, Name }) => ({ value: ID.toString(), label: Name}));
+  }
+
+  let defaultSelected = '';
+  if(placeInfo)
+  {
+    if(!selectData.length) selectData.push({ value: String(placeInfo[0].ID), label: "原："+placeInfo[0].Name});
+    defaultSelected = selectData[0].value;
+    console.log(defaultSelected);
+  }
+
   async function handleSubmit(values: any)
   {
     if(values.sp_type == '')
@@ -140,7 +165,7 @@ function ModifyContestPage({setFormToShow}: ModifyContestPage) {
     let stDate = values.StartDate.getFullYear()+'-'+(values.StartDate.getMonth()+1)+'-'+values.StartDate.getDate();
     let enDate = values.EndDate.getFullYear()+'-'+(values.EndDate.getMonth()+1)+'-'+values.EndDate.getDate();
     let deadline = values.Deadline.getFullYear()+'-'+(values.Deadline.getMonth()+1)+'-'+values.Deadline.getDate();
-    
+
     if(loading) return;
     let {error} = await trigger(c_id, values.Name, values.Content, parseInt(placeValue), parseInt(values.sp_type), stDate, enDate, deadline, values.Url, values.Other);
     if(error) return console.error(error);
@@ -177,82 +202,88 @@ function ModifyContestPage({setFormToShow}: ModifyContestPage) {
         {data && (
           <Box maw={500} mx="auto">
             <form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
-              <Select
-                mt="md"
-                comboboxProps={{ withinPortal: true }}
-                label="運動類別"
-                data={sports}
-                defaultValue={data[0].sp_type}
-                {...form.getInputProps('sp_type')}
+              <Select size={'md'}
+                      mt="md" required
+                      comboboxProps={{ withinPortal: true }}
+                      data={sports}
+                      placeholder="請挑選運動類別"
+                      label="運動類別"
+                      allowDeselect={false}
+                      {...form.getInputProps('sp_type')}
               />
-              <TextInput
-                mt="md"
-                withAsterisk
-                label="活動名稱"
-                defaultValue={data[0].Name}
-                {...form.getInputProps('Name')}
+              <TextInput size={'md'}
+                         mt="md" required
+                         label="活動名稱"
+                         placeholder="請輸入活動名稱"
+                         {...form.getInputProps('Name')}
               />
-              <TextInput
-                mt="md"
-                withAsterisk
-                label="地點"
-                defaultValue={data[0].Place}
-                {...form.getInputProps('Place')}
+              <Select size={'md'}
+                      mt="md" required
+                      label="活動地點"
+                      placeholder="請搜尋並選擇活動地點"
+                      clearable data={selectData}
+                      searchable nothingFoundMessage={"查無地點"}
+                      searchValue={searchInput}
+                      onSearchChange={(value)=>{
+                        console.log(value.length , searchInput.length - 1)
+                        if(value.length === searchInput.length - 1)
+                        {
+                          setPlaceValue('');
+                        }
+                        setSearchInput(value);
+                      }}
+                      value={placeValue} onChange={(value:string)=>setPlaceValue((value)? value: '')}
               />
-              <DateInput
-                mt="md"
-                withAsterisk
-                clearable defaultValue={new Date()}
-                dateParser={data.StartDate}
-                valueFormat="YYYY/MM/DD"
-                label="開始日期"
-                defaultDate={data[0].StartDate}
-                {...form.getInputProps('StartDate')}
+              <DatePickerInput size={'md'}
+                               mt="md" required
+                               clearable
+                               valueFormat="YYYY/MM/DD"
+                               label="報名截止日期"
+                               placeholder="請選擇報名截止日期"
+                               {...form.getInputProps('Deadline')}
               />
-              <DateInput
-                mt="md"
-                withAsterisk
-                clearable defaultValue={new Date()}
-                dateParser={data.EndDate}
-                valueFormat="YYYY/MM/DD"
-                label="結束日期"
-                defaultDate={data.EndDate}
-                {...form.getInputProps('EndData')}
+              <DatePickerInput size={'md'}
+                               mt="md"
+                               clearable required
+                               valueFormat="YYYY/MM/DD"
+                               label="活動開始日期"
+                               placeholder="請選擇活動開始日期"
+                               {...form.getInputProps('StartDate')}
               />
-              <DateInput
-                mt="md"
-                withAsterisk
-                clearable defaultValue={new Date()}
-                dateParser={data[0].Deadline}
-                valueFormat="YYYY/MM/DD"
-                label="截止日期"
-                defaultDate={data.Deadline}
-                {...form.getInputProps('Deadline')}
+              <DatePickerInput size={'md'}
+                               mt="md" required
+                               clearable
+                               valueFormat="YYYY/MM/DD"
+                               label="活動結束日期"
+                               placeholder="請選擇活動結束日期"
+                               {...form.getInputProps('EndDate')}
               />
-              <TextInput
-                mt="md"
-                withAsterisk
-                label="內容"
-                defaultValue={data[0].Content}
-                {...form.getInputProps('Content')}
+              <Textarea size={'md'}
+                        mt="md" radius={'md'}
+                        required
+                        label="詳細說明"
+                        placeholder="關於這個活動詳情"
+                        {...form.getInputProps('Content')}
+                        minRows={8} autosize
+              ></Textarea>
+              <TextInput size={'md'}
+                         mt="md"
+                         required
+                         label="官網網址"
+                         placeholder="請輸入官方網站網址"
+                         {...form.getInputProps('Url')}
               />
-              <TextInput
-                mt="md"
-                withAsterisk
-                label="報名連結"
-                //defaultValue={}
-                {...form.getInputProps('Url')}
-              />
-              <TextInput
-                mt="md"
-                withAsterisk
-                label="其他"
-                defaultValue={data[0].Other}
-                {...form.getInputProps('Other')}
+              <Textarea size={'md'}
+                        mt="md"
+                        required
+                        minRows={3} autosize
+                        label="其他"
+                        placeholder="關於這個活動的其他資訊"
+                        {...form.getInputProps('Other')}
               />
               <Group justify={"space-evenly"} my={'lg'}>
                 <Button
-                  onClick={() => { window.location.href = '/events' }}
+                  onClick={()=>setFormToShow(FormType.showContestForm)}
                   leftSection={<IconChevronLeft />}
                   w={"45%"}
                 >
@@ -297,12 +328,13 @@ type Contests = {
     showContestForm,
     modifyContestForm,
   }
+
 export default function ContestPage(){
   const router = useRouter();
   const c_id = router.query.c_id;
   const [formToShow, setFormToShow] = useState(FormType.showContestForm);
 
-  let { data, error } = useSWR(['cont/contests/'+c_id, { throwHttpErrors: true }]);
+  let { data, error, mutate:refresh } = useSWR(['cont/contests/'+c_id, { throwHttpErrors: true }]);
 
   if(error instanceof HTTPError && error.response.status === 404)
   {
@@ -326,6 +358,7 @@ export default function ContestPage(){
       confirmProps: { color: 'red' },
       onConfirm: async () => {
         await trigger(c_id);
+        router.replace('/events');
         notifications.show({
           color: "green",
           title: '已成功刪除您的活動～',
@@ -405,7 +438,6 @@ export default function ContestPage(){
               暫時無法取得資料
             </Alert>
             }
-          { !error }
         </Container>
       </main>
     </>
