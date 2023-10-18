@@ -1,5 +1,6 @@
 import { useAsyncFunction, useNavbarTitle, useUser } from '@/hooks';
 import Head from 'next/head';
+import '@mantine/dates/styles.css';
 import {
   Card,
   Container,
@@ -22,13 +23,12 @@ import {
   IconCheck,
   IconChevronLeft,
   IconChevronRight,
-  IconEdit,
   IconUser,
   IconUsersGroup,
 } from '@tabler/icons-react';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
-import { DatePicker, DateTimePicker } from '@mantine/dates';
+import { DateTimePicker } from '@mantine/dates';
 import { addQuestion } from '@/apis/qa';
 import { addInvite } from '@/apis/invite';
 import { useForm } from '@mantine/form';
@@ -151,7 +151,7 @@ function PostInvite({setDisplayState, refreshInvite}:any){
   const [Name, set_Name] = useState("");
   const [Content, set_Content]=useState("");
   const [Other, set_Other]=useState("");
-  const [Datetime, set_Datetime]=useState<Date>(new Date(Date.now() + 86400000));
+  const [Datetime, set_Datetime]=useState<Date|null>(new Date(Date.now() + 86400000));
 
   const sports = [
     { value: "1", label: "籃球" },
@@ -195,6 +195,7 @@ function PostInvite({setDisplayState, refreshInvite}:any){
   async function handlePostInvite()
   {
     if(!sp_type) return;
+    if(!Datetime) return;
     //let DT = values.DateTime.getFullYear()+'-'+(values.DateTime.getMonth()+1)+'-'+values.DateTime.getDate()+' '+values.DateTime.getHours()+':'+values.DateTime.getMinutes();
     if(loading) return;
     let {error} = await trigger(Name, Content, parseInt(placeValue), parseInt(sp_type), Datetime.getTime(), Other);
@@ -204,11 +205,9 @@ function PostInvite({setDisplayState, refreshInvite}:any){
   }
 
   return(
-    <>
       <main>
         {!!user &&
           <Box m = "xl" component="form">
-            {/*<form onSubmit={form.onSubmit((values) => handlePostInvite(values))}>*/}
               <Select
                 label="運動類別 :"
                 clearable={false}
@@ -234,7 +233,7 @@ function PostInvite({setDisplayState, refreshInvite}:any){
                 onChange={(event)=>(set_Name(event.currentTarget.value))}
               />
               <DateTimePicker
-                label="時間日期："
+                label="日期、時間："
                 placeholder="請選擇邀請時間及日期"
                 valueFormat={'YYYY/MM/DD hh:mm'}
                 dropdownType={'modal'}
@@ -242,6 +241,7 @@ function PostInvite({setDisplayState, refreshInvite}:any){
                 size={'md'}
                 mt="md"
                 required value={Datetime}
+                onChange={set_Datetime}
               />
               <Select
                 label="地點："
@@ -298,7 +298,6 @@ function PostInvite({setDisplayState, refreshInvite}:any){
                   確定
                 </Button>
               </Group>
-            {/*</form>*/}
           </Box>
         }
         {!user &&
@@ -320,7 +319,6 @@ function PostInvite({setDisplayState, refreshInvite}:any){
           </Box>
         }
       </main>
-    </>
   );
 }
 
