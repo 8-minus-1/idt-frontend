@@ -21,6 +21,8 @@ import qs from 'querystring';
 import LeafletMarker from 'leaflet/dist/images/marker-icon.png';
 import LeafletMarker2x from 'leaflet/dist/images/marker-icon-2x.png';
 import LeafletMarkerShadow from 'leaflet/dist/images/marker-shadow.png';
+import SelectedMarker from '@/assets/marker-icon-selected.png';
+import SelectedMarker2x from '@/assets/marker-icon-selected-2x.png';
 
 Icon.Default.prototype.options.iconUrl = LeafletMarker.src;
 Icon.Default.prototype.options.iconRetinaUrl = LeafletMarker2x.src;
@@ -38,6 +40,18 @@ const tileLayerProps: TileLayerProps = {
     '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
   url: 'https://apis.verylowmaint.com/osm/tile{r}/{z}/{x}/{y}.png',
 };
+const SelectedIcon = new Icon({
+  iconUrl: SelectedMarker.src,
+  iconRetinaUrl: SelectedMarker2x.src,
+  shadowUrl: LeafletMarkerShadow.src,
+  shadowRetinaUrl: LeafletMarkerShadow.src,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  tooltipAnchor: [16, -28],
+  shadowSize: [41, 41],
+});
+const DefaultIcon = new Icon.Default();
 
 function Resizer() {
   const map = useMap();
@@ -91,7 +105,7 @@ function HashParamsLoader() {
 
 function MapPageInner() {
   let fabContainer = useContext(FABContainerContext);
-  const [displayState, setDisplayState] = useState(0);
+  const [selectedPlaceId, setSelectedPlaceId] = useState<Number | null>(null);
   const map = useMap();
   const router = useRouter();
 
@@ -116,11 +130,6 @@ function MapPageInner() {
       });
   }
 
-  useMapEvents({
-    zoomend: handleZoomAndCenterChange,
-    moveend: handleZoomAndCenterChange,
-  });
-
   const places = [
     {
       ID: 1234,
@@ -136,22 +145,30 @@ function MapPageInner() {
     },
   ];
 
+  useMapEvents({
+    zoomend: handleZoomAndCenterChange,
+    moveend: handleZoomAndCenterChange,
+    click() {
+      setSelectedPlaceId(null);
+    },
+  });
+
   return (
     <>
       {places.map(({ ID, Name, Latitude, Longitude }) => (
         <Marker
           key={ID}
           position={{ lat: Latitude, lng: Longitude }}
+          icon={selectedPlaceId === ID ? SelectedIcon : DefaultIcon}
           eventHandlers={{
             click: (e) => {
-              setDisplayState(1);
+              map.flyTo([Latitude, Longitude], 17);
+              setSelectedPlaceId(ID);
             },
           }}
-        >
-          <Popup>{Name}</Popup>
-        </Marker>
+        />
       ))}
-      {displayState &&
+      {selectedPlaceId &&
         fabContainer &&
         createPortal(
           <div style={{ zIndex: 1, position: 'absolute', bottom: 0, width: '100%' }}>
