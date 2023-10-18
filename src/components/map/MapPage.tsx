@@ -1,18 +1,21 @@
-import { useViewportSize } from '@mantine/hooks';
-import { Card, Flex, rem, Text } from '@mantine/core';
+import { useOs, useViewportSize } from '@mantine/hooks';
+import { ActionIcon, Card, Flex, Text } from '@mantine/core';
 import React, { useContext, useEffect, useState } from 'react';
 import {
   MapContainer,
   MapContainerProps,
   Marker,
-  Popup,
   TileLayer,
   TileLayerProps,
   useMap,
   useMapEvents,
 } from 'react-leaflet';
 import { Icon, Control } from 'leaflet';
-import { IconChevronRight } from '@tabler/icons-react';
+import {
+  IconChevronRight,
+  IconCurrentLocation,
+  IconLocation,
+} from '@tabler/icons-react';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/router';
@@ -24,6 +27,7 @@ import LeafletMarkerShadow from 'leaflet/dist/images/marker-shadow.png';
 import SelectedMarker from '@/assets/marker-icon-selected.png';
 import SelectedMarker2x from '@/assets/marker-icon-selected-2x.png';
 import Link from 'next/link';
+import { notifications } from '@mantine/notifications';
 
 Icon.Default.prototype.options.iconUrl = LeafletMarker.src;
 Icon.Default.prototype.options.iconRetinaUrl = LeafletMarker2x.src;
@@ -144,6 +148,11 @@ function MapPageInner() {
       });
   }
 
+  function handleLocate() {
+    setSelectedPlaceId(null);
+    map.locate({ enableHighAccuracy: true, setView: true });
+  }
+
   const places = [
     {
       ID: 1234,
@@ -165,11 +174,27 @@ function MapPageInner() {
     click() {
       setSelectedPlaceId(null);
     },
+    locationerror(event) {
+      let message = '無法取得目前位置。';
+      if (event.code === 0) {
+        message = '此瀏覽器或裝置不支援定位功能。';
+      } else if (event.code === 1) {
+        message = '允許網頁取得定位權限後才能定位。';
+      }
+      notifications.clean();
+      notifications.show({
+        color: 'red',
+        message,
+      });
+    },
   });
 
   useEffect(() => {
     encodeMapStateIntoUrl();
   }, [selectedPlaceId]);
+
+  const os = useOs();
+  const LocationIcon = os === 'ios' || os === 'macos' ? IconLocation : IconCurrentLocation;
 
   return (
     <>
@@ -186,25 +211,54 @@ function MapPageInner() {
           }}
         />
       ))}
-      {selectedPlaceId &&
-        fabContainer &&
+      {fabContainer &&
         createPortal(
-          <div style={{ zIndex: 1, position: 'absolute', bottom: 0, width: '100%' }}>
-            <Card padding="lg" px="xl" bg="#F2FAFC" radius="lg" m="lg" shadow="sm">
-              <Text fw="700" size="xl">
-                元智大學
-              </Text>
-              <Text>地址 : 320桃園市中壢區遠東路135號</Text>
-              <Text>聯繫方式 : 034638800</Text>
-              <Text>網站連結 : https://www.yzu.edu.tw/</Text>
-              <Text>更新時間 : 2023-10-18</Text>
-              <Flex c="blue" mt="md" justify="right">
-                <Text fw={600} size="md">
-                  <Link href={`/map/places/${selectedPlaceId}`}>查看詳細內容</Link>
+          <div
+            style={{
+              zIndex: 1,
+              position: 'absolute',
+              bottom: 0,
+              width: '100%',
+              pointerEvents: 'none',
+            }}
+          >
+            <Flex justify="flex-end">
+              <ActionIcon
+                size="xl"
+                variant="default"
+                m="md"
+                mb={selectedPlaceId ? '0' : 'xl'}
+                style={{ pointerEvents: 'auto' }}
+                onClick={handleLocate}
+              >
+                <LocationIcon style={{ width: '60%', height: '60%' }} />
+              </ActionIcon>
+            </Flex>
+            {selectedPlaceId && (
+              <Card
+                padding="lg"
+                px="xl"
+                bg="#F2FAFC"
+                radius="lg"
+                m="lg"
+                shadow="sm"
+                style={{ pointerEvents: 'auto' }}
+              >
+                <Text fw="700" size="xl">
+                  元智大學
                 </Text>
-                <IconChevronRight />
-              </Flex>
-            </Card>
+                <Text>地址 : 320桃園市中壢區遠東路135號</Text>
+                <Text>聯繫方式 : 034638800</Text>
+                <Text>網站連結 : https://www.yzu.edu.tw/</Text>
+                <Text>更新時間 : 2023-10-18</Text>
+                <Flex c="blue" mt="md" justify="right">
+                  <Text fw={600} size="md">
+                    <Link href={`/map/places/${selectedPlaceId}`}>查看詳細內容</Link>
+                  </Text>
+                  <IconChevronRight />
+                </Flex>
+              </Card>
+            )}
           </div>,
           fabContainer
         )}
