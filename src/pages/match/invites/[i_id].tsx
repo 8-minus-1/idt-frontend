@@ -72,11 +72,11 @@ export default function InvitePage() {
               暫時無法取得資料
             </Alert>
           }
-          { !error && data && data.map((invite: m) =>
+          { !error && !!data &&
             <>
-              <InviteCard invite={invite}></InviteCard>
+              <InviteCard invite={data[0]}></InviteCard>
             </>
-          )}
+          }
         </Container>
       </main>
     </>
