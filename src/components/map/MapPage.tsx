@@ -251,6 +251,12 @@ function MapPageInner() {
                 <Text>聯繫方式 : 034638800</Text>
                 <Text>網站連結 : https://www.yzu.edu.tw/</Text>
                 <Text>更新時間 : 2023-10-18</Text>
+                <Flex c="blue" mt="md" justify="left">
+                  <Text fw={600} size="md">
+                    <Link href={`/events/place/${1}`}>查看詳細內容</Link>
+                  </Text>
+                  <IconChevronRight />
+                </Flex>
                 <Flex c="blue" mt="md" justify="right">
                   <Text fw={600} size="md">
                     <Link href={`/map/places/${selectedPlaceId}`}>查看詳細內容</Link>
