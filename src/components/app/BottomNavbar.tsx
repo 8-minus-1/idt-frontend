@@ -34,7 +34,8 @@ export default function BottomNavbar() {
       {items.map(([label, path, Icon]) => {
         let active = false;
         if (router.isReady) {
-          if (router.asPath === path || router.asPath.startsWith(path + '/')) {
+          let pathToCheck = router.asPath.split('#')[0].split('?')[0];
+          if (pathToCheck === path || pathToCheck.startsWith(path + '/')) {
             active = true;
           }
         }
