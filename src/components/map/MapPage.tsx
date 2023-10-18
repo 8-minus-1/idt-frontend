@@ -23,6 +23,7 @@ import LeafletMarker2x from 'leaflet/dist/images/marker-icon-2x.png';
 import LeafletMarkerShadow from 'leaflet/dist/images/marker-shadow.png';
 import SelectedMarker from '@/assets/marker-icon-selected.png';
 import SelectedMarker2x from '@/assets/marker-icon-selected-2x.png';
+import Link from 'next/link';
 
 Icon.Default.prototype.options.iconUrl = LeafletMarker.src;
 Icon.Default.prototype.options.iconRetinaUrl = LeafletMarker2x.src;
@@ -198,12 +199,8 @@ function MapPageInner() {
               <Text>網站連結 : https://www.yzu.edu.tw/</Text>
               <Text>更新時間 : 2023-10-18</Text>
               <Flex c="blue" mt="md" justify="right">
-                <Text
-                  style={{ textDecoration: 'underline', textDecorationThickness: rem(2) }}
-                  fw={600}
-                  size="md"
-                >
-                  查看詳細內容
+                <Text fw={600} size="md">
+                  <Link href={`/map/places/${selectedPlaceId}`}>查看詳細內容</Link>
                 </Text>
                 <IconChevronRight />
               </Flex>
