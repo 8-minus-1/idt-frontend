@@ -3,6 +3,7 @@ import { client } from './common';
 import exp from 'constants';
 
 export async function addContest(Name : string,
+                                 Organizer: string,
                                  Content : string,
                                  Place : number,
                                  sp_type : number,
@@ -15,6 +16,7 @@ export async function addContest(Name : string,
   await client.post("cont/contests",{
     json:{
       Name,
+      Organizer,
       Content,
       Place,
       sp_type,
@@ -33,19 +35,21 @@ export async function deleteContest(c_id:number)
 }
 
 export async function editContest(c_id: any,
-  Name : string,
-  Content : string,
-  Place : number,
-  sp_type : number,
-  StartDate :string,
-  EndDate:string,
-  Deadline:string,
-  Url:string,
-  Other:string)
+                                  Name : string,
+                                  Organizer: string,
+                                  Content : string,
+                                  Place : number,
+                                  sp_type : number,
+                                  StartDate :string,
+                                  EndDate:string,
+                                  Deadline:string,
+                                  Url:string,
+                                  Other:string)
 {
   await client.put("cont/contests/modify?c_id="+c_id,{
     json:{
       Name,
+      Organizer,
       Content,
       Place,
       sp_type,

@@ -24,8 +24,8 @@ import {
   IconChevronRight,
   IconCalendarOff,
   IconCalendarCheck,
-  IconCalendarX,
-  IconPinnedFilled, IconRun, IconFileDescription, IconBulb, IconMap, IconMap2,
+  IconCalendarX, IconScoreboard,
+  IconFileDescription, IconBulb, IconMap2,
 } from '@tabler/icons-react';
 import useSWR from 'swr';
 import { Alert } from '@mantine/core';
@@ -45,6 +45,7 @@ import isUrl from "is-url";
 type Contests = {
   User_id: number,
   Name: string,
+  Organizer: string,
   Place: string,
   Content: string,
   sp_type: number,
@@ -82,6 +83,7 @@ function ModifyContestPage({data, c_id, setFormToShow, refresh}: ModifyContestPa
   const form = useForm({
     initialValues: {
       Name: data[0].Name,
+      Organizer: data[0].Organizer,
       Content: data[0].Content,
       sp_type: data[0].sp_type,//前端送往後端時需處理
       StartDate: new Date(data[0].StartDate),//前端送往後端時需處理
@@ -193,7 +195,7 @@ function ModifyContestPage({data, c_id, setFormToShow, refresh}: ModifyContestPa
     let deadline = (new Date(values.Deadline - tz_offset)).toISOString().split('T')[0];
 
     if(loading) return;
-    let {error} = await trigger(c_id, values.Name, values.Content, parseInt(placeValue), parseInt(values.sp_type), stDate, enDate, deadline, values.Url, values.Other);
+    let {error} = await trigger(c_id, values.Name, values.Organizer, values.Content, parseInt(placeValue), parseInt(values.sp_type), stDate, enDate, deadline, values.Url, values.Other);
     if(error) return console.error(error);
     notifications.show({
       color: "green",
@@ -243,6 +245,12 @@ function ModifyContestPage({data, c_id, setFormToShow, refresh}: ModifyContestPa
                          label="活動名稱"
                          placeholder="請輸入活動名稱"
                          {...form.getInputProps('Name')}
+              />
+              <TextInput size={'md'}
+                         mt="md" required
+                         label="主辦單位"
+                         placeholder="輸入主辦單位（多個請用頓號隔開）"
+                         {...form.getInputProps('Organizer')}
               />
               <Select size={'md'}
                       mt="md" required
@@ -446,6 +454,10 @@ export default function ContestPage(){
                   }
                     </Group>
                     <Text size="xl" ml={'lg'} mt='lg' fw='700'>{data[0].Name}</Text>
+                  <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                    <IconScoreboard />
+                    <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>主辦單位：{data[0].Organizer}</Text>
+                  </Flex>
                   <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                     <IconCalendarCheck />
                     <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>活動開始日期：{stDate}</Text>

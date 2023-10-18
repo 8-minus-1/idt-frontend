@@ -7,20 +7,14 @@ import {
   Alert,
   Box,
   Button,
-  Code,
   Container,
-  Menu,
   rem,
-  PasswordInput,
   Text,
   TextInput,
-  Checkbox,
   Group,
   Select,
-  Notification,
   Card,
   Flex,
-  ActionIcon,
   Textarea,
 } from '@mantine/core';
 import { isEmail, useForm } from '@mantine/form';
@@ -44,7 +38,7 @@ import {
   IconCalendarOff,
   IconPinnedFilled,
   IconBallBasketball,
-  IconFileDescription,
+  IconFileDescription, IconScoreboard,
 } from '@tabler/icons-react';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
@@ -97,6 +91,7 @@ function AddContestPage({setFormToShow}: any)
   const form = useForm({
     initialValues: {
       Name: '',
+      Organizer: '',
       Content:'',
       sp_type: '',//前端送往後端時需處理
       StartDate: null,//前端送往後端時需處理
@@ -201,7 +196,7 @@ function AddContestPage({setFormToShow}: any)
     let deadline = (new Date(values.Deadline - tz_offset)).toISOString().split('T')[0];
 
     if(loading) return;
-    let {error} = await trigger(values.Name, values.Content, parseInt(placeValue), parseInt(values.sp_type), stDate, enDate, deadline, values.Url, values.Other);
+    let {error} = await trigger(values.Name, values.Organizer, values.Content, parseInt(placeValue), parseInt(values.sp_type), stDate, enDate, deadline, values.Url, values.Other);
     if(error) return console.error(error);
     notifications.show({
       color: "green",
@@ -230,6 +225,12 @@ function AddContestPage({setFormToShow}: any)
                        label="活動名稱"
                        placeholder="請輸入活動名稱"
                        {...form.getInputProps('Name')}
+            />
+            <TextInput size={'md'}
+                       mt="md" required
+                       label="主辦單位"
+                       placeholder="輸入主辦單位（多個請用頓號隔開）"
+                       {...form.getInputProps('Organizer')}
             />
             <Select size={'md'}
                     mt="md" required
@@ -346,6 +347,7 @@ type ListContestPage = {
 type Contests = {
   User_id: number,
   Name: string,
+  Organizer: string,
   Place: string,
   Content: string,
   sp_type: number,
@@ -420,12 +422,15 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
                   <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>運動類型：{sports[contest.sp_type].label}</Text>
                 </Flex>
                 <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-                  <IconCalendarCheck />
-                  <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>活動開始日期：{new Date(new Date(contest.StartDate) as any - tz_offset).toISOString().split('T')[0]}</Text>
+                  <IconScoreboard />
+                  <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>主辦單位：{contest.Organizer}</Text>
                 </Flex>
                 <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-                  <IconCalendarX />
-                  <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>活動結束日期：{new Date(new Date(contest.EndDate) as any - tz_offset).toISOString().split('T')[0]}</Text>
+                  <IconCalendarCheck />
+                  <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
+                    活動日期：
+                    {new Date(new Date(contest.StartDate) as any - tz_offset).toISOString().split('T')[0] + " ～ " + new Date(new Date(contest.EndDate) as any - tz_offset).toISOString().split('T')[0]}
+                  </Text>
                 </Flex>
                 <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                   <IconCalendarOff />
