@@ -154,34 +154,27 @@ function MapPageInner() {
       {displayState &&
         fabContainer &&
         createPortal(
-          <Card
-            w="100%"
-            padding="lg"
-            px="xl"
-            bg="#F2FAFC"
-            radius="lg"
-            mb="xl"
-            shadow="sm"
-            style={{ zIndex: 1, position: 'absolute', bottom: 0 }}
-          >
-            <Text fw="700" size="xl">
-              元智大學
-            </Text>
-            <Text>地址 : 320桃園市中壢區遠東路135號</Text>
-            <Text>聯繫方式 : 034638800</Text>
-            <Text>網站連結 : https://www.yzu.edu.tw/</Text>
-            <Text>更新時間 : 2023-10-18</Text>
-            <Flex c="blue" mt="md" justify="right">
-              <Text
-                style={{ textDecoration: 'underline', textDecorationThickness: rem(2) }}
-                fw={600}
-                size="md"
-              >
-                查看詳細內容
+          <div style={{ zIndex: 1, position: 'absolute', bottom: 0, width: '100%' }}>
+            <Card padding="lg" px="xl" bg="#F2FAFC" radius="lg" m="lg" shadow="sm">
+              <Text fw="700" size="xl">
+                元智大學
               </Text>
-              <IconChevronRight />
-            </Flex>
-          </Card>,
+              <Text>地址 : 320桃園市中壢區遠東路135號</Text>
+              <Text>聯繫方式 : 034638800</Text>
+              <Text>網站連結 : https://www.yzu.edu.tw/</Text>
+              <Text>更新時間 : 2023-10-18</Text>
+              <Flex c="blue" mt="md" justify="right">
+                <Text
+                  style={{ textDecoration: 'underline', textDecorationThickness: rem(2) }}
+                  fw={600}
+                  size="md"
+                >
+                  查看詳細內容
+                </Text>
+                <IconChevronRight />
+              </Flex>
+            </Card>
+          </div>,
           fabContainer
         )}
     </>
