@@ -105,17 +105,30 @@ function HashParamsLoader() {
 
 function MapPageInner() {
   let fabContainer = useContext(FABContainerContext);
-  const [selectedPlaceId, setSelectedPlaceId] = useState<Number | null>(null);
+  let initialPlaceId: Number | null = null;
+  const url = new URL(location.href);
+  if (url.hash) {
+    const { pid } = qs.parse(url.hash.slice(1), ';');
+    const parsed = Number(pid);
+    if (!Number.isNaN(parsed)) {
+      initialPlaceId = parsed;
+    }
+  }
+
+  const [selectedPlaceId, setSelectedPlaceId] = useState<Number | null>(initialPlaceId);
   const map = useMap();
   const router = useRouter();
 
-  function handleZoomAndCenterChange() {
+  function encodeMapStateIntoUrl() {
     if (!router.isReady) return;
-    const params = {
+    const params: any = {
       z: map.getZoom(),
       x: map.getCenter().lng,
       y: map.getCenter().lat,
     };
+    if (selectedPlaceId) {
+      params.pid = selectedPlaceId;
+    }
 
     router
       .replace(
@@ -146,12 +159,16 @@ function MapPageInner() {
   ];
 
   useMapEvents({
-    zoomend: handleZoomAndCenterChange,
-    moveend: handleZoomAndCenterChange,
+    zoomend: encodeMapStateIntoUrl,
+    moveend: encodeMapStateIntoUrl,
     click() {
       setSelectedPlaceId(null);
     },
   });
+
+  useEffect(() => {
+    encodeMapStateIntoUrl();
+  }, [selectedPlaceId]);
 
   return (
     <>
