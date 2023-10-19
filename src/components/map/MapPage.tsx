@@ -28,6 +28,7 @@ import SelectedMarker from '@/assets/marker-icon-selected.png';
 import SelectedMarker2x from '@/assets/marker-icon-selected-2x.png';
 import Link from 'next/link';
 import { notifications } from '@mantine/notifications';
+import useSWR from 'swr';
 
 Icon.Default.prototype.options.iconUrl = LeafletMarker.src;
 Icon.Default.prototype.options.iconRetinaUrl = LeafletMarker2x.src;
@@ -108,7 +109,24 @@ function HashParamsLoader() {
   return <></>;
 }
 
+type Map =  {
+  ID:number
+  Name: string,
+  Latitude: number,
+  Longitude: number,
+  Address: string,
+  Url: string,
+  Phone: string,
+  Renew: string,
+  User: number
+}
+
 function MapPageInner() {
+  let { data, error, isLoading } = useSWR(['map/allPos', { throwHttpErrors: true }]);
+  if (data && data.length) console.log(data[0]);
+  else console.log("error")
+  if (error) console.log("error: ", error);
+
   let fabContainer = useContext(FABContainerContext);
   let initialPlaceId: Number | null = null;
   const url = new URL(location.href);
@@ -120,7 +138,7 @@ function MapPageInner() {
     }
   }
 
-  const [selectedPlaceId, setSelectedPlaceId] = useState<Number | null>(initialPlaceId);
+  const [selectedPlaceId, setSelectedPlaceId] = useState<number | null>(initialPlaceId);
   const map = useMap();
   const router = useRouter();
 
@@ -153,21 +171,6 @@ function MapPageInner() {
     map.locate({ enableHighAccuracy: true, setView: true });
   }
 
-  const places = [
-    {
-      ID: 1234,
-      Name: '元智大學',
-      Latitude: 24.97021049841728,
-      Longitude: 121.2634609147969,
-    },
-    {
-      ID: 1239,
-      Name: '元智大學鐵欄杆',
-      Latitude: 24.96512372296235,
-      Longitude: 121.26732568588233,
-    },
-  ];
-
   useMapEvents({
     zoomend: encodeMapStateIntoUrl,
     moveend: encodeMapStateIntoUrl,
@@ -198,15 +201,15 @@ function MapPageInner() {
 
   return (
     <>
-      {places.map(({ ID, Name, Latitude, Longitude }) => (
+      {!isLoading && data.map((m:Map) => (
         <Marker
-          key={ID}
-          position={{ lat: Latitude, lng: Longitude }}
-          icon={selectedPlaceId === ID ? SelectedIcon : DefaultIcon}
+          key={m.ID}
+          position={{ lat: m.Latitude, lng: m.Longitude }}
+          icon={selectedPlaceId === m.ID ? SelectedIcon : DefaultIcon}
           eventHandlers={{
             click: (e) => {
-              map.flyTo([Latitude, Longitude], 17);
-              setSelectedPlaceId(ID);
+              map.flyTo([m.Latitude, m.Longitude], 17);
+              setSelectedPlaceId(m.ID);
             },
           }}
         />
@@ -245,16 +248,17 @@ function MapPageInner() {
                 style={{ pointerEvents: 'auto' }}
               >
                 <Text fw="700" size="xl">
-                  元智大學
+                  {data[selectedPlaceId-1].Name}
                 </Text>
-                <Text>地址 : 320桃園市中壢區遠東路135號</Text>
-                <Text>聯繫方式 : 034638800</Text>
-                <Text>網站連結 : https://www.yzu.edu.tw/</Text>
-                <Text>更新時間 : 2023-10-18</Text>
+                <Text>地址 : {data[selectedPlaceId-1].Address}</Text>
+                <Text>聯繫方式 : {data[selectedPlaceId-1].Phone}</Text>
+                <Text> 網站連結 : <Link href={data[selectedPlaceId-1].Url}> {data[selectedPlaceId-1].Url}</Link></Text>
+                <Text>更新時間 : {data[selectedPlaceId-1].Renew.split("T")[0]}</Text>
                 <Flex c="blue" mt="md" justify="left">
                   <Text fw={600} size="md">
                     <Link href={`/events/place/${1}`}>查看詳細內容</Link>
                   </Text>
+
                   <IconChevronRight />
                 </Flex>
                 <Flex c="blue" mt="md" justify="right">
