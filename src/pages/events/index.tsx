@@ -38,7 +38,7 @@ import {
   IconCalendarOff,
   IconPinnedFilled,
   IconBallBasketball,
-  IconFileDescription, IconScoreboard,
+  IconFileDescription, IconScoreboard, IconMap2,
 } from '@tabler/icons-react';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
@@ -47,6 +47,7 @@ import submit = Simulate.submit;
 import {notifications} from "@mantine/notifications";
 import isUrl from "is-url";
 import { modals } from '@mantine/modals';
+import { getPlaceByID } from '@/apis/map';
 
 type searchData = {
   Name: string,
@@ -391,6 +392,21 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
   title += "活動"
   useNavbarTitle(title);
 
+  const [placeNames, setPlaceNames] = useState<any[]|null>(null);
+
+  if( (data && !placeNames) || ( data && placeNames!=null && (data.length != placeNames.length)) )
+  {
+    (async() =>{
+      let results = await Promise.all(
+        data.map((item:Contests)=>{
+          return getPlaceByID(item.Place);
+        })
+      );
+      setPlaceNames(results);
+    })()
+    console.log('callback')
+  }
+
   let tz_offset = (new Date()).getTimezoneOffset() * 60000;
   return (
     <>
@@ -407,7 +423,7 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
             value={sp_type}
             onChange={(value) => (setSp_type(value))}
           />
-          {data && data.map((contest: Contests) =>(
+          {!!data && !!placeNames && (data.length == placeNames.length) && data.map((contest: Contests, index:number) =>(
             <Link href={"events/contests/" + contest.c_id} key={contest.c_id}>
               <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm'>
                 <Group justify='space-between'>
@@ -417,6 +433,10 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
                   </Group>
                   </Group>
                 <Text size="xl" ml={'lg'} mt='lg' fw='600'>{'【 '+sports[contest.sp_type].label+' 】' + contest.Name}</Text>
+                <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                  <IconMap2 />
+                  <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>邀約地點：{placeNames[index].Name}</Text>
+                </Flex>
                 <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                   <IconScoreboard />
                   <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>主辦單位：{contest.Organizer}</Text>
