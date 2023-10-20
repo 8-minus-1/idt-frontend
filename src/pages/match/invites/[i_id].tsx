@@ -50,7 +50,7 @@ function InviteCard({invite}: inviteCardProps)
   let place = '';
   if(placeInfo)
   {
-    place = placeInfo[0].Name;
+    place = placeInfo.Name;
   }
 
   return(

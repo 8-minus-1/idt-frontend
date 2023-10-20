@@ -426,7 +426,7 @@ export default function ContestPage(){
   let place = '';
   if(placeInfo)
   {
-    place = placeInfo[0].Name;
+    place = placeInfo.Name;
   }
 
   return (
