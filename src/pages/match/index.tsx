@@ -23,7 +23,7 @@ import {
   IconCalendarCheck,
   IconCheck,
   IconChevronLeft,
-  IconChevronRight,
+  IconChevronRight, IconMap2,
   IconUser,
   IconUsersGroup,
 } from '@tabler/icons-react';
@@ -35,6 +35,7 @@ import { addInvite } from '@/apis/invite';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { getPlaceByID } from '@/apis/map';
+import invalid = Simulate.invalid;
 
 type m = {
   "User_id": number,
@@ -60,8 +61,6 @@ function MListPage()
   let { data, error }  = useSWR(['invite/invitation/InviteType?sp_type='+sp_type, { throwHttpErrors: true }]);
   if(error) console.log("error: ",error);
 
-  console.log(sp_type);
-
   const method =[
     { value: "0", label: "公開邀請" },
     { value: "1", label: "私人配對" },
@@ -84,6 +83,21 @@ function MListPage()
     { value: "14", label: "保齡球" },
     { value: "15", label: "其他" },
   ];
+
+  const [placeNames, setPlaceNames] = useState<any[]|null>(null);
+
+  if( (data && !placeNames) || ( data && placeNames!=null && (data.length != placeNames.length)) )
+  {
+    (async() =>{
+      let results = await Promise.all(
+        data.map((item:m)=>{
+          return getPlaceByID(item.Place);
+        })
+      );
+      setPlaceNames(results);
+    })()
+    console.log('callback')
+  }
 
   return(
     <>
@@ -112,8 +126,8 @@ function MListPage()
               暫時無法取得資料
             </Alert>
           }
-          {data &&
-            data.map((invite:m)=>
+          {!!data && !!placeNames && (data.length == placeNames.length) &&
+            data.map((invite:m, index:number)=>
               <Link href={"match/invites/"+invite.i_id} key={invite.i_id}>
                 <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm'>
                   <Group justify='space-between'>
@@ -122,7 +136,7 @@ function MListPage()
                       <Text fw={500}>User{invite.User_id}</Text>
                     </Group>
                   </Group>
-                  <Text size="xl" ml={'lg'} mt='lg' fw='600'>{'【 '+sports[invite.sp_type].label+' 】' + invite.Name}</Text>
+                  <Text size="lg" mx={'lg'} mt='lg' mb={'sm'} fw='600'>{'【 '+sports[invite.sp_type].label+' 】' + invite.Name }</Text>
                   <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                     <IconCalendarCheck />
                     <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
@@ -135,6 +149,10 @@ function MListPage()
                       邀約時間 :
                       {new Date(invite.DateTime).toLocaleTimeString().split(':')[0] + ':' + new Date(invite.DateTime).toLocaleTimeString().split(':')[1]}
                     </Text>
+                  </Flex>
+                  <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                    <IconMap2 />
+                    <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>邀約地點：{placeNames[index].Name}</Text>
                   </Flex>
                   <Flex c={'blue'} mt='md' justify='right'>
                     <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>查看詳細內容</Text>
