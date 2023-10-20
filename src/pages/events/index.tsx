@@ -416,11 +416,7 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
                     <Text fw={500} >User{contest.User_id}</Text>
                   </Group>
                   </Group>
-                <Text size="xl" ml={'lg'} mt='lg' fw='600'>{contest.Name}</Text>
-                <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-                  <IconBallBasketball />
-                  <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>運動類型：{sports[contest.sp_type].label}</Text>
-                </Flex>
+                <Text size="xl" ml={'lg'} mt='lg' fw='600'>{'【 '+sports[contest.sp_type].label+' 】' + contest.Name}</Text>
                 <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                   <IconScoreboard />
                   <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>主辦單位：{contest.Organizer}</Text>
@@ -429,12 +425,12 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
                   <IconCalendarCheck />
                   <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
                     活動日期：
-                    {new Date(new Date(contest.StartDate) as any - tz_offset).toISOString().split('T')[0] + " ～ " + new Date(new Date(contest.EndDate) as any - tz_offset).toISOString().split('T')[0]}
+                    {new Date(contest.StartDate).toLocaleDateString() + " ～ " + new Date(contest.EndDate).toLocaleDateString() }
                   </Text>
                 </Flex>
                 <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                   <IconCalendarOff />
-                  <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>報名截止日期：{new Date(new Date(contest.Deadline) as any - tz_offset).toISOString().split('T')[0]}</Text>
+                  <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>報名截止日期：{new Date(contest.Deadline).toLocaleDateString()}</Text>
                 </Flex>
                   <Flex mt='md' justify='right' c={'blue'}>
                     <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>查看詳細內容</Text>

@@ -207,7 +207,6 @@ function ModifyContestPage({data, c_id, setFormToShow, refresh}: ModifyContestPa
   }
 
   const sports = [
-    { value: "0", label: "顯示全部活動" },
     { value: "1", label: "籃球" },
     { value: "2", label: "排球" },
     { value: "3", label: "羽球" },
@@ -358,6 +357,24 @@ export default function ContestPage(){
     router.replace('/error');
   }
 
+  const sports = [
+    { value: "1", label: "籃球" },
+    { value: "2", label: "排球" },
+    { value: "3", label: "羽球" },
+    { value: "4", label: "網球" },
+    { value: "5", label: "游泳" },
+    { value: "6", label: "直排輪" },
+    { value: "7", label: "足球" },
+    { value: "8", label: "桌球" },
+    { value: "9", label: "棒球" },
+    { value: "10", label: "壘球" },
+    { value: "11", label: "躲避球" },
+    { value: "12", label: "跆拳道" },
+    { value: "13", label: "巧固球" },
+    { value: "14", label: "保齡球" },
+    { value: "15", label: "其他" },
+  ];
+
   let {user} = useUser();
   let {trigger, loading} = useAsyncFunction(deleteContest);
   async function handleDelete(c_id:number)
@@ -396,11 +413,11 @@ export default function ContestPage(){
   if(data)
   {
     let date = new Date(data[0].StartDate);
-    stDate = date.getFullYear() +  ' / ' + (date.getMonth()+1) + ' / ' + date.getDate();
+    stDate = date.toLocaleDateString();
     date = new Date(data[0].EndDate);
-    endDate = date.getFullYear() +  ' / ' + (date.getMonth()+1) + ' / ' + date.getDate();
+    endDate = date.toLocaleDateString();
     date = new Date(data[0].Deadline);
-    deadline = date.getFullYear() +  ' / ' + (date.getMonth()+1) + ' / ' + date.getDate();
+    deadline = date.toLocaleDateString();
     p_id = data[0].Place;
   }
 
@@ -453,7 +470,7 @@ export default function ContestPage(){
                     </Menu>
                   }
                     </Group>
-                    <Text size="xl" ml={'lg'} mt='lg' fw='700'>{data[0].Name}</Text>
+                    <Text size="xl" ml={'lg'} mt='lg' fw='700'>{'【 ' + sports[data[0].sp_type-1].label + ' 】' + data[0].Name}</Text>
                   <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                     <IconScoreboard />
                     <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>主辦單位：{data[0].Organizer}</Text>

@@ -131,11 +131,11 @@ function QListPage()
 function PostQuestion({setDisplayState, refreshQuestion}:any){
   const {user, mutate: refreshUser}=useUser();
   let {trigger, error, loading} = useAsyncFunction(addQuestion);
-  const [sp_type, set_sp_type] = useState<string>('0');
+  const [sp_type, set_sp_type] = useState<string|null>(null);
   const [q_title, set_q_title]=useState("");
   const [q_content, set_q_content]=useState("");
 
-  async function handlePostQuestion(sp_type: string, q_title: string, q_content: string) {
+  async function handlePostQuestion(sp_type: any, q_title: string, q_content: string) {
     if(q_title.length < 5)
     {
       console.log("error: too short")
@@ -166,7 +166,7 @@ function PostQuestion({setDisplayState, refreshQuestion}:any){
       })
       return;
     }
-    if(sp_type === '0')
+    if(sp_type === null)
     {
       notifications.show({
         color: "red",

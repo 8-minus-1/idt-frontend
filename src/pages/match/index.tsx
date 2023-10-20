@@ -20,6 +20,7 @@ import error = Simulate.error;
 import useSWR from 'swr';
 import Link from 'next/link';
 import {
+  IconCalendarCheck,
   IconCheck,
   IconChevronLeft,
   IconChevronRight,
@@ -33,6 +34,7 @@ import { addQuestion } from '@/apis/qa';
 import { addInvite } from '@/apis/invite';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
+import { getPlaceByID } from '@/apis/map';
 
 type m = {
   "User_id": number,
@@ -121,10 +123,20 @@ function MListPage()
                       <Text fw={500}>User{invite.User_id}</Text>
                     </Group>
                   </Group>
-                  <Text size="lg" m='md' fw='600'>{invite.Name}</Text>
-                  <Text ml="xl" mr='lg' size='md' fw={500} lineClamp={3}>{invite.Content}</Text>
-                  <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3} >日期 : {new Date(invite.DateTime).toISOString().split('T')[0]}</Text>
-                  <Text ml="xl" mr='lg' size='md' fw={500} mt="md" lineClamp={3} >時間 : {new Date(invite.DateTime).getHours() + ':' + new Date(invite.DateTime).getMinutes()}</Text>
+                  <Text size="lg" mx={'lg'} mt='lg' mb={'sm'} fw='600'>{'【 '+sports[invite.sp_type].label+' 】' + invite.Name}</Text>
+                  <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                    <IconCalendarCheck />
+                    <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
+                      邀約日期 : {new Date(invite.DateTime).toLocaleDateString() + invite.Place}
+                    </Text>
+                  </Flex>
+                  <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                    <IconCalendarCheck />
+                    <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
+                      邀約時間 :
+                      {new Date(invite.DateTime).toLocaleTimeString().split(':')[0] + ':' + new Date(invite.DateTime).toLocaleTimeString().split(':')[1]}
+                    </Text>
+                  </Flex>
                   <Flex c={'blue'} mt='md' justify='right'>
                     <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>查看詳細內容</Text>
                     <IconChevronRight/>
@@ -223,8 +235,8 @@ function PostInvite({setDisplayState, refreshInvite}:any){
                 allowDeselect={false}
               />
               <Textarea
-                label="標題 :"
-                placeholder="請輸入邀請標題名稱"
+                label="邀約名稱 :"
+                placeholder="設定個吸引人的名稱吧！可以包含地點、人數等資訊"
                 autosize size={'md'}
                 mt="md"
                 withAsterisk
