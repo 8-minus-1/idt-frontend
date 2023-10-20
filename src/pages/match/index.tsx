@@ -194,9 +194,56 @@ function PostInvite({setDisplayState, refreshInvite}:any){
 
   async function handlePostInvite()
   {
-    if(!sp_type) return;
+    if(sp_type === null)
+    {
+      notifications.show({
+        color: "red",
+        title: '沒有選擇問題類別！',
+        message: '選擇邀約對應的運動，讓他人更快找到你的邀約吧！',
+      })
+      return;
+    }
+    if(Name.length < 5)
+    {
+      console.log("error: too short")
+      notifications.show({
+        color: "red",
+        title: '邀約名稱至少要有5個字喔～',
+        message: '把名稱寫清楚，吸引更多人參加吧！',
+      })
+      return;
+    }
+    if(Name.length > 30)
+    {
+      console.log("error: too short")
+      notifications.show({
+        color: "red",
+        title: '邀約名稱太長了！',
+        message: '請將名稱簡約概述，讓它更一目了然～',
+      })
+      return;
+    }
+    if(placeValue === '')
+    {
+      notifications.show({
+        color: "red",
+        title: '沒有選擇邀約地點！',
+        message: '搜尋並選擇邀約的地點，以提高報名的意願吧！',
+      })
+      return;
+    }
+    if(Other.length < 1)
+    {
+      console.log("error: too short")
+      notifications.show({
+        color: "red",
+        title: '尚未填寫資訊內容～',
+        message: '把內容寫得更清楚，吸引更多人參加吧！',
+      })
+      return;
+    }
+    console.log(placeValue)
     if(!Datetime) return;
-    //let DT = values.DateTime.getFullYear()+'-'+(values.DateTime.getMonth()+1)+'-'+values.DateTime.getDate()+' '+values.DateTime.getHours()+':'+values.DateTime.getMinutes();
     if(loading) return;
     let {error} = await trigger(Name, parseInt(placeValue), parseInt(sp_type), Datetime.getTime(), Other);
     if(error) return console.error(error);
@@ -231,7 +278,7 @@ function PostInvite({setDisplayState, refreshInvite}:any){
                 onChange={(event)=>(set_Name(event.currentTarget.value))}
               />
               <DateTimePicker
-                label="日期、時間："
+                label="邀約日期 & 時間："
                 placeholder="請選擇邀請時間及日期"
                 valueFormat={'YYYY/MM/DD hh:mm'}
                 dropdownType={'modal'}
@@ -242,7 +289,7 @@ function PostInvite({setDisplayState, refreshInvite}:any){
                 onChange={set_Datetime}
               />
               <Select
-                label="地點："
+                label="邀約地點："
                 placeholder="請搜尋並選擇邀請地點"
                 size={'md'}
                 mt="md" required
@@ -260,11 +307,10 @@ function PostInvite({setDisplayState, refreshInvite}:any){
                 value={placeValue} onChange={(value:string)=>setPlaceValue((value)? value: '')}
               />
               <Textarea
-                label="其他:"
+                label="更多資訊（內容）:"
                 placeholder="關於此邀請的其他資訊"
                 minRows={3} autosize size={'md'}
                 mt="md"
-                //{...form.getInputProps('Other')}
                 required value = {Other}
                 onChange={(event)=>(set_Other(event.currentTarget.value))}
               />
