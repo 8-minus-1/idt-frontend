@@ -128,7 +128,7 @@ function MapPageInner() {
   if (error) console.log("error: ", error);
 
   let fabContainer = useContext(FABContainerContext);
-  let initialPlaceId: Number | null = null;
+  let initialPlaceId: number | null = null;
   const url = new URL(location.href);
   if (url.hash) {
     const { pid } = qs.parse(url.hash.slice(1), ';');
@@ -138,7 +138,7 @@ function MapPageInner() {
     }
   }
 
-  const [selectedPlaceId, setSelectedPlaceId] = useState<Number | null>(initialPlaceId);
+  const [selectedPlaceId, setSelectedPlaceId] = useState<number | null>(initialPlaceId);
   const map = useMap();
   const router = useRouter();
 
@@ -237,7 +237,7 @@ function MapPageInner() {
                 <LocationIcon style={{ width: '60%', height: '60%' }} />
               </ActionIcon>
             </Flex>
-            {!!selectedPlaceId && (
+            {!!selectedPlaceId && !!data && (
               <Card
                 padding="lg"
                 px="xl"
@@ -248,12 +248,12 @@ function MapPageInner() {
                 style={{ pointerEvents: 'auto' }}
               >
                 <Text fw="700" size="xl">
-                  {data[selectedPlaceId.valueOf()-1].Name}
+                  {data[selectedPlaceId-1].Name}
                 </Text>
-                <Text>地址 : {data[selectedPlaceId.valueOf()-1].Address}</Text>
-                <Text>聯繫方式 : {data[selectedPlaceId.valueOf()-1].Phone}</Text>
-                <Text> 網站連結 : <Link href={data[selectedPlaceId.valueOf()-1].Url}> {data[selectedPlaceId.valueOf()-1].Url}</Link></Text>
-                <Text>更新時間 : {data[selectedPlaceId.valueOf()-1].Renew.split("T")[0]}</Text>
+                <Text>地址 : {data[selectedPlaceId-1].Address}</Text>
+                <Text>聯繫方式 : {data[selectedPlaceId-1].Phone}</Text>
+                <Text> 網站連結 : <Link href={data[selectedPlaceId-1].Url}> {data[selectedPlaceId-1].Url}</Link></Text>
+                <Text>更新時間 : {data[selectedPlaceId-1].Renew.split("T")[0]}</Text>
                 <Flex c="blue" mt="md" justify="left">
                   <Text fw={600} size="md">
                     <Link href={`/events/place/${1}`}>查看詳細內容</Link>
