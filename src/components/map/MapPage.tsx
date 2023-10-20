@@ -1,5 +1,5 @@
 import { useOs, useViewportSize } from '@mantine/hooks';
-import { ActionIcon, Card, Flex, Text } from '@mantine/core';
+import { ActionIcon, Card, Flex, Text, Rating,Group } from '@mantine/core';
 import React, { useContext, useEffect, useState } from 'react';
 import {
   MapContainer,
@@ -118,7 +118,8 @@ type Map =  {
   Url: string,
   Phone: string,
   Renew: string,
-  User: number
+  User: number,
+  Rank:number
 }
 
 function MapPageInner() {
@@ -254,6 +255,7 @@ function MapPageInner() {
                 <Text>聯繫方式 : {data[selectedPlaceId-1].Phone}</Text>
                 <Text> 網站連結 : <Link href={data[selectedPlaceId-1].Url}> {data[selectedPlaceId-1].Url}</Link></Text>
                 <Text>更新時間 : {data[selectedPlaceId-1].Renew.split("T")[0]}</Text>
+                <Group>{data[selectedPlaceId-1].Rank}<Rating value={data[selectedPlaceId-1].Rank} fractions={10} readOnly/></Group>
                 <Flex c="blue" mt="md" justify="left">
                   <Text fw={600} size="md">
                     <Link href={`/events/place/${1}`}>查看詳細內容</Link>
