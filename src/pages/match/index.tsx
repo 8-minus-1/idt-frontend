@@ -39,7 +39,6 @@ import { getPlaceByID } from '@/apis/map';
 type m = {
   "User_id": number,
   "Name": string,
-  "Content": string,
   "Place": string,
   "sp_type": number,
   "DateTime": string,
@@ -123,11 +122,11 @@ function MListPage()
                       <Text fw={500}>User{invite.User_id}</Text>
                     </Group>
                   </Group>
-                  <Text size="lg" mx={'lg'} mt='lg' mb={'sm'} fw='600'>{'【 '+sports[invite.sp_type].label+' 】' + invite.Name}</Text>
+                  <Text size="xl" ml={'lg'} mt='lg' fw='600'>{'【 '+sports[invite.sp_type].label+' 】' + invite.Name}</Text>
                   <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                     <IconCalendarCheck />
                     <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
-                      邀約日期 : {new Date(invite.DateTime).toLocaleDateString() + invite.Place}
+                      邀約日期 : {new Date(invite.DateTime).toLocaleDateString()}
                     </Text>
                   </Flex>
                   <Flex ml={'xl'} mt='md' justify={'flex-start'}>
@@ -161,7 +160,6 @@ function PostInvite({setDisplayState, refreshInvite}:any){
   let {trigger, error, loading} = useAsyncFunction(addInvite);
   const [sp_type, set_sp_type] = useState<string|null>(null);
   const [Name, set_Name] = useState("");
-  const [Content, set_Content]=useState("");
   const [Other, set_Other]=useState("");
   const [Datetime, set_Datetime]=useState<Date|null>(new Date(Date.now() + 86400000));
 
@@ -183,16 +181,6 @@ function PostInvite({setDisplayState, refreshInvite}:any){
     { value: "15", label: "其他" },
   ];
 
-  // const form = useForm({
-  //   initialValues: {
-  //     Name: '',
-  //     Content:'',
-  //     sp_type: '',
-  //     DateTime: null,
-  //     Other:''
-  //   },
-  // });
-
   const [searchInput, setSearchInput] = useState<string>('');
   const [placeValue, setPlaceValue] = useState<string>('')
 
@@ -210,7 +198,7 @@ function PostInvite({setDisplayState, refreshInvite}:any){
     if(!Datetime) return;
     //let DT = values.DateTime.getFullYear()+'-'+(values.DateTime.getMonth()+1)+'-'+values.DateTime.getDate()+' '+values.DateTime.getHours()+':'+values.DateTime.getMinutes();
     if(loading) return;
-    let {error} = await trigger(Name, Content, parseInt(placeValue), parseInt(sp_type), Datetime.getTime(), Other);
+    let {error} = await trigger(Name, parseInt(placeValue), parseInt(sp_type), Datetime.getTime(), Other);
     if(error) return console.error(error);
     refreshInvite()
     setDisplayState(0)
@@ -229,7 +217,6 @@ function PostInvite({setDisplayState, refreshInvite}:any){
                 size={'md'}
                 required
                 mt="md"
-                //{...form.getInputProps('sp_type')}
                 value = {sp_type}
                 onChange={(value:string)=>(set_sp_type(value))}
                 allowDeselect={false}
@@ -240,7 +227,6 @@ function PostInvite({setDisplayState, refreshInvite}:any){
                 autosize size={'md'}
                 mt="md"
                 withAsterisk
-                //{...form.getInputProps('Name')}
                 required value = {Name}
                 onChange={(event)=>(set_Name(event.currentTarget.value))}
               />
@@ -274,22 +260,12 @@ function PostInvite({setDisplayState, refreshInvite}:any){
                 value={placeValue} onChange={(value:string)=>setPlaceValue((value)? value: '')}
               />
               <Textarea
-                label="詳細說明（至少10字）:"
-                placeholder="關於此邀請的詳情"
-                minRows={6} autosize size={'md'}
-                mt="md"
-                withAsterisk
-                //{...form.getInputProps('Content')}
-                required value = {Content}
-                onChange={(event)=>(set_Content(event.currentTarget.value))}
-              />
-              <Textarea
                 label="其他:"
                 placeholder="關於此邀請的其他資訊"
                 minRows={3} autosize size={'md'}
                 mt="md"
                 //{...form.getInputProps('Other')}
-                value = {Other}
+                required value = {Other}
                 onChange={(event)=>(set_Other(event.currentTarget.value))}
               />
               <Group justify="space-evenly" mt="md">
