@@ -435,7 +435,7 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
                 <Text size="xl" ml={'lg'} mt='lg' fw='600'>{'【 '+sports[contest.sp_type].label+' 】' + contest.Name}</Text>
                 <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                   <IconMap2 />
-                  <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>邀約地點：{placeNames[index].Name}</Text>
+                  <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>活動地點：{placeNames[index].Name}</Text>
                 </Flex>
                 <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                   <IconScoreboard />
