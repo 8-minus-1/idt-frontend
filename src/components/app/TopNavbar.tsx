@@ -15,7 +15,7 @@ const isBrowser = typeof window !== 'undefined';
 const initialHistoryLength = isBrowser ? window.history.length : 0;
 const topLevelNavDestinations = ['/events', '/forums', '/map', '/match', '/more'];
 
-export default function TopNavbar() {
+export default function TopNavbar({ rightSlot }: { rightSlot: React.JSX.Element }) {
   let [_, title] = useContext(NavbarTitleContext);
   let router = useRouter();
   let isTopLevelNavDestination = topLevelNavDestinations.includes(router.pathname);
@@ -36,7 +36,7 @@ export default function TopNavbar() {
         )}
       </div>
       <div>{title}</div>
-      <div>{/* placeholder */}</div>
+      {rightSlot}
     </nav>
   );
 }

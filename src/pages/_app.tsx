@@ -7,14 +7,15 @@ import styles from '@/styles/app.module.css';
 import TopNavbar, { NavbarTitleContext, NavbarTitleContextValue } from '@/components/app/TopNavbar';
 import BottomNavbar from '@/components/app/BottomNavbar';
 import React, { useState } from 'react';
-import { MantineProvider, createTheme, rem  } from '@mantine/core';
-import {ModalsProvider} from '@mantine/modals'
+import { MantineProvider, createTheme, rem } from '@mantine/core';
+import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
 import { SWRConfig } from 'swr';
 import { client } from '@/apis/common';
 import { Options as KyOptions } from 'ky';
 import { useUser } from '@/hooks';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
+import { NavbarRightSlotContext } from '@/contexts/NavbarRightSlotContext';
 
 const theme = createTheme({});
 
@@ -31,6 +32,7 @@ function AppInner({ Component, pageProps }: AppProps) {
   let navbarTitleContextValue: NavbarTitleContextValue = [setNavbarTitle, navbarTitle];
   let shouldHideBottomNav = !!(Component as any).hideBottomNav;
   let [fabContainer, setFabContainer] = useState<HTMLDivElement | null>(null);
+  let [navbarRightSlot, setNavbarRightSlot] = useState<HTMLDivElement | null>(null);
 
   // Preload
   let user = useUser();
@@ -38,14 +40,20 @@ function AppInner({ Component, pageProps }: AppProps) {
   return (
     <FABContainerContext.Provider value={fabContainer}>
       <NavbarTitleContext.Provider value={navbarTitleContextValue}>
-        <div className={styles.appShell}>
-          <TopNavbar />
-          <div className={styles.page}>
-            <Component {...pageProps} />
+        <NavbarRightSlotContext.Provider value={navbarRightSlot}>
+          <div className={styles.appShell}>
+            <TopNavbar
+              rightSlot={
+                <div ref={(element) => setNavbarRightSlot(element)} style={{ height: '100%' }} />
+              }
+            />
+            <div className={styles.page}>
+              <Component {...pageProps} />
+            </div>
+            <div ref={(element) => setFabContainer(element)} className={styles.fabContainer} />
+            {!shouldHideBottomNav && <BottomNavbar />}
           </div>
-          <div ref={(element) => setFabContainer(element)} className={styles.fabContainer} />
-          {!shouldHideBottomNav && <BottomNavbar />}
-        </div>
+        </NavbarRightSlotContext.Provider>
       </NavbarTitleContext.Provider>
     </FABContainerContext.Provider>
   );
@@ -59,15 +67,18 @@ export default function App(appProps: AppProps) {
       </Head>
       <MantineProvider theme={theme}>
         <ModalsProvider>
-        <SWRConfig
-          value={{
-            shouldRetryOnError: false,
-            fetcher: defaultFetcher,
-          }}
-        >
-          <AppInner {...appProps} />
-        </SWRConfig>
-        <Notifications position={"bottom-center"} style={{position: 'absolute', bottom: rem(100)}}/>
+          <SWRConfig
+            value={{
+              shouldRetryOnError: false,
+              fetcher: defaultFetcher,
+            }}
+          >
+            <AppInner {...appProps} />
+          </SWRConfig>
+          <Notifications
+            position={'bottom-center'}
+            style={{ position: 'absolute', bottom: rem(100) }}
+          />
         </ModalsProvider>
       </MantineProvider>
     </>

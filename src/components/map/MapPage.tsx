@@ -1,5 +1,5 @@
 import { useOs, useViewportSize } from '@mantine/hooks';
-import { ActionIcon, Card, Flex, Text, Rating,Group } from '@mantine/core';
+import { ActionIcon, Card, Flex, Text, Rating, Group, UnstyledButton } from '@mantine/core';
 import React, { useContext, useEffect, useState } from 'react';
 import {
   MapContainer,
@@ -15,6 +15,7 @@ import {
   IconChevronRight,
   IconCurrentLocation,
   IconLocation,
+  IconSearch,
 } from '@tabler/icons-react';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
@@ -29,6 +30,7 @@ import SelectedMarker2x from '@/assets/marker-icon-selected-2x.png';
 import Link from 'next/link';
 import { notifications } from '@mantine/notifications';
 import useSWR from 'swr';
+import { NavbarRightSlotContext } from '@/contexts/NavbarRightSlotContext';
 
 Icon.Default.prototype.options.iconUrl = LeafletMarker.src;
 Icon.Default.prototype.options.iconRetinaUrl = LeafletMarker2x.src;
@@ -109,26 +111,28 @@ function HashParamsLoader() {
   return <></>;
 }
 
-type Map =  {
-  ID:number
-  Name: string,
-  Latitude: number,
-  Longitude: number,
-  Address: string,
-  Url: string,
-  Phone: string,
-  Renew: string,
-  User: number,
-  Rank:number
-}
+type Map = {
+  ID: number;
+  Name: string;
+  Latitude: number;
+  Longitude: number;
+  Address: string;
+  Url: string;
+  Phone: string;
+  Renew: string;
+  User: number;
+  Rank: number;
+};
 
 function MapPageInner() {
   let { data, error, isLoading } = useSWR(['map/allPos', { throwHttpErrors: true }]);
   if (data && data.length) console.log(data[0]);
-  else console.log("error")
-  if (error) console.log("error: ", error);
+  else console.log('error');
+  if (error) console.log('error: ', error);
 
-  let fabContainer = useContext(FABContainerContext);
+  const fabContainer = useContext(FABContainerContext);
+  const navbarRightSlot = useContext(NavbarRightSlotContext);
+
   let initialPlaceId: number | null = null;
   const url = new URL(location.href);
   if (url.hash) {
@@ -172,6 +176,10 @@ function MapPageInner() {
     map.locate({ enableHighAccuracy: true, setView: true });
   }
 
+  function handleSearch() {
+    router.push('/map/places/search');
+  }
+
   useMapEvents({
     zoomend: encodeMapStateIntoUrl,
     moveend: encodeMapStateIntoUrl,
@@ -202,19 +210,27 @@ function MapPageInner() {
 
   return (
     <>
-      {!isLoading && data.map((m:Map) => (
-        <Marker
-          key={m.ID}
-          position={{ lat: m.Latitude, lng: m.Longitude }}
-          icon={selectedPlaceId === m.ID ? SelectedIcon : DefaultIcon}
-          eventHandlers={{
-            click: (e) => {
-              map.flyTo([m.Latitude, m.Longitude], 17);
-              setSelectedPlaceId(m.ID);
-            },
-          }}
-        />
-      ))}
+      {navbarRightSlot &&
+        createPortal(
+          <UnstyledButton px="sm" lh="1" display="block" ml="auto" h="100%" onClick={handleSearch}>
+            <IconSearch />
+          </UnstyledButton>,
+          navbarRightSlot
+        )}
+      {!isLoading &&
+        data.map((m: Map) => (
+          <Marker
+            key={m.ID}
+            position={{ lat: m.Latitude, lng: m.Longitude }}
+            icon={selectedPlaceId === m.ID ? SelectedIcon : DefaultIcon}
+            eventHandlers={{
+              click: (e) => {
+                map.flyTo([m.Latitude, m.Longitude], 17);
+                setSelectedPlaceId(m.ID);
+              },
+            }}
+          />
+        ))}
       {fabContainer &&
         createPortal(
           <div
@@ -249,13 +265,19 @@ function MapPageInner() {
                 style={{ pointerEvents: 'auto' }}
               >
                 <Text fw="700" size="xl">
-                  {data[selectedPlaceId-1].Name}
+                  {data[selectedPlaceId - 1].Name}
                 </Text>
-                <Text>地址 : {data[selectedPlaceId-1].Address}</Text>
-                <Text>聯繫方式 : {data[selectedPlaceId-1].Phone}</Text>
-                <Text> 網站連結 : <Link href={data[selectedPlaceId-1].Url}> {data[selectedPlaceId-1].Url}</Link></Text>
-                <Text>更新時間 : {data[selectedPlaceId-1].Renew.split("T")[0]}</Text>
-                <Group>{data[selectedPlaceId-1].Rank}<Rating value={data[selectedPlaceId-1].Rank} fractions={10} readOnly/></Group>
+                <Text>地址 : {data[selectedPlaceId - 1].Address}</Text>
+                <Text>聯繫方式 : {data[selectedPlaceId - 1].Phone}</Text>
+                <Text>
+                  網站連結 :{' '}
+                  <Link href={data[selectedPlaceId - 1].Url}> {data[selectedPlaceId - 1].Url}</Link>
+                </Text>
+                <Text>更新時間 : {data[selectedPlaceId - 1].Renew.split('T')[0]}</Text>
+                <Group>
+                  {data[selectedPlaceId - 1].Rank}
+                  <Rating value={data[selectedPlaceId - 1].Rank} fractions={10} readOnly />
+                </Group>
                 <Flex c="blue" mt="md" justify="left">
                   <Text fw={600} size="md">
                     <Link href={`/events/place/${1}`}>查看詳細內容</Link>
