@@ -13,3 +13,8 @@ export async function addInvite(Name : string, Place : number, sp_type : number,
     },
   });
 }
+
+export async function deleteInvite(i_id:number)
+{
+  await client.delete("invite/invitation/"+i_id);
+}

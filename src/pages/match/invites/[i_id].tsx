@@ -4,8 +4,19 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import useSWR from 'swr';
 import { HTTPError } from 'ky';
-import { Card, Container, Group, Text, Alert, Flex, rem } from '@mantine/core';
-import { IconBulb, IconCalendarCheck, IconMap2, IconUser } from '@tabler/icons-react';
+import { Card, Container, Group, Text, Alert, Flex, rem, Menu, ActionIcon } from '@mantine/core';
+import {
+  IconBulb,
+  IconCalendarCheck,
+  IconDots,
+  IconMap2,
+  IconTrash,
+  IconUser,
+} from '@tabler/icons-react';
+import { deleteQuestion } from '@/apis/qa';
+import { deleteInvite } from '@/apis/invite';
+import { modals } from '@mantine/modals';
+import { notifications } from '@mantine/notifications';
 
 type m = {
   "User_id": number,
@@ -26,6 +37,8 @@ function InviteCard({invite}: inviteCardProps)
   let {user} = useUser();
   let router = useRouter();
 
+  let {trigger, loading} = useAsyncFunction(deleteInvite);
+
   const sports = [
     { value: "1", label: "籃球" },
     { value: "2", label: "排球" },
@@ -44,6 +57,31 @@ function InviteCard({invite}: inviteCardProps)
     { value: "15", label: "其他" },
   ];
 
+  async function handleDelete(i_id:number)
+  {
+    if(loading) return;
+    modals.openConfirmModal({
+      title: '您確定要刪除這則邀約嗎？',
+      centered: true,
+      children:(
+        <Text size="sm">
+          請注意，以上動作沒有辦法復原
+        </Text>
+      ),
+      labels: { confirm: '是的，我非常確定', cancel: "不，請返回" },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        await trigger(i_id);
+        router.replace('/match');
+        notifications.show({
+          color: "green",
+          title: '已成功刪除您的邀約～',
+          message: '期待您隨時來新增邀約！',
+        })
+      },
+    });
+  }
+
   let p_id = invite.Place
   let { data: placeInfo, error: placeInfoError } = useSWR(['map/getInfo?id='+p_id, { throwHttpErrors: true }]);
 
@@ -60,6 +98,25 @@ function InviteCard({invite}: inviteCardProps)
           <IconUser/>
           <Text fw={500}>User{invite.User_id}</Text>
         </Group>
+
+        { invite.User_id === user?.id &&
+          <Menu withinPortal position="bottom-end" shadow="sm">
+            <Menu.Target>
+              <ActionIcon variant="subtle" color="gray">
+                <IconDots  style={{ width: rem(16), height: rem(16) }} />
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Item
+                leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
+                color="red"
+                onClick={()=>handleDelete(invite.i_id)}
+              >
+                刪除此邀約
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        }
       </Group>
       <Text size="xl" ml={'lg'} mt='lg' fw='700'>{'【 '+ sports[invite.sp_type].label+' 】' + invite.Name}</Text>
       <Flex ml={'xl'} mt='md' justify={'flex-start'}>
