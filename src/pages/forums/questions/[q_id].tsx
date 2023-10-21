@@ -264,15 +264,13 @@ export default function QuestionPage(){
   const q_id = router.query.q_id;
   const { user, mutate: refreshUser } = useUser();
 
+
   // 0: display, 1: new, 2: edit
   const [pageStatus, setPageStatus] = useState(0);
 
   let { data, error, mutate: refreshAnswer } = useSWR(['qa/questions/'+q_id+'/answers', { throwHttpErrors: true }]);
 
-  if(error instanceof HTTPError && error.response.status === 404)
-  {
-    router.replace('/error');
-  }
+
 
   let question = {} as q, answers = [];
   if(data)
@@ -281,7 +279,6 @@ export default function QuestionPage(){
     answers = data.answers;
     console.log(question, answers);
   }
-
   let title = (question.q_title)? "Q: "+question.q_title : "運動論壇";
   useNavbarTitle(title);
 
@@ -292,7 +289,12 @@ export default function QuestionPage(){
       </Head>
       <main>
         <Container p='lg'>
-          { error &&
+          { error instanceof HTTPError && error.response.status === 404 &&
+            <Alert variant="light" color="red" my="md">
+              錯誤：PAGE NOT FOUND
+            </Alert>
+          }
+          { error && ( !(error instanceof HTTPError) || (error instanceof HTTPError && error.response.status !== 404) ) &&
             <Alert variant="light" color="red" my="md">
               暫時無法取得資料
             </Alert>
