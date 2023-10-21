@@ -29,7 +29,7 @@ import { Alert } from '@mantine/core';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
 import { router } from 'next/client';
-  
+
   type Contests = {
     User_id: number,
     Name: string,
@@ -46,13 +46,13 @@ import { router } from 'next/client';
 
   export default function EventsPage() {
     let p_id:number = parseInt(router.query.p_id as string);
-    let str = 'cont/contest?p_id=' + p_id;
-    
+    let str = 'cont/contests/place/' + p_id;
+
     let { data, error, mutate:refreshList } = useSWR([str, { throwHttpErrors: true }]);
     console.log(data);
     if (data && data.length) console.log(data[0]);
     if (error) console.log("error: ", error);
-  
+
     const sports = [
       { value: "0", label: "顯示全部活動" },
       { value: "1", label: "籃球" },
@@ -71,10 +71,10 @@ import { router } from 'next/client';
       { value: "14", label: "保齡球" },
       { value: "15", label: "其他" },
     ];
-  
+
     let title = "活動列表";
     useNavbarTitle(title);
-  
+
     let tz_offset = (new Date()).getTimezoneOffset() * 60000;
     let fabContainer = useContext(FABContainerContext);
 

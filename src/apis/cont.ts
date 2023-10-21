@@ -46,7 +46,7 @@ export async function editContest(c_id: any,
                                   Url:string,
                                   Other:string)
 {
-  await client.put("cont/contests/modify?c_id="+c_id,{
+  await client.put("cont/contests/modify/"+c_id,{
     json:{
       Name,
       Organizer,

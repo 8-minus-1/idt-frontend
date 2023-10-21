@@ -103,7 +103,7 @@ function ModifyContestPage({data, c_id, setFormToShow, refresh}: ModifyContestPa
   let defaultSelected = '';
   if(placeInfo)
   {
-    if(!selectData.length) selectData.push({ value: String(placeInfo[0].ID), label: "原："+placeInfo[0].Name});
+    if(!selectData.length) selectData.push({ value: String(placeInfo.ID), label: "原："+placeInfo.Name});
     defaultSelected = selectData[0].value;
     console.log(defaultSelected);
   }
