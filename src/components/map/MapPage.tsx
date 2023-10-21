@@ -125,8 +125,8 @@ type Map = {
 };
 
 function MapPageInner() {
-  let { data, error, isLoading } = useSWR(['map/allPos', { throwHttpErrors: true }]);
-  if (data && data.length) console.log(data[0]);
+  let { data: places, error } = useSWR<Map[]>(['map/allPos']);
+  if (places && places.length) console.log(places[0]);
   else console.log('error');
   if (error) console.log('error: ', error);
 
@@ -208,6 +208,8 @@ function MapPageInner() {
   const os = useOs();
   const LocationIcon = os === 'ios' || os === 'macos' ? IconLocation : IconCurrentLocation;
 
+  const selectedPlace = selectedPlaceId !== null && places?.find(place => place.ID === selectedPlaceId);
+
   return (
     <>
       {navbarRightSlot &&
@@ -217,8 +219,8 @@ function MapPageInner() {
           </UnstyledButton>,
           navbarRightSlot
         )}
-      {!isLoading &&
-        data.map((m: Map) => (
+      {places &&
+        places.map((m) => (
           <Marker
             key={m.ID}
             position={{ lat: m.Latitude, lng: m.Longitude }}
@@ -254,7 +256,7 @@ function MapPageInner() {
                 <LocationIcon style={{ width: '60%', height: '60%' }} />
               </ActionIcon>
             </Flex>
-            {!!selectedPlaceId && !!data && (
+            {selectedPlace && (
               <Card
                 padding="lg"
                 px="xl"
@@ -265,24 +267,23 @@ function MapPageInner() {
                 style={{ pointerEvents: 'auto' }}
               >
                 <Text fw="700" size="xl">
-                  {data[selectedPlaceId - 1].Name}
+                  {selectedPlace.Name}
                 </Text>
-                <Text>地址 : {data[selectedPlaceId - 1].Address}</Text>
-                <Text>聯繫方式 : {data[selectedPlaceId - 1].Phone}</Text>
+                <Text>地址 : {selectedPlace.Address}</Text>
+                <Text>聯繫方式 : {selectedPlace.Phone}</Text>
                 <Text>
                   網站連結 :{' '}
-                  <Link href={data[selectedPlaceId - 1].Url}> {data[selectedPlaceId - 1].Url}</Link>
+                  <Link href={selectedPlace.Url}> {selectedPlace.Url}</Link>
                 </Text>
-                <Text>更新時間 : {data[selectedPlaceId - 1].Renew.split('T')[0]}</Text>
+                <Text>更新時間 : {selectedPlace.Renew.split('T')[0]}</Text>
                 <Group>
-                  {data[selectedPlaceId - 1].Rank}
-                  <Rating value={data[selectedPlaceId - 1].Rank} fractions={10} readOnly />
+                  {selectedPlace.Rank}
+                  <Rating value={selectedPlace.Rank} fractions={10} readOnly />
                 </Group>
                 <Flex c="blue" mt="md" justify="left">
                   <Text fw={600} size="md">
-                    <Link href={`/events/place/${1}`}>查看詳細內容</Link>
+                    <Link href={`/events/place/${selectedPlaceId}`}>查看場館活動</Link>
                   </Text>
-
                   <IconChevronRight />
                 </Flex>
                 <Flex c="blue" mt="md" justify="right">
