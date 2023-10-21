@@ -352,11 +352,6 @@ export default function ContestPage(){
 
   let { data, error, mutate:refresh } = useSWR(['cont/contests/'+c_id, { throwHttpErrors: true }]);
 
-  if(error instanceof HTTPError && error.response.status === 404)
-  {
-    router.replace('/error');
-  }
-
   const sports = [
     { value: "1", label: "籃球" },
     { value: "2", label: "排球" },
@@ -516,11 +511,16 @@ export default function ContestPage(){
             {formToShow === FormType.modifyContestForm && (
               <ModifyContestPage data={data} c_id={c_id as string} refresh={refresh} setFormToShow={setFormToShow}></ModifyContestPage>
             )}
-            { error &&
+          { error instanceof HTTPError && error.response.status === 404 &&
+            <Alert variant="light" color="red" my="md">
+              錯誤：PAGE NOT FOUND
+            </Alert>
+          }
+          { error && ( !(error instanceof HTTPError) || (error instanceof HTTPError && error.response.status !== 404) ) &&
             <Alert variant="light" color="red" my="md">
               暫時無法取得資料
             </Alert>
-            }
+          }
         </Container>
       </main>
     </>
