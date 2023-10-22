@@ -121,6 +121,12 @@ export default function PlaceInfoPage() {
               <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>聯絡資訊：</Text>
             </Flex>
             <Text mt={'sm'} ml={'xl'} pl={'xl'} size='md' fw={700} style={{ whiteSpace: 'pre-wrap' }}>{data.Phone}</Text>
+            <Flex c="blue" mt="md" justify="right">
+              <Text fw={600} size="md">
+                <Link href={`/events/place/`+data.ID}>查看場館活動</Link>
+              </Text>
+              <IconChevronRight />
+            </Flex>
           </Card>
         }
         <Flex justify={'center'}>
