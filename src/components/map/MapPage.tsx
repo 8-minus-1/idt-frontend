@@ -1,5 +1,5 @@
 import { useOs, useViewportSize } from '@mantine/hooks';
-import { ActionIcon, Card, Flex, Text, Rating, Group, UnstyledButton } from '@mantine/core';
+import { ActionIcon, Card, Flex, Text, Rating, Group, UnstyledButton, rem } from '@mantine/core';
 import React, { useContext, useEffect, useState } from 'react';
 import {
   MapContainer,
@@ -271,7 +271,7 @@ function MapPageInner() {
                 </Text>
                 <Text>地址 : {selectedPlace.Address}</Text>
                 <Text>聯繫方式 : {selectedPlace.Phone}</Text>
-                <Text>
+                <Text >
                   網站連結 :{' '}
                   <Link href={selectedPlace.Url}> {selectedPlace.Url}</Link>
                 </Text>

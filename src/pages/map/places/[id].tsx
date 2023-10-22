@@ -18,7 +18,7 @@ import {
   Textarea,
   Rating,
   Center,
-  Space
+  Space, Paper,
 } from '@mantine/core';
 import Link from 'next/link';
 import {
@@ -48,13 +48,57 @@ import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { HTTPError } from 'ky';
 
+type r = {
+  Rank:number,
+  Comment:string,
+  User:number
+}
+function ShowAllRank({allRank,refreshAllRank}:any){
+  let {user} = useUser();
+  let count =1;
+  return(
+    <>
+      { !allRank &&
+        <Text size="md" my="xl" ta="center" fw={600}>
+          目前沒有人評論喔～當第一個熱心ㄉ人吧！
+        </Text>
+      }
+      {!!allRank && !((allRank.length === 1) && (allRank[0].User  === user?.id)) &&
+        <Text size="md" mt="xl" mb='md' fw={600}>
+          所有評論：
+        </Text>
+      }
+      {!!allRank &&
+        allRank.map( (rank:r)=>(!(rank.User  === user?.id) &&
+            <Paper withBorder p={'lg'} key={count++}>
+              <Group justify='space-between'>
+                <Group>
+                  <IconUser />
+                  <Text fw={500}>User{rank.User}</Text>
+                </Group>
+
+              </Group>
+              <Rating value={rank.Rank} fractions={10} readOnly />
+              <Text ml={'xl'} mt={'lg'} style={{whiteSpace: 'pre-wrap'}}>{rank.Comment}</Text>
+            </Paper>
+          )
+        )
+      }</>
+  );
+}
+
+
 export default function PlaceInfoPage() {
   const { query } = useRouter();
   const [StarValue, setValue] = useState(0);
   const [Comment, setComment] = useState('');
+  const [RankState,setRankState] = useState(0);
+  const [Ranked, set_Ranked] = useState(0);
   const id = query.id;
-  let { data, error: infoError } = useSWR(['map/getInfo?id=' + id, { throwHttpErrors: true }]);
+  let { data, error:infoError } = useSWR(['map/getInfo?id='+id, { throwHttpErrors: true }]);
   let fabContainer = useContext(FABContainerContext);
+  let { data:RankInfo, error:rankError } = useSWR(['map/RankByUser?id='+id, { throwHttpErrors: true }]);
+  let { data:allRank, error:allRankError, mutate: refreshRank } = useSWR(['map/RankByPlace?id='+id, { throwHttpErrors: true }]);
 
   useNavbarTitle('場館資訊');
   const { user, mutate: refreshUser } = useUser();
@@ -69,16 +113,27 @@ export default function PlaceInfoPage() {
       })
       return;
     }
-    if (loading) return;
-    if (query.id) {
-      let { error } = await trigger(parseInt(query.id[0]), StarValue);
-      if (error) return console.error(error);
+    if (Comment == '') {
+      console.log("error: 評論不可為空！")
       notifications.show({
-        color: "green",
-        title: '新增Rank成功～',
-        message: '隨時關注，以獲得最新資訊！',
+        color: "red",
+        title: '尚未評論！',
+        message: '評論不可為空！',
       })
+      return;
     }
+    if (loading) return;
+    let { error } = await trigger(parseInt(id as string), StarValue, Comment);
+    if (error) return console.error(error);
+    notifications.show({
+      color: "green",
+      title: '新增Rank成功～',
+      message: '隨時關注，以獲得最新資訊！',
+    })
+
+    set_Ranked(1);
+    console.log("Rank is ", Ranked);
+
   }
 
   return (
@@ -129,13 +184,59 @@ export default function PlaceInfoPage() {
             </Flex>
           </Card>
         }
-        <Flex justify={'center'}>
-          <Rating size={"xl"} value={StarValue} onChange={setValue} />
-        </Flex>
-        <Textarea
-          minRows={6} radius={"lg"} mt={"sm"} autosize size={'md'} placeholder="新增相關評論吧！" required onChange={(event) => (setComment(event.currentTarget.value))}
-        ></Textarea>
-        <Button variant="gradient" gradient={{ from: 'yellow', to: 'orange', deg: 90 }} rightSection={<IconCheck />} mt="md" fullWidth onClick={handlePostRank}>送出評論</Button>
+        {rankError instanceof HTTPError && rankError.response.status === 404 && Ranked ===0 &&
+          <>
+            <Flex justify={'center'}>
+              <Rating size={"xl"} value={StarValue} onChange={setValue} />
+            </Flex>
+            <Textarea
+            minRows={6} radius={"lg"} mt={"sm"} autosize size={'md'} placeholder="新增相關評論吧！" required onChange={(event) => (setComment(event.currentTarget.value))}
+            ></Textarea>
+            <Button variant="gradient" gradient={{ from: 'yellow', to: 'orange', deg: 90 }} rightSection={<IconCheck />} mt="md" fullWidth onClick={()=>handlePostRank()}>送出評論</Button>
+          </>
+        }
+        {RankInfo && {Ranked} &&
+          <>
+            <Text size="md" mt="xl" mb='md' fw={600}>
+              你的評論：
+            </Text>
+            <Paper withBorder p={'lg'} key={RankInfo[0].ID} >
+              <Group justify='space-between'>
+                <Group>
+                  <IconUser />
+                  <Text fw={500}>User{RankInfo[0].User}</Text>
+                </Group>
+
+                <Menu withinPortal position="bottom-end" shadow="sm">
+                  <Menu.Target>
+                    <ActionIcon variant="subtle" color="gray">
+                      <IconDots style={{ width: rem(16), height: rem(16) }} />
+                    </ActionIcon>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item
+                      leftSection={<IconEdit style={{ width: rem(14), height: rem(14) }} />}
+                      color="black"
+                      //onClick={()=>handleDelete(RankInfo.a_id)}
+                    >
+                      編輯此回答
+                    </Menu.Item>
+                    <Menu.Item
+                      leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
+                      color="red"
+                      //onClick={()=>handleDelete(RankInfo.a_id)}
+                    >
+                      刪除此回答
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              </Group>
+              <Rating value={RankInfo[0].Rank} fractions={10} readOnly />
+              <Text ml={'xl'} mt={'md'} style={{whiteSpace: 'pre-wrap'}}>{RankInfo[0].Comment}</Text>
+            </Paper>
+          </>
+        }
+        <ShowAllRank allRank={allRank} refreshAllRank={refreshRank}></ShowAllRank>
         {infoError instanceof HTTPError && infoError.response.status === 404 &&
           <Alert variant="light" color="red" my="md">
             錯誤：PAGE NOT FOUND
