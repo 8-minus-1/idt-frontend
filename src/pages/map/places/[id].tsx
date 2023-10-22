@@ -46,6 +46,7 @@ import { createPortal } from 'react-dom';
 import { deletePosition } from '@/apis/map';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
+import { HTTPError } from 'ky';
 
 export default function PlaceInfoPage() {
   const { query } = useRouter();
@@ -129,15 +130,14 @@ export default function PlaceInfoPage() {
           minRows={6} radius={"lg"} mt={"sm"} autosize size={'md'} placeholder="新增相關評論吧！" required onChange={(event) => (setComment(event.currentTarget.value))}
         ></Textarea>
         <Button variant="gradient" gradient={{ from: 'yellow', to: 'orange', deg: 90 }} rightSection={<IconCheck />} mt="md" fullWidth onClick={handlePostRank}>送出評論</Button>
-        {infoError && !data &&
+        {infoError instanceof HTTPError && infoError.response.status === 404 &&
           <Alert variant="light" color="red" my="md">
-            錯誤：暫時無法取得資料
+            錯誤：PAGE NOT FOUND
           </Alert>
         }
-
-        {!data &&
-          <Alert variant="light" color="yellow" my="md">
-            目前沒有可以顯示的東西QQ
+        {infoError && (!(error instanceof HTTPError) || (infoError instanceof HTTPError && infoError.response.status !== 404)) &&
+          <Alert variant="light" color="red" my="md">
+            暫時無法取得資料
           </Alert>
         }
       </main>
