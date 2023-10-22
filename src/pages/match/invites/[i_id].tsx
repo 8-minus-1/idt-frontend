@@ -4,7 +4,18 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import useSWR from 'swr';
 import { HTTPError } from 'ky';
-import { Card, Container, Group, Text, Alert, Flex, rem, Menu, ActionIcon } from '@mantine/core';
+import {
+  Card,
+  Container,
+  Group,
+  Text,
+  Alert,
+  Flex,
+  rem,
+  Menu,
+  ActionIcon,
+  Button,
+} from '@mantine/core';
 import {
   IconBulb,
   IconCalendarCheck,
@@ -17,6 +28,7 @@ import { deleteQuestion } from '@/apis/qa';
 import { deleteInvite } from '@/apis/invite';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
+import Link from 'next/link';
 
 type m = {
   "User_id": number,
@@ -92,6 +104,7 @@ function InviteCard({invite}: inviteCardProps)
   }
 
   return(
+    <main>
     <Card padding="lg"  pb='xl' bg="#D6EAF8" radius="lg" mb='xs' shadow='sm'>
       <Group justify='space-between'>
         <Group>
@@ -147,8 +160,31 @@ function InviteCard({invite}: inviteCardProps)
       <Text mt={'sm'} ml={'xl'} pl={'xl'} size='md' fw={700} style={{whiteSpace: 'pre-wrap'}}>
         {invite.Other}
       </Text>
-
     </Card>
+    {!user &&
+      <Text size="md" my="xl" ta="center" fw={600}>
+        登入後即可報名！前往<Link style={{marginLeft: rem(5), textDecoration: "underline"}} href={"/signin"}>註冊/登入</Link>
+      </Text>
+    }
+    { !!user &&
+      <>
+        <Button mt={'md'}
+          variant="gradient"
+          gradient={{ from: 'blue.3', to: 'blue.6', deg: 90 }}
+          fullWidth radius={'md'}
+        >
+          查看發起者基本資料
+        </Button>
+        <Button mt={'xs'}
+          variant="gradient"
+          gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
+          fullWidth radius={'md'}
+        >
+          送出報名請求
+        </Button>
+      </>
+    }
+    </main>
   )
 }
 export default function InvitePage() {
