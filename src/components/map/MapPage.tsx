@@ -269,10 +269,18 @@ function MapPageInner() {
                 <Text fw="700" size="xl">
                   {selectedPlace.Name}
                 </Text>
-                <Text>地址 : 320桃園市中壢區遠東路135號</Text>
-                <Text>聯繫方式 : 034638800</Text>
-                <Text>網站連結 : https://www.yzu.edu.tw/</Text>
-                <Text>更新時間 : 2023-10-18</Text>
+                <Text>地址 : {selectedPlace.Address}</Text>
+                <Text>聯繫方式 : {selectedPlace.Phone}</Text>
+                <Text>
+                  網站連結 :{' '}
+                  <Link href={selectedPlace.Url}> {selectedPlace.Url}</Link>
+                </Text>
+                <Text>更新時間 : {selectedPlace.Renew.split('T')[0]}</Text>
+                <Group>
+                  {selectedPlace.Rank}
+                  <Rating value={selectedPlace.Rank} fractions={10} readOnly />
+                </Group>
+
                 <Flex c="blue" mt="md" justify="right">
                   <Text fw={600} size="md">
                     <Link href={`/map/places/${selectedPlaceId}`}>查看詳細內容</Link>
