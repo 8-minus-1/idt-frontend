@@ -1,7 +1,7 @@
 import { useAsyncFunction, useNavbarTitle, useUser } from '@/hooks';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { Rating, Textarea, Button } from '@mantine/core';
+import { Rating, Textarea, Button, Flex } from '@mantine/core';
 import React, { useState }from 'react';
 import { IconCheck } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
@@ -13,8 +13,8 @@ export default function PlaceInfoPage() {
   useNavbarTitle('場館資訊');
   const {user, mutate: refreshUser}=useUser();
   let {trigger, error, loading} = useAsyncFunction(addRank);
-  async function handlePostRank(ID : any ,rank: any) {
-      if(rank==0){
+  async function handlePostRank() {
+      if(StarValue==0){
         console.log("error: 沒有填些星級")
         notifications.show({
           color: "red",
@@ -24,13 +24,16 @@ export default function PlaceInfoPage() {
         return;
       }
     if(loading) return;
-    let {error} = await trigger(parseInt(ID), parseInt(rank));
-    if(error) return console.error(error);
-    notifications.show({
-      color: "green",
-      title: '新增Rank成功～',
-      message: '隨時關注，以獲得最新資訊！',
-    })
+    if(query.id)
+    {
+      let {error} = await trigger(parseInt(query.id[0]), StarValue);
+      if(error) return console.error(error);
+      notifications.show({
+        color: "green",
+        title: '新增Rank成功～',
+        message: '隨時關注，以獲得最新資訊！',
+      })
+    }
   }
 
   return (
@@ -40,11 +43,13 @@ export default function PlaceInfoPage() {
       </Head>
       <main>
         {query.id}
-        <Rating size={"xl"} value={StarValue} onChange={setValue}/>
+        <Flex justify={'center'}>
+          <Rating size={"xl"} value={StarValue} onChange={setValue}/>
+        </Flex>
         <Textarea
           minRows={6} radius={"lg"} mt={"sm"}  autosize size={'md'} placeholder="新增相關評論吧！" required onChange={(event)=>(setComment(event.currentTarget.value))}
         ></Textarea>
-        <Button variant="gradient" gradient={{ from: 'yellow', to: 'orange', deg: 90 }} rightSection={<IconCheck />} mt="md" fullWidth onClick={()=>handlePostRank(query.id ,StarValue)}>送出評論</Button>
+        <Button variant="gradient" gradient={{ from: 'yellow', to: 'orange', deg: 90 }} rightSection={<IconCheck />} mt="md" fullWidth onClick={handlePostRank}>送出評論</Button>
       </main>
     </>
   );
