@@ -36,6 +36,7 @@ import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { getPlaceByID } from '@/apis/map';
 import invalid = Simulate.invalid;
+import { Public_Sans } from 'next/dist/compiled/@next/font/dist/google';
 
 type m = {
   "User_id": number,
@@ -54,12 +55,87 @@ type searchData = {
   ID: number
 }
 
+function PublicPage( { sp_type, sports }: any )
+{
+  let { data, error }  = useSWR(['invite/invitation/InviteType?sp_type='+sp_type, { throwHttpErrors: true }]);
+  if(error) console.log("error: ",error);
+
+  const [placeNames, setPlaceNames] = useState<any[]|null>(null);
+  if( (data && !placeNames) || ( data && placeNames!=null && (data.length != placeNames.length)) )
+  {
+    (async() =>{
+      let results = await Promise.all(
+        data.map((item:m)=>{
+          return getPlaceByID(item.Place);
+        })
+      );
+      setPlaceNames(results);
+    })()
+    console.log('callback')
+  }
+
+  return(
+    <>
+      { error &&
+        <Alert variant="light" color="red" my="md">
+          暫時無法取得資料
+        </Alert>
+      }
+      {!!data && !!placeNames && (data.length == placeNames.length) &&
+        data.map((invite:m, index:number)=>
+          <Link href={"match/invites/"+invite.i_id} key={invite.i_id}>
+            <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm'>
+              <Group justify='space-between'>
+                <Group>
+                  <IconUser/>
+                  <Text fw={500}>User{invite.User_id}</Text>
+                </Group>
+              </Group>
+              <Text size="lg" mx={'lg'} mt='lg' mb={'sm'} fw='600'>{'【 '+sports[invite.sp_type].label+' 】' + invite.Name }</Text>
+              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                <IconCalendarCheck />
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
+                  邀約日期 : {new Date(invite.DateTime).toLocaleDateString()}
+                </Text>
+              </Flex>
+              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                <IconCalendarCheck />
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
+                  邀約時間 :
+                  {new Date(invite.DateTime).toLocaleTimeString().split(':')[0] + ':' + new Date(invite.DateTime).toLocaleTimeString().split(':')[1]}
+                </Text>
+              </Flex>
+              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                <IconMap2 />
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>邀約地點：{placeNames[index].Name}</Text>
+              </Flex>
+              <Flex c={'blue'} mt='md' justify='right'>
+                <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>查看詳細內容</Text>
+                <IconChevronRight/>
+              </Flex>
+            </Card>
+          </Link>
+        )
+      }
+      { data && !data.length &&
+        <Alert variant="light" color="yellow" my="md">
+          目前沒有可以顯示的內容QQ
+        </Alert>
+      }
+    </>
+  )
+}
+
+function PrivatePage()
+{
+    return(
+      <>私人配對</>
+    )
+}
+
 function MListPage()
 {
   const [sp_type, setSp_type] = useState<string>('0');
-
-  let { data, error }  = useSWR(['invite/invitation/InviteType?sp_type='+sp_type, { throwHttpErrors: true }]);
-  if(error) console.log("error: ",error);
 
   const method =[
     { value: "0", label: "公開邀請" },
@@ -84,20 +160,8 @@ function MListPage()
     { value: "15", label: "其他" },
   ];
 
-  const [placeNames, setPlaceNames] = useState<any[]|null>(null);
 
-  if( (data && !placeNames) || ( data && placeNames!=null && (data.length != placeNames.length)) )
-  {
-    (async() =>{
-      let results = await Promise.all(
-        data.map((item:m)=>{
-          return getPlaceByID(item.Place);
-        })
-      );
-      setPlaceNames(results);
-    })()
-    console.log('callback')
-  }
+  const [methodValue, setMethod] = useState('0');
 
   return(
     <>
@@ -110,6 +174,7 @@ function MListPage()
               defaultValue={method[0].value}
               pb='xl'
               w={"30%"}
+              value={methodValue} onChange={(value:string)=>(setMethod(value))}
             />
             <Select
               label="運動類別篩選"
@@ -121,51 +186,11 @@ function MListPage()
               onChange={(value:string)=>(setSp_type(value))}
             />
           </Group>
-          { error &&
-            <Alert variant="light" color="red" my="md">
-              暫時無法取得資料
-            </Alert>
+          { methodValue === '0' &&
+            <PublicPage sp_type={sp_type} sports={sports}></PublicPage>
           }
-          {!!data && !!placeNames && (data.length == placeNames.length) &&
-            data.map((invite:m, index:number)=>
-              <Link href={"match/invites/"+invite.i_id} key={invite.i_id}>
-                <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm'>
-                  <Group justify='space-between'>
-                    <Group>
-                      <IconUser/>
-                      <Text fw={500}>User{invite.User_id}</Text>
-                    </Group>
-                  </Group>
-                  <Text size="lg" mx={'lg'} mt='lg' mb={'sm'} fw='600'>{'【 '+sports[invite.sp_type].label+' 】' + invite.Name }</Text>
-                  <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-                    <IconCalendarCheck />
-                    <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
-                      邀約日期 : {new Date(invite.DateTime).toLocaleDateString()}
-                    </Text>
-                  </Flex>
-                  <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-                    <IconCalendarCheck />
-                    <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
-                      邀約時間 :
-                      {new Date(invite.DateTime).toLocaleTimeString().split(':')[0] + ':' + new Date(invite.DateTime).toLocaleTimeString().split(':')[1]}
-                    </Text>
-                  </Flex>
-                  <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-                    <IconMap2 />
-                    <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>邀約地點：{placeNames[index].Name}</Text>
-                  </Flex>
-                  <Flex c={'blue'} mt='md' justify='right'>
-                    <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>查看詳細內容</Text>
-                    <IconChevronRight/>
-                  </Flex>
-                </Card>
-              </Link>
-            )
-          }
-          { data && !data.length &&
-            <Alert variant="light" color="yellow" my="md">
-              目前沒有可以顯示的內容QQ
-            </Alert>
+          { methodValue === '1' &&
+            <PrivatePage></PrivatePage>
           }
         </Container>
       </main>
@@ -233,7 +258,7 @@ function PostInvite({setDisplayState, refreshInvite}:any){
     }
     if(Name.length > 30)
     {
-      console.log("error: too short")
+      console.log("error: too long")
       notifications.show({
         color: "red",
         title: '邀約名稱太長了！',
@@ -326,7 +351,7 @@ function PostInvite({setDisplayState, refreshInvite}:any){
               />
               <Textarea
                 label="更多資訊（內容）:"
-                placeholder="關於此邀請的其他資訊"
+                placeholder="關於此邀請的其他資訊（無則填寫「無」）"
                 minRows={3} autosize size={'md'}
                 mt="md"
                 required value = {Other}
