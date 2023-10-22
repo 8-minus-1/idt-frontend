@@ -1,7 +1,7 @@
 import { signOut } from '@/apis/auth';
 import { useNavbarTitle, useUser } from '@/hooks';
 import { Button, Card, Container, Divider, Flex, Group, Space, Text } from '@mantine/core';
-import { IconChevronRight, IconMessage, IconShield, IconUser } from '@tabler/icons-react';
+import { IconChevronRight, IconMessage, IconShield, IconUser,  IconId    } from '@tabler/icons-react';
 import Head from 'next/head';
 import Link from 'next/link';
 import React from 'react';
@@ -59,6 +59,7 @@ export default function MorePage() {
         </Container>
         <Space h="xl" />
         {[
+          [IconId, '我ㄉ', '/my'],
           [IconShield, '隱私權政策', '/privacy'],
           [IconMessage, '聯絡我們', '/contact'],
         ].map(([Icon, label, href], i) => (
