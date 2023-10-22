@@ -15,17 +15,18 @@ import {
   Menu,
   ActionIcon,
   Button,
+  Box, Select
 } from '@mantine/core';
 import {
   IconBulb,
   IconCalendarCheck,
-  IconDots,
+  IconDots, IconEdit,
   IconMap2,
   IconTrash,
   IconUser,
 } from '@tabler/icons-react';
 import { deleteQuestion } from '@/apis/qa';
-import { deleteInvite } from '@/apis/invite';
+import { addInvite, deleteInvite, editInvite } from '@/apis/invite';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import Link from 'next/link';
@@ -44,7 +45,7 @@ type inviteCardProps = {
   invite: m
 }
 
-function InviteCard({invite}: inviteCardProps)
+function InviteCard({invite, setPageStatus}: any)
 {
   let {user} = useUser();
   let router = useRouter();
@@ -120,6 +121,13 @@ function InviteCard({invite}: inviteCardProps)
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
+              {/*<Menu.Item*/}
+              {/*  leftSection={<IconEdit style={{ width: rem(14), height: rem(14) }} />}*/}
+              {/*  color="black"*/}
+              {/*  onClick={()=>setPageStatus(1)}*/}
+              {/*>*/}
+              {/*  編輯此邀約*/}
+              {/*</Menu.Item>*/}
               <Menu.Item
                 leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
                 color="red"
@@ -187,13 +195,57 @@ function InviteCard({invite}: inviteCardProps)
     </main>
   )
 }
+
+async function ModifyInvitePage({invite, setPageStatus, refreshInvite}: any)
+{
+  let {user} = useUser();
+  let {trigger, error, loading} = useAsyncFunction(editInvite);
+
+  const sports = [
+    { value: "1", label: "籃球" },
+    { value: "2", label: "排球" },
+    { value: "3", label: "羽球" },
+    { value: "4", label: "網球" },
+    { value: "5", label: "游泳" },
+    { value: "6", label: "直排輪" },
+    { value: "7", label: "足球" },
+    { value: "8", label: "桌球" },
+    { value: "9", label: "棒球" },
+    { value: "10", label: "壘球" },
+    { value: "11", label: "躲避球" },
+    { value: "12", label: "跆拳道" },
+    { value: "13", label: "巧固球" },
+    { value: "14", label: "保齡球" },
+    { value: "15", label: "其他" },
+  ];
+
+  return(
+    <main>
+      {!!invite.length &&
+        <Box m = "xl" component="form">
+          <Select
+            label="運動類別 :"
+            clearable={false}
+            data={sports}
+            defaultValue={""}
+            placeholder="請挑選運動類別"
+            size={'md'}
+            required
+            mt="md"
+          />
+        </Box>
+      }
+    </main>
+  )
+}
+
 export default function InvitePage() {
   const router = useRouter();
   const i_id = router.query.i_id;
 
   const [pageStatus, setPageStatus] = useState(0);
 
-  let { data, error } = useSWR(['invite/invitation/'+i_id, { throwHttpErrors: true }]);
+  let { data, error, mutate: refreshInvite } = useSWR(['invite/invitation/'+i_id, { throwHttpErrors: true }]);
   console.log(data)
 
   if(error instanceof HTTPError && error.response.status === 404)
@@ -218,7 +270,16 @@ export default function InvitePage() {
           }
           { !error && !!data &&
             <>
-              <InviteCard invite={data[0]}></InviteCard>
+              { pageStatus === 0 &&
+                <>
+                  <InviteCard invite={data[0]}  setPageStatus={setPageStatus}></InviteCard>
+                </>
+              }
+              { pageStatus === 1 &&
+                <>
+                  <ModifyInvitePage invite={data[0]} setPageStatus={setPageStatus} refreshInvite={refreshInvite}></ModifyInvitePage>
+                </>
+              }
             </>
           }
         </Container>
