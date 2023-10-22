@@ -290,6 +290,14 @@ function PostInvite({setDisplayState, refreshInvite}:any){
     if(loading) return;
     let {error} = await trigger(Name, parseInt(placeValue), parseInt(sp_type), Datetime.getTime(), Other);
     if(error) return console.error(error);
+    else
+    {
+      notifications.show({
+        color: "green",
+        title: '成功發送公開邀請～',
+        message: '相信你的邀請一定會有很多人來報名的！',
+      })
+    }
     refreshInvite()
     setDisplayState(0)
   }
