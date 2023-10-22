@@ -1,4 +1,4 @@
-import {useAsyncFunction, useNavbarTitle, useUser} from '@/hooks';
+import { useAsyncFunction, useNavbarTitle, useUser } from '@/hooks';
 import '@mantine/dates/styles.css';
 import Head from 'next/head';
 import { addContest, deleteContest, editContest } from '@/apis/cont';
@@ -44,7 +44,7 @@ import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
 import { Simulate } from 'react-dom/test-utils';
 import submit = Simulate.submit;
-import {notifications} from "@mantine/notifications";
+import { notifications } from "@mantine/notifications";
 import isUrl from "is-url";
 import { modals } from '@mantine/modals';
 import { getPlaceByID } from '@/apis/map';
@@ -55,10 +55,9 @@ type searchData = {
   ID: number
 }
 
-function AddContestPage({setFormToShow}: any)
-{
-  const {user, mutate: refreshUser}=useUser();
-  let {trigger, error, loading} = useAsyncFunction(addContest);
+function AddContestPage({ setFormToShow }: any) {
+  const { user, mutate: refreshUser } = useUser();
+  let { trigger, error, loading } = useAsyncFunction(addContest);
 
   const sports = [
     { value: "1", label: "籃球" },
@@ -81,25 +80,24 @@ function AddContestPage({setFormToShow}: any)
   const [searchInput, setSearchInput] = useState<string>('');
   const [placeValue, setPlaceValue] = useState<string>('');
 
-  let {data, mutate: updateItems} = useSWR<searchData[]>(['map/search/'+searchInput, { throwHttpErrors: true }]);
+  let { data, mutate: updateItems } = useSWR<searchData[]>(['map/search/' + searchInput, { throwHttpErrors: true }]);
 
   let selectData;
-  if(data)
-  {
-    selectData = data.map(({ ID, Name }) => ({ value: ID.toString(), label: Name}));
+  if (data) {
+    selectData = data.map(({ ID, Name }) => ({ value: ID.toString(), label: Name }));
   }
 
   const form = useForm({
     initialValues: {
       Name: '',
       Organizer: '',
-      Content:'',
+      Content: '',
       sp_type: '',//前端送往後端時需處理
       StartDate: null,//前端送往後端時需處理
       EndDate: null,//前端送往後端時需處理
       Deadline: null,
-      Url:'',
-      Other:''
+      Url: '',
+      Other: ''
     },
   });
 
@@ -110,10 +108,8 @@ function AddContestPage({setFormToShow}: any)
     return new Date(input);
   };
 
-  async function handleSubmit(values: any)
-  {
-    if(values.sp_type == '')
-    {
+  async function handleSubmit(values: any) {
+    if (values.sp_type == '') {
       notifications.show({
         color: "red",
         title: '沒有選擇運動類別！',
@@ -121,8 +117,7 @@ function AddContestPage({setFormToShow}: any)
       })
       return;
     }
-    if(values.Name.length < 5)
-    {
+    if (values.Name.length < 5) {
       console.log("error: too short")
       notifications.show({
         color: "red",
@@ -131,8 +126,7 @@ function AddContestPage({setFormToShow}: any)
       })
       return;
     }
-    if(placeValue == '')
-    {
+    if (placeValue == '') {
       notifications.show({
         color: "red",
         title: '沒有選擇活動地點！',
@@ -141,8 +135,7 @@ function AddContestPage({setFormToShow}: any)
       return;
     }
     //console.log(values,stDate,enDate,deadline)
-    if(!values.StartDate || !values.Deadline || !values.EndDate)
-    {
+    if (!values.StartDate || !values.Deadline || !values.EndDate) {
       console.log("error: error")
       notifications.show({
         color: "red",
@@ -151,8 +144,7 @@ function AddContestPage({setFormToShow}: any)
       })
       return;
     }
-    if(values.Deadline < Date.now())
-    {
+    if (values.Deadline < Date.now()) {
       notifications.show({
         color: "red",
         title: '歐不！再檢查一次日期～',
@@ -160,8 +152,7 @@ function AddContestPage({setFormToShow}: any)
       })
       return;
     }
-    if(values.StartDate < values.Deadline)
-    {
+    if (values.StartDate < values.Deadline) {
       console.log("error: error")
       notifications.show({
         color: "red",
@@ -170,8 +161,7 @@ function AddContestPage({setFormToShow}: any)
       })
       return;
     }
-    if(values.StartDate > values.EndDate)
-    {
+    if (values.StartDate > values.EndDate) {
       console.log("error: error")
       notifications.show({
         color: "red",
@@ -180,8 +170,7 @@ function AddContestPage({setFormToShow}: any)
       })
       return;
     }
-    if(!isUrl(values.Url))
-    {
+    if (!isUrl(values.Url)) {
       console.log("error: error")
       notifications.show({
         color: "red",
@@ -196,9 +185,9 @@ function AddContestPage({setFormToShow}: any)
     let enDate = (new Date(values.EndDate - tz_offset)).toISOString().split('T')[0];
     let deadline = (new Date(values.Deadline - tz_offset)).toISOString().split('T')[0];
 
-    if(loading) return;
-    let {error} = await trigger(values.Name, values.Organizer, values.Content, parseInt(placeValue), parseInt(values.sp_type), stDate, enDate, deadline, values.Url, values.Other);
-    if(error) return console.error(error);
+    if (loading) return;
+    let { error } = await trigger(values.Name, values.Organizer, values.Content, parseInt(placeValue), parseInt(values.sp_type), stDate, enDate, deadline, values.Url, values.Other);
+    if (error) return console.error(error);
     notifications.show({
       color: "green",
       title: '新增比賽成功～',
@@ -207,99 +196,98 @@ function AddContestPage({setFormToShow}: any)
     setFormToShow(FormType.showContestForm);
   }
 
-  return(
+  return (
     <main>
       {!!user &&
         <Box m="xl">
           <form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
             <Select size={'md'}
-                    mt="md" required
-                    comboboxProps={{ withinPortal: true }}
-                    data={sports}
-                    placeholder="請挑選運動類別"
-                    label="運動類別"
-                    allowDeselect={false}
-                    {...form.getInputProps('sp_type')}
+              mt="md" required
+              comboboxProps={{ withinPortal: true }}
+              data={sports}
+              placeholder="請挑選運動類別"
+              label="運動類別"
+              allowDeselect={false}
+              {...form.getInputProps('sp_type')}
             />
             <TextInput size={'md'}
-                       mt="md" required
-                       label="活動名稱"
-                       placeholder="請輸入活動名稱"
-                       {...form.getInputProps('Name')}
+              mt="md" required
+              label="活動名稱"
+              placeholder="請輸入活動名稱"
+              {...form.getInputProps('Name')}
             />
             <TextInput size={'md'}
-                       mt="md" required
-                       label="主辦單位"
-                       placeholder="輸入主辦單位（多個請用頓號隔開）"
-                       {...form.getInputProps('Organizer')}
+              mt="md" required
+              label="主辦單位"
+              placeholder="輸入主辦單位（多個請用頓號隔開）"
+              {...form.getInputProps('Organizer')}
             />
             <Select size={'md'}
-                    mt="md" required
-                    label="活動地點"
-                    placeholder="請搜尋並選擇活動地點"
-                    data={selectData} clearable
-                    searchable nothingFoundMessage={"查無地點"}
-                    searchValue={searchInput}
-                    onSearchChange={(value)=>{
-                      console.log(value.length , searchInput.length - 1)
-                      if(value.length === searchInput.length - 1)
-                      {
-                        setPlaceValue('');
-                      }
-                      setSearchInput(value);
-                    }}
-                    value={placeValue} onChange={(value:string)=>setPlaceValue((value)? value: '')}
+              mt="md" required
+              label="活動地點"
+              placeholder="請搜尋並選擇活動地點"
+              data={selectData} clearable
+              searchable nothingFoundMessage={"查無地點"}
+              searchValue={searchInput}
+              onSearchChange={(value) => {
+                console.log(value.length, searchInput.length - 1)
+                if (value.length === searchInput.length - 1) {
+                  setPlaceValue('');
+                }
+                setSearchInput(value);
+              }}
+              value={placeValue} onChange={(value: string) => setPlaceValue((value) ? value : '')}
             />
             <DatePickerInput size={'md'}
-                             mt="md" required
-                             clearable
-                             valueFormat="YYYY/MM/DD"
-                             label="報名截止日期"
-                             placeholder="請選擇報名截止日期"
-                             {...form.getInputProps('Deadline')}
+              mt="md" required
+              clearable
+              valueFormat="YYYY/MM/DD"
+              label="報名截止日期"
+              placeholder="請選擇報名截止日期"
+              {...form.getInputProps('Deadline')}
             />
             <DatePickerInput size={'md'}
-                             mt="md"
-                             clearable required
-                             valueFormat="YYYY/MM/DD"
-                             label="活動開始日期"
-                             placeholder="請選擇活動開始日期"
-                             {...form.getInputProps('StartDate')}
+              mt="md"
+              clearable required
+              valueFormat="YYYY/MM/DD"
+              label="活動開始日期"
+              placeholder="請選擇活動開始日期"
+              {...form.getInputProps('StartDate')}
             />
             <DatePickerInput size={'md'}
-                             mt="md" required
-                             clearable
-                             valueFormat="YYYY/MM/DD"
-                             label="活動結束日期"
-                             placeholder="請選擇活動結束日期"
-                             {...form.getInputProps('EndDate')}
+              mt="md" required
+              clearable
+              valueFormat="YYYY/MM/DD"
+              label="活動結束日期"
+              placeholder="請選擇活動結束日期"
+              {...form.getInputProps('EndDate')}
             />
             <Textarea size={'md'}
-                      mt="md" radius={'md'}
-                      required
-                      label="詳細說明"
-                      placeholder="關於這個活動詳情"
-                      {...form.getInputProps('Content')}
-                      minRows={8} autosize
+              mt="md" radius={'md'}
+              required
+              label="詳細說明"
+              placeholder="關於這個活動詳情"
+              {...form.getInputProps('Content')}
+              minRows={8} autosize
             ></Textarea>
             <TextInput size={'md'}
-                       mt="md"
-                       required
-                       label="官網網址"
-                       placeholder="請輸入官方網站網址"
-                       {...form.getInputProps('Url')}
+              mt="md"
+              required
+              label="官網網址"
+              placeholder="請輸入官方網站網址"
+              {...form.getInputProps('Url')}
             />
             <Textarea size={'md'}
-                      mt="md"
-                      required
-                      minRows={3} autosize
-                      label="其他"
-                      placeholder="關於這個活動的其他資訊"
-                      {...form.getInputProps('Other')}
+              mt="md"
+              required
+              minRows={3} autosize
+              label="其他"
+              placeholder="關於這個活動的其他資訊"
+              {...form.getInputProps('Other')}
             />
             <Group justify={"space-evenly"} my={'lg'}>
               <Button
-                onClick={()=>setFormToShow(FormType.showContestForm)}
+                onClick={() => setFormToShow(FormType.showContestForm)}
                 leftSection={<IconChevronLeft />}
                 w={"45%"}
               >
@@ -318,23 +306,23 @@ function AddContestPage({setFormToShow}: any)
           </form>
         </Box>
       }{!user &&
-      <Box style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '70vh',
-      }}>
-        {(
-          <>
-            <Alert
-              color="blue" fw={500}>
-              登入後即可新增活動！前往
-              <Link href = '/signin'> 註冊/登入</Link>
-            </Alert>
-          </>
-        )}
-      </Box>
-    }
+        <Box style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '70vh',
+        }}>
+          {(
+            <>
+              <Alert
+                color="blue" fw={500}>
+                登入後即可新增活動！前往
+                <Link href='/signin'> 註冊/登入</Link>
+              </Alert>
+            </>
+          )}
+        </Box>
+      }
     </main>
   )
 }
@@ -363,7 +351,7 @@ type Contests = {
 function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
   const [sp_type, setSp_type] = useState<string | null>('0');
   let str = 'cont/contests/SelectType?sp_type=' + sp_type;
-  let { data, error, mutate:refreshList } = useSWR([str, { throwHttpErrors: true }]);
+  let { data, error, mutate: refreshList } = useSWR([str, { throwHttpErrors: true }]);
   if (data && data.length) console.log(data[0]);
   if (error) console.log("error: ", error);
 
@@ -387,18 +375,17 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
   ];
 
   let title = "全部"
-  if(sp_type && sp_type !== "0")
+  if (sp_type && sp_type !== "0")
     title = sports[parseInt(sp_type)].label;
   title += "活動"
   useNavbarTitle(title);
 
-  const [placeNames, setPlaceNames] = useState<any[]|null>(null);
+  const [placeNames, setPlaceNames] = useState<any[] | null>(null);
 
-  if( (data && !placeNames) || ( data && placeNames!=null && (data.length != placeNames.length)) )
-  {
-    (async() =>{
+  if ((data && !placeNames) || (data && placeNames != null && (data.length != placeNames.length))) {
+    (async () => {
       let results = await Promise.all(
-        data.map((item:Contests)=>{
+        data.map((item: Contests) => {
           return getPlaceByID(item.Place);
         })
       );
@@ -423,7 +410,7 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
             value={sp_type}
             onChange={(value) => (setSp_type(value))}
           />
-          {!!data && !!placeNames && (data.length == placeNames.length) && data.map((contest: Contests, index:number) =>(
+          {!!data && !!placeNames && (data.length == placeNames.length) && data.map((contest: Contests, index: number) => (
             <Link href={"events/contests/" + contest.c_id} key={contest.c_id}>
               <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm'>
                 <Group justify='space-between'>
@@ -431,8 +418,8 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
                     <IconUser />
                     <Text fw={500} >User{contest.User_id}</Text>
                   </Group>
-                  </Group>
-                <Text size="xl" ml={'lg'} mt='lg' fw='600'>{'【 '+sports[contest.sp_type].label+' 】' + contest.Name}</Text>
+                </Group>
+                <Text size="xl" ml={'lg'} mt='lg' fw='600'>{'【 ' + sports[contest.sp_type].label + ' 】' + contest.Name}</Text>
                 <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                   <IconMap2 />
                   <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>活動地點：{placeNames[index].Name}</Text>
@@ -445,17 +432,17 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
                   <IconCalendarCheck />
                   <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
                     活動日期：
-                    {new Date(contest.StartDate).toLocaleDateString() + " ～ " + new Date(contest.EndDate).toLocaleDateString() }
+                    {new Date(contest.StartDate).toLocaleDateString() + " ～ " + new Date(contest.EndDate).toLocaleDateString()}
                   </Text>
                 </Flex>
                 <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                   <IconCalendarOff />
                   <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>報名截止日期：{new Date(contest.Deadline).toLocaleDateString()}</Text>
                 </Flex>
-                  <Flex mt='md' justify='right' c={'blue'}>
-                    <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>查看詳細內容</Text>
-                    <IconChevronRight />
-                  </Flex>
+                <Flex mt='md' justify='right' c={'blue'}>
+                  <Text style={{ textDecoration: "underline", textDecorationThickness: rem(2) }} fw={600} size='md'>查看詳細內容</Text>
+                  <IconChevronRight />
+                </Flex>
               </Card>
             </Link>)
           )}
@@ -464,7 +451,7 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
               錯誤：暫時無法取得資料
             </Alert>
           }
-          { data && !data.length &&
+          {data && !data.length &&
             <Alert variant="light" color="yellow" my="md">
               目前沒有可以顯示的東西QQ
             </Alert>
@@ -507,10 +494,10 @@ export default function EventsPage() {
               displayByc_id={(c_id) => {
                 setc_id(c_id);
               }}
-              setFormToShow = {(FormType) => {
+              setFormToShow={(FormType) => {
                 setFormToShow(FormType);
               }}
-              setc_id = {setc_id}
+              setc_id={setc_id}
             />
             {fabContainer && createPortal(
               <Button leftSection={<IconPlus size={20} />} mr={'xl'} mb='xl'
@@ -536,7 +523,7 @@ export default function EventsPage() {
             <>
               <Alert color="blue">
                 未登入系統，請先登入後再新增活動！
-                <Link href = '/signin'>按此前往登入頁面</Link>
+                <Link href='/signin'>按此前往登入頁面</Link>
               </Alert>
             </>
           </Box>
