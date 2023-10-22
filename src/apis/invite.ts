@@ -20,10 +20,9 @@ export async function deleteInvite(i_id:number)
 }
 
 export async function editInvite(i_id:number, Name : string, Place : number,
-                                 sp_type : number, DateTime :number, Other:string)
-{
-  await client.put("invite/invitation/EditInvite/"+i_id,{
-    json:{
+                                 sp_type : number, DateTime :number, Other:string) {
+  await client.put("invite/invitation/EditInvite/" + i_id, {
+    json: {
       Name,
       Place,
       sp_type,
@@ -31,4 +30,9 @@ export async function editInvite(i_id:number, Name : string, Place : number,
       Other
     },
   });
+}
+
+export async function signupPublicInv(i_id: number)
+{
+   await client.post("invite/signup/"+i_id);
 }

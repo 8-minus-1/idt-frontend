@@ -25,8 +25,7 @@ import {
   IconTrash,
   IconUser,
 } from '@tabler/icons-react';
-import { deleteQuestion } from '@/apis/qa';
-import { addInvite, deleteInvite, editInvite } from '@/apis/invite';
+import { deleteInvite, editInvite, signupPublicInv } from '@/apis/invite';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import Link from 'next/link';
@@ -104,6 +103,42 @@ function InviteCard({invite, setPageStatus}: any)
     place = placeInfo.Name;
   }
 
+  let {trigger: signup, loading: signupLoading, error } = useAsyncFunction(signupPublicInv);
+
+  let {data: signupStatus, mutate: refreshStatus} = useSWR(['invite/signup/status/'+invite.i_id, { throwHttpErrors: false }])
+
+  async function handleSignup()
+  {
+    if(signupLoading) return;
+    else {
+      modals.openConfirmModal({
+        title: '您確定要報名這則邀約嗎？',
+        centered: true,
+        children:(
+          <Text size="sm">
+            請注意，報名後無法收回，必須準時赴約
+          </Text>
+        ),
+        labels: { confirm: '是的，我非常確定', cancel: "不，請返回" },
+        confirmProps: { color: 'red' },
+        onConfirm: async () => {
+          let {error} = await signup(invite.i_id);
+          if(error) console.log(error);
+          else
+          {
+            notifications.show({
+              color: "green",
+              title: '已成功報名這個公開邀請～',
+              message: '待對方同意後就算配對成功囉！',
+            });
+            refreshStatus();
+          }
+        },
+      });
+    }
+  }
+
+
   return(
     <main>
     <Card padding="lg"  pb='xl' bg="#D6EAF8" radius="lg" mb='xs' shadow='sm'>
@@ -176,20 +211,34 @@ function InviteCard({invite, setPageStatus}: any)
     }
     { !!user &&
       <>
-        <Button mt={'md'}
-          variant="gradient"
-          gradient={{ from: 'blue.3', to: 'blue.6', deg: 90 }}
-          fullWidth radius={'md'}
-        >
-          查看發起者基本資料
-        </Button>
-        <Button mt={'xs'}
-          variant="gradient"
-          gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
-          fullWidth radius={'md'}
-        >
-          送出報名請求
-        </Button>
+        {user.id !== invite.User_id &&
+          <>
+            <Button mt={'md'}
+                    variant="gradient"
+                    gradient={{ from: 'blue.3', to: 'blue.6', deg: 90 }}
+                    fullWidth radius={'md'}
+            >
+              查看發起者基本資料
+            </Button>
+            {!!signupStatus &&
+              <Button mt={'xs'} disabled={signupStatus.status}
+              variant="gradient" loading={signupLoading}
+              gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
+              fullWidth radius={'md'} onClick={handleSignup}
+              >
+            { signupStatus.status &&
+              <>您已經報名過了～等待對方同意吧！</>
+            }
+            { !signupStatus.status &&
+              <>送出報名請求</>
+            }
+              </Button>
+            }
+          </>
+        }
+        { user.id === invite.User_id &&
+          <Text fw={700} ta={'center'} mt={'lg'}>報名此邀約的人</Text>
+        }
       </>
     }
     </main>
