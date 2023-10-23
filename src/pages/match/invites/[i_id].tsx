@@ -15,11 +15,11 @@ import {
   Menu,
   ActionIcon,
   Button,
-  Box, Select
+  Box, Select, Textarea,
 } from '@mantine/core';
 import {
   IconBulb,
-  IconCalendarCheck,
+  IconCalendarCheck, IconCheck, IconChevronLeft,
   IconDots, IconEdit,
   IconMap2,
   IconTrash,
@@ -29,6 +29,8 @@ import { deleteInvite, editInvite, signupPublicInv } from '@/apis/invite';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import Link from 'next/link';
+import { DateTimePicker } from '@mantine/dates';
+import '@mantine/dates/styles.css';
 
 type m = {
   "User_id": number,
@@ -156,13 +158,13 @@ function InviteCard({invite, setPageStatus}: any)
               </ActionIcon>
             </Menu.Target>
             <Menu.Dropdown>
-              {/*<Menu.Item*/}
-              {/*  leftSection={<IconEdit style={{ width: rem(14), height: rem(14) }} />}*/}
-              {/*  color="black"*/}
-              {/*  onClick={()=>setPageStatus(1)}*/}
-              {/*>*/}
-              {/*  編輯此邀約*/}
-              {/*</Menu.Item>*/}
+              <Menu.Item
+                leftSection={<IconEdit style={{ width: rem(14), height: rem(14) }} />}
+                color="black"
+                onClick={()=>setPageStatus(1)}
+              >
+                編輯此邀約
+              </Menu.Item>
               <Menu.Item
                 leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
                 color="red"
@@ -174,7 +176,7 @@ function InviteCard({invite, setPageStatus}: any)
           </Menu>
         }
       </Group>
-      <Text size="xl" ml={'lg'} mt='lg' fw='700'>{'【 '+ sports[invite.sp_type].label+' 】' + invite.Name}</Text>
+      <Text size="xl" ml={'lg'} mt='lg' fw='700'>{'【 '+ sports[invite.sp_type-1].label+' 】' + invite.Name}</Text>
       <Flex ml={'xl'} mt='md' justify={'flex-start'}>
         <IconCalendarCheck />
         <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
@@ -245,10 +247,19 @@ function InviteCard({invite, setPageStatus}: any)
   )
 }
 
-async function ModifyInvitePage({invite, setPageStatus, refreshInvite}: any)
+type searchData = {
+  Name: string,
+  Address: string,
+  ID: number
+}
+function ModifyInvitePage({invite, i_id, setPageStatus, refreshInvite}: any)
 {
   let {user} = useUser();
   let {trigger, error, loading} = useAsyncFunction(editInvite);
+  const [sp_type, set_sp_type] = useState<string|null>(invite.sp_type);
+  const [Name, set_Name] = useState(invite.Name);
+  const [Other, set_Other]=useState(invite.Other);
+  const [Datetime, set_Datetime]=useState<Date|null>(new Date(invite.DateTime));
 
   const sports = [
     { value: "1", label: "籃球" },
@@ -268,20 +279,161 @@ async function ModifyInvitePage({invite, setPageStatus, refreshInvite}: any)
     { value: "15", label: "其他" },
   ];
 
+  let { data: placeInfo, error:placeInfoError } = useSWR(['map/getInfo?id='+invite.Place, { throwHttpErrors: true }]);
+  const [searchInput, setSearchInput] = useState<string>('');
+  const [placeValue, setPlaceValue] = useState<string>('')
+
+  let { data:s_data, mutate: updateItems} = useSWR<searchData[]>(['map/search/'+searchInput, { throwHttpErrors: true }]);
+
+  let selectData: any[] = [];
+  if(s_data)
+  {
+    selectData = s_data.map(({ ID, Name }) => ({ value: ID.toString(), label: Name}));
+  }
+
+  let defaultSelected = '';
+  if(placeInfo)
+  {
+    if(!selectData.length) selectData.push({ value: String(placeInfo.ID), label: "原："+placeInfo.Name});
+    defaultSelected = selectData[0].value;
+    console.log(defaultSelected);
+  }
+
+  async function handleEditInvite()
+  {
+    if(sp_type === null)
+    {
+      notifications.show({
+        color: "red",
+        title: '沒有選擇問題類別！',
+        message: '選擇邀約對應的運動，讓他人更快找到你的邀約吧！',
+      })
+      return;
+    }
+    if(Name.length < 5)
+    {
+      console.log("error: too short")
+      notifications.show({
+        color: "red",
+        title: '邀約名稱至少要有5個字喔～',
+        message: '把名稱寫清楚，吸引更多人參加吧！',
+      })
+      return;
+    }
+    if(Name.length > 30)
+    {
+      console.log("error: too long")
+      notifications.show({
+        color: "red",
+        title: '邀約名稱太長了！',
+        message: '請將名稱簡約概述，讓它更一目了然～',
+      })
+      return;
+    }
+    if(placeValue === '')
+    {
+      notifications.show({
+        color: "red",
+        title: '沒有選擇邀約地點！',
+        message: '搜尋並選擇邀約的地點，以提高報名的意願吧！',
+      })
+      return;
+    }
+    if(Other.length < 1)
+    {
+      console.log("error: too short")
+      notifications.show({
+        color: "red",
+        title: '尚未填寫資訊內容～',
+        message: '把內容寫得更清楚，吸引更多人參加吧！',
+      })
+      return;
+    }
+    if(!Datetime) return;
+    if(loading) return;
+    let {error} = await trigger(i_id, Name, parseInt(placeValue), parseInt(sp_type), Datetime.getTime(), Other);
+    if(error) return console.error(error);
+    refreshInvite()
+    setPageStatus(0)
+  }
+
   return(
     <main>
-      {!!invite.length &&
+      {invite &&
         <Box m = "xl" component="form">
           <Select
             label="運動類別 :"
-            clearable={false}
             data={sports}
             defaultValue={""}
             placeholder="請挑選運動類別"
-            size={'md'}
-            required
+            size={'md'} required
             mt="md"
+            value = {sp_type}
+            onChange={(value:string)=>(set_sp_type(value))}
+            allowDeselect={false}
           />
+          <Textarea
+            label="邀約名稱 :"
+            placeholder="設定個吸引人的名稱吧！可以包含地點、人數等資訊"
+            autosize size={'md'}
+            mt="md"
+            withAsterisk
+            required value = {Name}
+            onChange={(event)=>(set_Name(event.currentTarget.value))}
+          />
+          <DateTimePicker
+            label="邀約日期 & 時間："
+            placeholder="請選擇邀請時間及日期"
+            valueFormat={'YYYY/MM/DD hh:mm'}
+            dropdownType={'modal'}
+            minDate={new Date(Date.now())}
+            size={'md'}
+            mt="md"
+            required value={Datetime}
+            onChange={set_Datetime}
+          />
+          <Select
+            label="活動地點"
+            placeholder="請搜尋並選擇活動地點"
+            size={'md'}
+            mt="md" required
+            data={selectData} clearable
+            searchable nothingFoundMessage={"查無地點"}
+            searchValue={searchInput}
+            onSearchChange={(value)=>{
+              console.log(value.length , searchInput.length - 1)
+              if(value.length === searchInput.length - 1)
+              {
+                setPlaceValue('');
+              }
+              setSearchInput(value);
+            }}
+            value={placeValue} onChange={(value:string)=>setPlaceValue((value)? value: '')}
+          />
+          <Textarea
+            label="更多資訊（內容）:"
+            minRows={3} autosize size={'md'}
+            mt="md"
+            required value = {Other}
+            onChange={(event)=>(set_Other(event.currentTarget.value))}
+          />
+          <Group justify="space-evenly" mt="md">
+            <Button
+              onClick={()=>(setPageStatus(0))}
+              leftSection={<IconChevronLeft />}
+              w={"45%"}
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleEditInvite}
+              variant="gradient"
+              gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
+              rightSection={<IconCheck />}
+              w={"45%"} loading={loading}>
+              確定
+            </Button>
+          </Group>
         </Box>
       }
     </main>
@@ -324,11 +476,9 @@ export default function InvitePage() {
                   <InviteCard invite={data[0]}  setPageStatus={setPageStatus}></InviteCard>
                 </>
               }
-              { pageStatus === 1 &&
-                <>
-                  <ModifyInvitePage invite={data[0]} setPageStatus={setPageStatus} refreshInvite={refreshInvite}></ModifyInvitePage>
-                </>
-              }
+              { pageStatus === 1 && (
+                <ModifyInvitePage invite={data[0]} i_id={i_id as string} setPageStatus={setPageStatus} refreshInvite={refreshInvite}></ModifyInvitePage>
+              )}
             </>
           }
         </Container>
