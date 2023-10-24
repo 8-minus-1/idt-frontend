@@ -36,7 +36,14 @@ import {
   IconTrash,
   IconScoreboard,
   IconFileDescription,
-  IconBulb
+  IconBulb,
+  IconMap,
+  IconHome,
+  IconCalendar,
+  IconReportMoney,
+  IconPhone,
+  IconClock,
+  IconPencil
 } from '@tabler/icons-react';
 import { IconExternalLink } from '@tabler/icons-react';
 import { Alert } from '@mantine/core';
@@ -86,7 +93,6 @@ function ShowAllRank({allRank,refreshAllRank}:any){
       }</>
   );
 }
-
 
 export default function PlaceInfoPage() {
   const { query } = useRouter();
@@ -144,20 +150,20 @@ export default function PlaceInfoPage() {
           < Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='md' shadow='sm'>
             <Group justify='space-between'>
               <Group>
-                <IconUser />
-                <Text fw={500}>User{data.Name}</Text>
+                <IconHome />
+                <Text fw={700}>場地名稱 : {data.Name}</Text>
               </Group>
             </Group>
             <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-              <IconCalendarCheck />
+              <IconMap />
               <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>地址：{data.City}{data.Town}{data.address}</Text>
             </Flex>
             <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-              <IconCalendarX />
+              <IconClock />
               <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>營業時間：{data.OpenTime} ~ {data.CloseTime}</Text>
             </Flex>
             <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-              <IconCalendarOff />
+              <IconReportMoney />
               <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>價格：{data.Price}</Text>
             </Flex>
             <Flex ml={'xl'} mt='md' justify={'flex-start'}>
@@ -166,14 +172,16 @@ export default function PlaceInfoPage() {
             </Flex>
             <Flex ml={'xl'} mt='md' justify={'flex-start'}>
               <IconFileDescription />
-              <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>官方網址：</Text>
+              <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>官方網址：<Link href={data.Url}>{data.Url}</Link></Text>
             </Flex>
-            <Text mt={'sm'} ml={'xl'} pl={'xl'} size='md' fw={700} style={{ whiteSpace: 'pre-wrap' }}>{data.Url}</Text>
             <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-              <IconBulb />
-              <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>聯絡資訊：</Text>
+              <IconPhone />
+              <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>聯絡資訊：{data.Phone}</Text>
             </Flex>
-            <Text mt={'sm'} ml={'xl'} pl={'xl'} size='md' fw={700} style={{ whiteSpace: 'pre-wrap' }}>{data.Phone}</Text>
+            <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+              <IconPencil />
+              <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>由User{data.User}在{data.Renew}更新</Text>
+            </Flex>
             <Flex c="blue" mt="md" justify="right">
               <Text fw={600} size="md">
                 <Link href={`/events/place/`+data.ID}>查看場館活動</Link>
