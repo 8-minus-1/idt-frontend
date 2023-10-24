@@ -97,7 +97,7 @@ export default function PlaceInfoPage() {
   const id = query.id;
   let { data, error:infoError } = useSWR(['map/getInfo?id='+id, { throwHttpErrors: true }]);
   let fabContainer = useContext(FABContainerContext);
-  let { data:RankInfo, error:rankError } = useSWR(['map/RankByUser?id='+id, { throwHttpErrors: true }]);
+  let { data:RankInfo, error:rankError, mutate: refresh } = useSWR(['map/RankByUser?id='+id, { throwHttpErrors: true }]);
   let { data:allRank, error:allRankError, mutate: refreshRank } = useSWR(['map/RankByPlace?id='+id, { throwHttpErrors: true }]);
 
   useNavbarTitle('場館資訊');
@@ -130,10 +130,8 @@ export default function PlaceInfoPage() {
       title: '新增Rank成功～',
       message: '隨時關注，以獲得最新資訊！',
     })
-
+    refresh()
     set_Ranked(1);
-    console.log("Rank is ", Ranked);
-
   }
 
   return (
@@ -219,14 +217,14 @@ export default function PlaceInfoPage() {
                       color="black"
                       //onClick={()=>handleDelete(RankInfo.a_id)}
                     >
-                      編輯此回答
+                      編輯此評論
                     </Menu.Item>
                     <Menu.Item
                       leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
                       color="red"
                       //onClick={()=>handleDelete(RankInfo.a_id)}
                     >
-                      刪除此回答
+                      刪除此評論
                     </Menu.Item>
                   </Menu.Dropdown>
                 </Menu>
