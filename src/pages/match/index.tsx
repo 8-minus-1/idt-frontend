@@ -396,7 +396,7 @@ function PostInvite({setDisplayState, refreshInvite}:any){
               <>
                 <Alert
                   color="blue" fw={500}>
-                  登入後即可發問！前往
+                  登入後即可發起公開邀請！前往
                   <Link href = '/signin'> 註冊/登入</Link>
                 </Alert>
               </>

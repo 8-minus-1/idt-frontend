@@ -15,13 +15,13 @@ import {
   Menu,
   ActionIcon,
   Button,
-  Box, Select, Textarea,
+  Box, Select, Textarea, Paper,
 } from '@mantine/core';
 import {
   IconBulb,
   IconCalendarCheck, IconCheck, IconChevronLeft,
   IconDots, IconEdit,
-  IconMap2,
+  IconMap2, IconSend,
   IconTrash,
   IconUser,
 } from '@tabler/icons-react';
@@ -44,6 +44,16 @@ type m = {
 }
 type inviteCardProps = {
   invite: m
+}
+
+//signup
+type s =
+{
+  i_id: number,
+  user_id: number,
+  timestamp: number,
+  approved: boolean,
+  s_id: number
 }
 
 function InviteCard({invite, setPageStatus}: any)
@@ -109,6 +119,7 @@ function InviteCard({invite, setPageStatus}: any)
 
   let {data: signupStatus, mutate: refreshStatus} = useSWR(['invite/signup/status/'+invite.i_id, { throwHttpErrors: false }])
 
+  let {data: signupList, mutate: refreshList} = useSWR([ (invite.User_id === user?.id)? 'invite/signupList/'+invite.i_id : null, { throwHttpErrors: false }]);
   async function handleSignup()
   {
     if(signupLoading) return;
@@ -238,8 +249,56 @@ function InviteCard({invite, setPageStatus}: any)
             }
           </>
         }
-        { user.id === invite.User_id &&
-          <Text fw={700} ta={'center'} mt={'lg'}>報名此邀約的人</Text>
+        { user.id === invite.User_id && !!signupList &&
+          <>
+            { !signupList.length &&
+              <Text size="md" my="xl" ta="center" fw={600}>
+                目前沒有人報名喔～再等一會兒吧！
+              </Text>
+            }
+            { !!signupList.length &&
+              <>
+                <Text fw={700} mt={'lg'} mb={'sm'}>報名此邀約的人：</Text>
+                { signupList.map( (record:s) =>
+                  <Paper withBorder p={'lg'} key={record.s_id} >
+                    <Flex justify='space-between'>
+                      <Group>
+                        <IconUser />
+                        <Text fw={500}>User{record.user_id}</Text>
+                      </Group>
+                      <Text>{new Date(record.timestamp).toLocaleDateString()} {new Date(record.timestamp).toLocaleTimeString()}</Text>
+                    </Flex>
+                    <Button mt={'lg'}
+                            variant="gradient"
+                            gradient={{ from: 'blue.3', to: 'blue.6', deg: 90 }}
+                            fullWidth radius={'md'}
+                    >
+                      查看報名者基本資料
+                    </Button>
+                    <Group justify={"space-evenly"} mt={'xs'}>
+                      <Button
+                        //onClick={()=>(setPageStatus(0))}
+                        leftSection={<IconTrash />}
+                        w={"48%"} radius={'md'}
+                        color={'red.5'}
+                      >
+                        不同意並刪除
+                      </Button>
+                      <Button
+                        //onClick={()=>handleSendAnswer(q_id, a_content)}
+                        color={'green.6'}
+                        rightSection={<IconCheck />}
+                        w={"48%"} loading={loading} radius={'md'}
+                      >
+                        同意
+                      </Button>
+                    </Group>
+                  </Paper>
+                )
+                }
+              </>
+            }
+          </>
         }
       </>
     }
