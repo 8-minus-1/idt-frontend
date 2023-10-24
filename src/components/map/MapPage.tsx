@@ -275,10 +275,13 @@ function MapPageInner() {
                   網站連結 :{' '}
                   <Link href={selectedPlace.Url}> {selectedPlace.Url}</Link>
                 </Text>
-                <Text>更新時間 : {selectedPlace.Renew.split('T')[0]}</Text>
+                <Text>更新時間 : {selectedPlace.Renew}</Text>
                 <Group>
-                  {selectedPlace.Rank}
-                  <Rating value={selectedPlace.Rank} fractions={10} readOnly />
+                  {selectedPlace.Rank === 0 && <Text>尚未有評價！</Text>}
+                  {selectedPlace.Rank != 0 && <>
+                    {selectedPlace.Rank}
+                    <Rating value={selectedPlace.Rank} fractions={10} readOnly /></>
+                  }
                 </Group>
 
                 <Flex c="blue" mt="md" justify="right">
