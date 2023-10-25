@@ -39,14 +39,15 @@ import invalid = Simulate.invalid;
 import { Public_Sans } from 'next/dist/compiled/@next/font/dist/google';
 
 type m = {
-  "User_id": number,
-  "Name": string,
-  "Place": string,
-  "sp_type": number,
-  "DateTime": string,
-  "Time": string,
-  "Other": string,
-  "i_id": number,
+  User_id: number,
+  Name: string,
+  Place: string,
+  sp_type: number,
+  DateTime: string,
+  Time: string,
+  Other: string,
+  i_id: number,
+  signupCount: number
 }
 
 type searchData = {
@@ -118,13 +119,13 @@ function MListPage()
                     <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                       <IconCalendarCheck />
                       <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
-                        邀約日期 : {new Date(invite.DateTime).toLocaleDateString()}
+                        邀約日期：{new Date(invite.DateTime).toLocaleDateString()}
                       </Text>
                     </Flex>
                     <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                       <IconCalendarCheck />
                       <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
-                        邀約時間 :
+                        邀約時間：
                         {new Date(invite.DateTime).toLocaleTimeString().split(':')[0] + ':' + new Date(invite.DateTime).toLocaleTimeString().split(':')[1]}
                       </Text>
                     </Flex>
@@ -133,7 +134,7 @@ function MListPage()
                       <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>邀約地點：{placeNames[index].Name}</Text>
                     </Flex>
                     <Flex c={'blue'} mt='md' justify='right'>
-                      <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>立即查看有誰報名</Text>
+                      <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>目前有 {invite.signupCount} 人報名</Text>
                       <IconChevronRight/>
                     </Flex>
                   </Card>

@@ -95,13 +95,13 @@ function PublicPage( { sp_type, sports }: any )
               <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                 <IconCalendarCheck />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
-                  邀約日期 : {new Date(invite.DateTime).toLocaleDateString()}
+                  邀約日期：{new Date(invite.DateTime).toLocaleDateString()}
                 </Text>
               </Flex>
               <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                 <IconCalendarCheck />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
-                  邀約時間 :
+                  邀約時間：
                   {new Date(invite.DateTime).toLocaleTimeString().split(':')[0] + ':' + new Date(invite.DateTime).toLocaleTimeString().split(':')[1]}
                 </Text>
               </Flex>
