@@ -25,7 +25,13 @@ import {
   IconTrash,
   IconUser,
 } from '@tabler/icons-react';
-import { approveSignup, deleteInvite, editInvite, signupPublicInv } from '@/apis/invite';
+import {
+  approveSignup,
+  deleteInvite,
+  disapproveSignup,
+  editInvite,
+  signupPublicInv,
+} from '@/apis/invite';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import Link from 'next/link';
@@ -52,7 +58,7 @@ type s =
   i_id: number,
   user_id: number,
   timestamp: number,
-  approved: boolean,
+  approved: number,
   s_id: number
 }
 
@@ -119,6 +125,8 @@ function InviteCard({invite, setPageStatus}: any)
 
   let {trigger: approve, loading: approveLoading} = useAsyncFunction(approveSignup);
 
+  let {trigger: disapprove, loading: disapproveLoading} = useAsyncFunction(disapproveSignup);
+
   let {data: signupStatus, mutate: refreshStatus} = useSWR(['invite/signup/status/'+invite.i_id, { throwHttpErrors: false }])
 
   let {data: signupList, mutate: refreshList} = useSWR([ (invite.User_id === user?.id)? 'invite/signupList/'+invite.i_id : null, { throwHttpErrors: false }]);
@@ -153,6 +161,17 @@ function InviteCard({invite, setPageStatus}: any)
     }
   }
 
+  let sListCount = 0;
+  if(signupList)
+  {
+    sListCount = signupList.length;
+    for(let n = 0; n < signupList.length; ++n)
+    {
+      if(signupList[n].approved === -1)
+        --sListCount;
+    }
+  }
+
   async function approveSignupHandler(s_id: number)
   {
     if(approveLoading) return;
@@ -175,6 +194,35 @@ function InviteCard({invite, setPageStatus}: any)
             color: "green",
             title: '已同意此報名請求～',
             message: '雙方配對成功囉！依照時間準時赴約吧～',
+          });
+          refreshList();
+        }
+      },
+    });
+  }
+
+  async function disapproveSignupHandler(s_id: number)
+  {
+    if(disapproveLoading) return;
+    modals.openConfirmModal({
+      title: '您確定要拒絕這則請求嗎？',
+      centered: true,
+      children:(
+        <Text size="sm">
+          施主，緣分難得，您確定要這樣拒絕人家嗎？
+        </Text>
+      ),
+      labels: { confirm: '是的，我非常確定', cancel: "不，請返回" },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        let {error} = await disapprove(s_id);
+        if(error) console.log(error)
+        else
+        {
+          notifications.show({
+            color: "red",
+            title: '已刪除此報名請求～',
+            message: '緣分已盡，沒有辦法強求：）',
           });
           refreshList();
         }
@@ -281,56 +329,60 @@ function InviteCard({invite, setPageStatus}: any)
         }
         { user.id === invite.User_id && !!signupList &&
           <>
-            { !signupList.length &&
+            { !sListCount &&
               <Text size="md" my="xl" ta="center" fw={600}>
                 目前沒有人報名喔～再等一會兒吧！
               </Text>
             }
-            { !!signupList.length &&
+            { !!sListCount &&
               <>
                 <Text fw={700} mt={'lg'} mb={'sm'}>報名此邀約的人：</Text>
                 { signupList.map( (record:s) =>
-                  <Paper withBorder p={'lg'} key={record.s_id} >
-                    <Flex justify='space-between'>
-                      <Group>
-                        <IconUser />
-                        <Text fw={500}>User{record.user_id}</Text>
-                      </Group>
-                      <Text>{new Date(record.timestamp).toLocaleDateString()} {new Date(record.timestamp).toLocaleTimeString()}</Text>
-                    </Flex>
-                    <Button mt={'lg'}
-                            variant="gradient"
-                            gradient={{ from: 'blue.3', to: 'blue.6', deg: 90 }}
-                            fullWidth radius={'md'}
-                    >
-                      查看報名者基本資料
-                    </Button>
-                    { !record.approved &&
-                      <Group justify={"space-evenly"} mt={'xs'}>
-                        <Button
-                          //onClick={()=>(setPageStatus(0))}
-                          leftSection={<IconTrash />}
-                          w={"48%"} radius={'md'}
-                          color={'red.5'}
+                  <>
+                    {record.approved !== -1 &&
+                      <Paper withBorder p={'lg'} key={record.s_id} >
+                        <Flex justify='space-between'>
+                          <Group>
+                            <IconUser />
+                            <Text fw={500}>User{record.user_id}</Text>
+                          </Group>
+                          <Text>{new Date(record.timestamp).toLocaleDateString()} {new Date(record.timestamp).toLocaleTimeString()}</Text>
+                        </Flex>
+                        <Button mt={'lg'}
+                                variant="gradient"
+                                gradient={{ from: 'blue.3', to: 'blue.6', deg: 90 }}
+                                fullWidth radius={'md'}
                         >
-                          不同意並刪除
+                          查看報名者基本資料
                         </Button>
-                        <Button
-                          onClick={()=>approveSignupHandler(record.s_id)}
-                          color={'green.6'}
-                          rightSection={<IconCheck />}
-                          w={"48%"} loading={approveLoading} radius={'md'}
-                        >
-                          同意
-                        </Button>
-                      </Group>
+                        { record.approved === 0 &&
+                          <Group justify={"space-evenly"} mt={'xs'}>
+                            <Button
+                              onClick={()=>disapproveSignupHandler(record.s_id)} //(setPageStatus(0))
+                              leftSection={<IconTrash />}
+                              w={"48%"} radius={'md'} loading={disapproveLoading}
+                              color={'red.5'}
+                            >
+                              不同意並刪除
+                            </Button>
+                            <Button
+                              onClick={()=>approveSignupHandler(record.s_id)}
+                              color={'green.6'}
+                              rightSection={<IconCheck />}
+                              w={"48%"} loading={approveLoading} radius={'md'}
+                            >
+                              同意
+                            </Button>
+                          </Group>
+                        }
+                        { record.approved === 1 &&
+                          <Text size="md" mt="md" ta="center" fw={600}>
+                            您已同意此請求，記得準時赴約！
+                          </Text>
+                        }
+                      </Paper>
                     }
-                    { !!record.approved &&
-                      <Text size="md" mt="md" ta="center" fw={600}>
-                        您已同意此請求，記得準時赴約！
-                      </Text>
-                    }
-                  </Paper>
+                  </>
                 )
                 }
               </>

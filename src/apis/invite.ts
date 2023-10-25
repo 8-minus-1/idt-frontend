@@ -41,3 +41,8 @@ export async function approveSignup(s_id: number)
 {
   await client.post("invite/approve/" + s_id);
 }
+
+export async function disapproveSignup(s_id: number)
+{
+  await client.post("invite/disapprove/" + s_id);
+}
