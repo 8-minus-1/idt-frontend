@@ -12,3 +12,8 @@ export async function addRank(ID : number, Rank: number,Comment:string)
     },
   });
 }
+
+export async function deleteRank(r_id:number)
+{
+  await client.delete("map/deleteRank?id="+r_id);
+}

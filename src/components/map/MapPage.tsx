@@ -1,5 +1,5 @@
 import { useOs, useViewportSize } from '@mantine/hooks';
-import { ActionIcon, Card, Flex, Text, Rating, Group, UnstyledButton, rem } from '@mantine/core';
+import { ActionIcon, Card, Flex, Text, Rating, Group, UnstyledButton, rem, Container } from '@mantine/core';
 import React, { useContext, useEffect, useState } from 'react';
 import {
   MapContainer,
