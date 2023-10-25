@@ -156,17 +156,30 @@ function InviteCard({invite, setPageStatus}: any)
   async function approveSignupHandler(s_id: number)
   {
     if(approveLoading) return;
-    let {error} = await approve(s_id);
-    if(error) console.log(error)
-    else
-    {
-      notifications.show({
-        color: "green",
-        title: '已同意此報名請求～',
-        message: '雙方配對成功囉！依照時間準時赴約吧～',
-      });
-      refreshList();
-    }
+    modals.openConfirmModal({
+      title: '您確定要同意這則請求嗎？',
+      centered: true,
+      children:(
+        <Text size="sm">
+          請注意，同意後無法取消，必須準時赴約
+        </Text>
+      ),
+      labels: { confirm: '是的，我非常確定', cancel: "不，請返回" },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        let {error} = await approve(s_id);
+        if(error) console.log(error)
+        else
+        {
+          notifications.show({
+            color: "green",
+            title: '已同意此報名請求～',
+            message: '雙方配對成功囉！依照時間準時赴約吧～',
+          });
+          refreshList();
+        }
+      },
+    });
   }
 
   return(
