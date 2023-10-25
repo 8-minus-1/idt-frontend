@@ -95,6 +95,74 @@ function ShowAllRank({allRank,refreshAllRank}:any){
   );
 }
 
+function Edit({data,set_edit,refresh,id}:any){
+  const form = useForm({
+     initialValues: {
+       Rank : data.Rank,
+       Comment : data.Comment
+     },
+  });
+  let { trigger, error, loading } = useAsyncFunction(editRank);
+  async function handleEdit(values:any)
+  {
+    console.log(values.Comment)
+    console.log(values.Rank)
+    if (values.Comment == '') {
+      console.log("error: 評論不可為空！")
+      notifications.show({
+        color: "red",
+        title: '尚未評論！',
+        message: '評論不可為空！',
+      })
+      return;
+    }
+    if(loading) return;
+    let { error } = await trigger(parseInt(id as string), parseInt(values.Rank as string), values.Comment);
+    if (error) return console.error(error);
+    notifications.show({
+      color: "green",
+      title: '已成功修改您的評論～',
+      message: '期待您隨時來評論！',
+    });
+    refresh()
+    set_edit(0)
+  }
+
+  return (
+    <>
+      <main>
+        {data &&
+        <form onSubmit={form.onSubmit((values) => handleEdit(values))}>
+        <Flex justify={'center'}>
+          <Rating size={"xl"} {...form.getInputProps('Rank')} />
+        </Flex>
+        <Textarea
+          minRows={6} radius={"lg"} mt={"sm"} autosize size={'md'}  required {...form.getInputProps('Comment') }
+        ></Textarea>
+        <Group justify={"space-evenly"} my={'lg'}>
+          <Button
+            onClick={()=>set_edit(0)}
+            leftSection={<IconChevronLeft />}
+            w={"45%"}
+          >
+            取消
+          </Button>
+          <Button
+            type={'submit'}
+            variant="gradient"
+            gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
+            rightSection={<IconSend />}
+            w={"45%"} /*loading={loading}*/
+          >
+            送出
+          </Button>
+        </Group>
+        </form>}
+      </main>
+    </>
+  )
+}
+
 export default function PlaceInfoPage() {
   const { query } = useRouter();
   const [StarValue, setValue] = useState(0);
@@ -106,19 +174,14 @@ export default function PlaceInfoPage() {
   let { data, error:infoError } = useSWR(['map/getInfo?id='+id, { throwHttpErrors: true }]);
   let fabContainer = useContext(FABContainerContext);
   let { data:RankInfo, error:rankError, mutate: refresh } = useSWR(['map/RankByUser?id='+id, { throwHttpErrors: true }]);
-  // const form = useForm({
-  //   initialValues: {
-  //     Rank : RankInfo[0].Rank,
-  //     Comment : RankInfo[0].Comment
-  //   },
-  // });
+
   let { data:allRank, error:allRankError, mutate: refreshRank } = useSWR(['map/RankByPlace?id='+id, { throwHttpErrors: true }]);
   //if(RankInfo)set_Ranked(1);
   useNavbarTitle('場館資訊');
   const { user, mutate: refreshUser } = useUser();
   let { trigger, error, loading } = useAsyncFunction(addRank);
   let { trigger:Dtrigger, error:Derror, loading:Dloading } = useAsyncFunction(deleteRank);
-  let { trigger:Etrigger, error:Eerror, loading:Eloading } = useAsyncFunction(editRank);
+
 
   async function handlePostRank() {
     if (StarValue == 0) {
@@ -174,29 +237,6 @@ export default function PlaceInfoPage() {
         refresh(null)
       },
     });
-  }
-
-  async function handleEdit(r_id:number,rank:number,comment:string /*values:any*/)
-  {
-    if (comment == '') {
-      console.log("error: 評論不可為空！")
-      notifications.show({
-        color: "red",
-        title: '尚未評論！',
-        message: '評論不可為空！',
-      })
-      return;
-    }
-    if(Eloading) return;
-    let { error } = await Etrigger(parseInt(id as string), rank, comment);
-    if (error) return console.error(error);
-    notifications.show({
-      color: "green",
-      title: '已成功修改您的評論～',
-      message: '期待您隨時來評論！',
-    });
-    refresh()
-    set_edit(0)
   }
 
   return (
@@ -301,35 +341,7 @@ export default function PlaceInfoPage() {
             </Paper>
           </>
         }{EditStatus == 1 &&
-          <>
-          {/*<form onSubmit={form.onSubmit((values) => handleEdit(values))}>*/}
-            <Flex justify={'center'}>
-              <Rating size={"xl"} defaultValue={RankInfo[0].Rank} onChange={setValue} /*{...form.getInputProps('Rank')}*/ />
-            </Flex>
-            <Textarea
-              minRows={6} radius={"lg"} mt={"sm"} autosize size={'md'} defaultvalue = {Comment}  required onChange={(event) => setComment(event.target.value)/*{...form.getInputProps('Comment')*/ }
-            ></Textarea>
-            <Group justify={"space-evenly"} my={'lg'}>
-              <Button
-                onClick={()=>set_edit(0)}
-                leftSection={<IconChevronLeft />}
-                w={"45%"}
-              >
-                取消
-              </Button>
-              <Button
-                type={'submit'}
-                variant="gradient"
-                gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
-                rightSection={<IconSend />}
-                w={"45%"} /*loading={loading}*/
-                onClick={()=>handleEdit(RankInfo[0].ID,StarValue,Comment)}
-              >
-                送出
-              </Button>
-            </Group>
-          {/*</form>*/}
-          </>
+          <Edit data={RankInfo[0]} set_edit={set_edit} refresh={refresh} id={id}></Edit>
         }
         <ShowAllRank allRank={allRank} refreshAllRank={refreshRank}></ShowAllRank>
         {infoError instanceof HTTPError && infoError.response.status === 404 &&
