@@ -37,7 +37,7 @@ Icon.Default.prototype.options.iconRetinaUrl = LeafletMarker2x.src;
 Icon.Default.prototype.options.shadowUrl = LeafletMarkerShadow.src;
 Icon.Default.prototype.options.shadowRetinaUrl = LeafletMarkerShadow.src;
 Control.Attribution.prototype.options.prefix = 'Leaflet';
-
+let wrap = require('word-wrap');
 const mapProps: MapContainerProps = {
   center: [24.97294, 121.25822],
   zoom: 15,
@@ -271,9 +271,9 @@ function MapPageInner() {
                 </Text>
                 <Text>地址 : {selectedPlace.Address}</Text>
                 <Text>聯繫方式 : {selectedPlace.Phone}</Text>
-                <Text >
+                <Text>
                   網站連結 :{' '}
-                  <Link href={selectedPlace.Url}> {selectedPlace.Url}</Link>
+                  <Link href={selectedPlace.Url} style = {{'wordBreak': 'break-all'}}>{selectedPlace.Url}</Link>
                 </Text>
                 <Text>更新時間 : {selectedPlace.Renew}</Text>
                 <Group>

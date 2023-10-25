@@ -17,3 +17,14 @@ export async function deleteRank(r_id:number)
 {
   await client.delete("map/deleteRank?id="+r_id);
 }
+
+export async function editRank(ID:number,Rank:number,Comment:string)
+{
+  await client.put("map/editRank",{
+    json:{
+      ID,
+      Rank,
+      Comment
+    }
+  });
+}

@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import '@mantine/dates/styles.css';
 import useSWR from 'swr';
-import { addRank, deleteRank } from '@/apis/rank';
+import { addRank, deleteRank, editRank } from '@/apis/rank';
 import {
   Card,
   Container,
@@ -43,7 +43,7 @@ import {
   IconReportMoney,
   IconPhone,
   IconClock,
-  IconPencil
+  IconPencil, IconChevronLeft, IconSend,
 } from '@tabler/icons-react';
 import { IconExternalLink } from '@tabler/icons-react';
 import { Alert } from '@mantine/core';
@@ -54,6 +54,7 @@ import { deletePosition } from '@/apis/map';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { HTTPError } from 'ky';
+import { useForm } from '@mantine/form';
 
 type r = {
   Rank:number,
@@ -99,19 +100,26 @@ export default function PlaceInfoPage() {
   const [StarValue, setValue] = useState(0);
   const [Comment, setComment] = useState('');
   const [RankState,setRankState] = useState(0);
-  const [Ranked, set_Ranked] = useState(0);
+  const [EditStatus, set_edit] = useState(0);
   const id = query.id;
   console.log(id)
   let { data, error:infoError } = useSWR(['map/getInfo?id='+id, { throwHttpErrors: true }]);
   let fabContainer = useContext(FABContainerContext);
   let { data:RankInfo, error:rankError, mutate: refresh } = useSWR(['map/RankByUser?id='+id, { throwHttpErrors: true }]);
-
+  // const form = useForm({
+  //   initialValues: {
+  //     Rank : RankInfo[0].Rank,
+  //     Comment : RankInfo[0].Comment
+  //   },
+  // });
   let { data:allRank, error:allRankError, mutate: refreshRank } = useSWR(['map/RankByPlace?id='+id, { throwHttpErrors: true }]);
   //if(RankInfo)set_Ranked(1);
   useNavbarTitle('場館資訊');
   const { user, mutate: refreshUser } = useUser();
   let { trigger, error, loading } = useAsyncFunction(addRank);
   let { trigger:Dtrigger, error:Derror, loading:Dloading } = useAsyncFunction(deleteRank);
+  let { trigger:Etrigger, error:Eerror, loading:Eloading } = useAsyncFunction(editRank);
+
   async function handlePostRank() {
     if (StarValue == 0) {
       console.log("error: 沒有填些星級")
@@ -141,7 +149,6 @@ export default function PlaceInfoPage() {
     })
     refresh()
     refreshRank()
-    set_Ranked(1);
   }
 
   async function handleDelete(r_id:number)
@@ -165,9 +172,31 @@ export default function PlaceInfoPage() {
           message: '期待您隨時來評論！',
         });
         refresh(null)
-        set_Ranked(0)
       },
     });
+  }
+
+  async function handleEdit(r_id:number,rank:number,comment:string /*values:any*/)
+  {
+    if (comment == '') {
+      console.log("error: 評論不可為空！")
+      notifications.show({
+        color: "red",
+        title: '尚未評論！',
+        message: '評論不可為空！',
+      })
+      return;
+    }
+    if(Eloading) return;
+    let { error } = await Etrigger(parseInt(id as string), rank, comment);
+    if (error) return console.error(error);
+    notifications.show({
+      color: "green",
+      title: '已成功修改您的評論～',
+      message: '期待您隨時來評論！',
+    });
+    refresh()
+    set_edit(0)
   }
 
   return (
@@ -231,7 +260,7 @@ export default function PlaceInfoPage() {
             <Button variant="gradient" gradient={{ from: 'yellow', to: 'orange', deg: 90 }} rightSection={<IconCheck />} mt="md" fullWidth onClick={()=>handlePostRank()}>送出評論</Button>
           </>
         }
-        {RankInfo &&
+        {RankInfo && EditStatus === 0 &&
           <>
             <Text size="md" mt="xl" mb='md' fw={600}>
               你的評論：
@@ -253,7 +282,7 @@ export default function PlaceInfoPage() {
                     <Menu.Item
                       leftSection={<IconEdit style={{ width: rem(14), height: rem(14) }} />}
                       color="black"
-                      //onClick={()=>handleDelete(RankInfo[0].ID)}
+                      onClick={()=>set_edit(1)}
                     >
                       編輯此評論
                     </Menu.Item>
@@ -270,6 +299,36 @@ export default function PlaceInfoPage() {
               <Rating value={RankInfo[0].Rank} fractions={10} readOnly />
               <Text ml={'xl'} mt={'md'} style={{whiteSpace: 'pre-wrap'}}>{RankInfo[0].Comment}</Text>
             </Paper>
+          </>
+        }{EditStatus == 1 &&
+          <>
+          {/*<form onSubmit={form.onSubmit((values) => handleEdit(values))}>*/}
+            <Flex justify={'center'}>
+              <Rating size={"xl"} defaultValue={RankInfo[0].Rank} onChange={setValue} /*{...form.getInputProps('Rank')}*/ />
+            </Flex>
+            <Textarea
+              minRows={6} radius={"lg"} mt={"sm"} autosize size={'md'} defaultvalue = {Comment}  required onChange={(event) => setComment(event.target.value)/*{...form.getInputProps('Comment')*/ }
+            ></Textarea>
+            <Group justify={"space-evenly"} my={'lg'}>
+              <Button
+                onClick={()=>set_edit(0)}
+                leftSection={<IconChevronLeft />}
+                w={"45%"}
+              >
+                取消
+              </Button>
+              <Button
+                type={'submit'}
+                variant="gradient"
+                gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
+                rightSection={<IconSend />}
+                w={"45%"} /*loading={loading}*/
+                onClick={()=>handleEdit(RankInfo[0].ID,StarValue,Comment)}
+              >
+                送出
+              </Button>
+            </Group>
+          {/*</form>*/}
           </>
         }
         <ShowAllRank allRank={allRank} refreshAllRank={refreshRank}></ShowAllRank>
