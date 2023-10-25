@@ -317,12 +317,15 @@ function InviteCard({invite, setPageStatus}: any)
               gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
               fullWidth radius={'md'} onClick={handleSignup}
               >
-            { signupStatus.status &&
-              <>您已經報名過了～等待對方同意吧！</>
-            }
-            { !signupStatus.status &&
-              <>送出報名請求</>
-            }
+                { signupStatus.status === 0 &&
+                  <>送出報名請求</>
+                }
+                { signupStatus.status === -1 &&
+                  <>您已經報名過了～等待對方同意吧！</>
+                }
+                { signupStatus.status === 1 &&
+                  <>對方已經同意您的報名囉！準時赴約吧～</>
+                }
               </Button>
             }
           </>
