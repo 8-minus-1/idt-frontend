@@ -36,3 +36,8 @@ export async function signupPublicInv(i_id: number)
 {
    await client.post("invite/signup/"+i_id);
 }
+
+export async function approveSignup(s_id: number)
+{
+  await client.post("invite/approve/" + s_id);
+}

@@ -25,7 +25,7 @@ import {
   IconTrash,
   IconUser,
 } from '@tabler/icons-react';
-import { deleteInvite, editInvite, signupPublicInv } from '@/apis/invite';
+import { approveSignup, deleteInvite, editInvite, signupPublicInv } from '@/apis/invite';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import Link from 'next/link';
@@ -117,6 +117,8 @@ function InviteCard({invite, setPageStatus}: any)
 
   let {trigger: signup, loading: signupLoading, error } = useAsyncFunction(signupPublicInv);
 
+  let {trigger: approve, loading: approveLoading} = useAsyncFunction(approveSignup);
+
   let {data: signupStatus, mutate: refreshStatus} = useSWR(['invite/signup/status/'+invite.i_id, { throwHttpErrors: false }])
 
   let {data: signupList, mutate: refreshList} = useSWR([ (invite.User_id === user?.id)? 'invite/signupList/'+invite.i_id : null, { throwHttpErrors: false }]);
@@ -151,6 +153,21 @@ function InviteCard({invite, setPageStatus}: any)
     }
   }
 
+  async function approveSignupHandler(s_id: number)
+  {
+    if(approveLoading) return;
+    let {error} = await approve(s_id);
+    if(error) console.log(error)
+    else
+    {
+      notifications.show({
+        color: "green",
+        title: '已同意此報名請求～',
+        message: '雙方配對成功囉！依照時間準時赴約吧～',
+      });
+      refreshList();
+    }
+  }
 
   return(
     <main>
@@ -275,24 +292,31 @@ function InviteCard({invite, setPageStatus}: any)
                     >
                       查看報名者基本資料
                     </Button>
-                    <Group justify={"space-evenly"} mt={'xs'}>
-                      <Button
-                        //onClick={()=>(setPageStatus(0))}
-                        leftSection={<IconTrash />}
-                        w={"48%"} radius={'md'}
-                        color={'red.5'}
-                      >
-                        不同意並刪除
-                      </Button>
-                      <Button
-                        //onClick={()=>handleSendAnswer(q_id, a_content)}
-                        color={'green.6'}
-                        rightSection={<IconCheck />}
-                        w={"48%"} loading={loading} radius={'md'}
-                      >
-                        同意
-                      </Button>
-                    </Group>
+                    { !record.approved &&
+                      <Group justify={"space-evenly"} mt={'xs'}>
+                        <Button
+                          //onClick={()=>(setPageStatus(0))}
+                          leftSection={<IconTrash />}
+                          w={"48%"} radius={'md'}
+                          color={'red.5'}
+                        >
+                          不同意並刪除
+                        </Button>
+                        <Button
+                          onClick={()=>approveSignupHandler(record.s_id)}
+                          color={'green.6'}
+                          rightSection={<IconCheck />}
+                          w={"48%"} loading={approveLoading} radius={'md'}
+                        >
+                          同意
+                        </Button>
+                      </Group>
+                    }
+                    { !!record.approved &&
+                      <Text size="md" mt="md" ta="center" fw={600}>
+                        您已同意此請求，記得準時赴約！
+                      </Text>
+                    }
                   </Paper>
                 )
                 }
