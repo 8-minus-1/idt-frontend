@@ -1,6 +1,6 @@
 import { signOut } from '@/apis/auth';
 import { useNavbarTitle, useUser } from '@/hooks';
-import { Button, Card, Container, Divider, Flex, Group, Space, Text } from '@mantine/core';
+import { Button, Card, Container, Divider, Flex, Group, rem, Space, Text } from '@mantine/core';
 import { IconChevronRight, IconMessage, IconShield, IconUser,  IconId    } from '@tabler/icons-react';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -38,9 +38,23 @@ export default function MorePage() {
             <>
               <Card p="xl" bg="#edfdff" radius="md">
                 <Flex gap="xl">
-                  <IconUser />
-                  <Text fw={500}>{user.email}</Text>
-                  <IconChevronRight style={{ marginLeft: 'auto' }} />
+                  <Flex align={'center'}>
+                    <IconUser />
+                  </Flex>
+                  <Flex direction={'column'}>
+                    <Text fw={500}>{user.email}</Text>
+                    <Text size={rem(13)} fw={500}>
+                      {!user.profileCompleted &&
+                       <>尚未完成個人資料設定及註冊問卷！點此進行填寫～</>
+                      }
+                      { !!user.profileCompleted &&
+                        <>點此查看、修改個人資料！</>
+                      }
+                    </Text>
+                  </Flex>
+                  <Flex direction={'row'} align={'center'} style={{ marginLeft: 'auto' }}>
+                    <IconChevronRight />
+                  </Flex>
                 </Flex>
               </Card>
               <Group justify="flex-end" mt="sm">
