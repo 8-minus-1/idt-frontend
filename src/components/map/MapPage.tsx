@@ -37,7 +37,7 @@ Icon.Default.prototype.options.iconRetinaUrl = LeafletMarker2x.src;
 Icon.Default.prototype.options.shadowUrl = LeafletMarkerShadow.src;
 Icon.Default.prototype.options.shadowRetinaUrl = LeafletMarkerShadow.src;
 Control.Attribution.prototype.options.prefix = 'Leaflet';
-let wrap = require('word-wrap');
+
 const mapProps: MapContainerProps = {
   center: [24.97294, 121.25822],
   zoom: 15,
