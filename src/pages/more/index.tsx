@@ -36,6 +36,7 @@ export default function MorePage() {
           )}
           {!!user && (
             <>
+              <Link href={'/my/info'}>
               <Card p="xl" bg="#edfdff" radius="md">
                 <Flex gap="xl">
                   <Flex align={'center'}>
@@ -57,6 +58,7 @@ export default function MorePage() {
                   </Flex>
                 </Flex>
               </Card>
+              </Link>
               <Group justify="flex-end" mt="sm">
                 <Button
                   onClick={() => {
