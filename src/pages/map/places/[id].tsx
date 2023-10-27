@@ -253,7 +253,7 @@ export default function PlaceInfoPage() {
               </Text>
               <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                 <IconMap />
-                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>地址：{data.City}{data.Town}{data.address}</Text>
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>地址：{data.Address}</Text>
               </Flex>
               <Flex ml={'xl'} mt='md' justify={'flex-start'}>
                 <IconClock />
