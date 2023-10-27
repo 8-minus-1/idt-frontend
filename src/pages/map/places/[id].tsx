@@ -245,115 +245,122 @@ export default function PlaceInfoPage() {
         <title>場館資訊</title>
       </Head>
       <main>
-        {data &&
-          < Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='md' shadow='sm'>
-            <Group justify='space-between'>
-              <Group>
-                <IconHome />
-                <Text fw={700}>場地名稱 : {data.Name}</Text>
-              </Group>
-            </Group>
-            <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-              <IconMap />
-              <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>地址：{data.City}{data.Town}{data.address}</Text>
-            </Flex>
-            <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-              <IconClock />
-              <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>營業時間：{data.OpenTime} ~ {data.CloseTime}</Text>
-            </Flex>
-            <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-              <IconReportMoney />
-              <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>價格：{data.Price}</Text>
-            </Flex>
-            <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-              <IconMap2 />
-              <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>停車資訊：{data.Parking}</Text>
-            </Flex>
-            <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-              <IconFileDescription />
-              <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>官方網址：<Link href={data.Url}>{data.Url}</Link></Text>
-            </Flex>
-            <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-              <IconPhone />
-              <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>聯絡資訊：{data.Phone}</Text>
-            </Flex>
-            <Flex ml={'xl'} mt='md' justify={'flex-start'}>
-              <IconPencil />
-              <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>由User{data.User}在{data.Renew}更新</Text>
-            </Flex>
-            <Flex c="blue" mt="md" justify="right">
-              <Text fw={600} size="md">
-                <Link href={`/events/place/`+data.ID}>查看場館活動</Link>
+        <Container p='lg'>
+          {data &&
+            < Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='md' shadow='sm'>
+              <Text size="xl" ml={'lg'} mt='lg' fw='700'>
+                {data.Name}
               </Text>
-              <IconChevronRight />
-            </Flex>
-          </Card>
-        }
-        {rankError instanceof HTTPError && rankError.response.status === 404 && !RankInfo &&
-          <>
-            <Flex justify={'center'}>
-              <Rating size={"xl"} value={StarValue} onChange={setValue} />
-            </Flex>
-            <Textarea
-            minRows={6} radius={"lg"} mt={"sm"} autosize size={'md'} placeholder="新增相關評論吧！" required onChange={(event) => (setComment(event.currentTarget.value))}
-            ></Textarea>
-            <Button variant="gradient" gradient={{ from: 'yellow', to: 'orange', deg: 90 }} rightSection={<IconCheck />} mt="md" fullWidth onClick={()=>handlePostRank()}>送出評論</Button>
-          </>
-        }
-        {RankInfo && EditStatus === 0 &&
-          <>
-            <Text size="md" mt="xl" mb='md' fw={600}>
-              你的評論：
-            </Text>
-            <Paper withBorder p={'lg'} key={RankInfo[0].ID} >
-              <Group justify='space-between'>
-                <Group>
-                  <IconUser />
-                  <Text fw={500}>User{RankInfo[0].User}</Text>
-                </Group>
+              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                <IconMap />
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>地址：{data.City}{data.Town}{data.address}</Text>
+              </Flex>
+              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                <IconClock />
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
+                  營業時間：
+                  {(data.OpenTime).split(':')[0] + ':' + (data.OpenTime).split(':')[1] } ~ {(data.CloseTime).split(':')[0] + ':' + (data.CloseTime).split(':')[1] }
+                </Text>
+              </Flex>
+              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                <IconReportMoney />
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>價格：{data.Price}</Text>
+              </Flex>
+              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                <IconMap2 />
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>停車資訊：{data.Parking}</Text>
+              </Flex>
+              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                <IconFileDescription />
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
+                  官方網址：
+                </Text>
+              </Flex>
+              <Text mt={'xs'} ml={'xl'} mr={'xl'} pl={'xl'} size='md' fw={700} style={{wordBreak: 'break-all'}}>
+                <Link href={data.Url}>{data.Url}</Link>
+              </Text>
+              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                <IconPhone />
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>聯絡資訊：{data.Phone}</Text>
+              </Flex>
+              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+                <IconPencil />
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>由User{data.User}在{data.Renew}更新</Text>
+              </Flex>
+              <Flex c="blue" mt="md" justify="right">
+                <Text fw={600} size="md">
+                  <Link href={`/events/place/`+data.ID}>查看場館活動</Link>
+                </Text>
+                <IconChevronRight />
+              </Flex>
+            </Card>
+          }
+          {rankError instanceof HTTPError && rankError.response.status === 404 && !RankInfo &&
+            <>
+              <Flex justify={'center'}>
+                <Rating size={"xl"} value={StarValue} onChange={setValue} />
+              </Flex>
+              <Textarea
+              minRows={6} radius={"lg"} mt={"sm"} autosize size={'md'} placeholder="新增相關評論吧！" required onChange={(event) => (setComment(event.currentTarget.value))}
+              ></Textarea>
+              <Button variant="gradient" gradient={{ from: 'yellow', to: 'orange', deg: 90 }} rightSection={<IconCheck />} mt="md" fullWidth onClick={()=>handlePostRank()}>送出評論</Button>
+            </>
+          }
+          {RankInfo && EditStatus === 0 &&
+            <>
+              <Text size="md" mt="xl" mb='md' fw={600}>
+                你的評論：
+              </Text>
+              <Paper withBorder p={'lg'} key={RankInfo[0].ID} >
+                <Group justify='space-between'>
+                  <Group>
+                    <IconUser />
+                    <Text fw={500}>User{RankInfo[0].User}</Text>
+                  </Group>
 
-                <Menu withinPortal position="bottom-end" shadow="sm">
-                  <Menu.Target>
-                    <ActionIcon variant="subtle" color="gray">
-                      <IconDots style={{ width: rem(16), height: rem(16) }} />
-                    </ActionIcon>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    <Menu.Item
-                      leftSection={<IconEdit style={{ width: rem(14), height: rem(14) }} />}
-                      color="black"
-                      onClick={()=>set_edit(1)}
-                    >
-                      編輯此評論
-                    </Menu.Item>
-                    <Menu.Item
-                      leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
-                      color="red"
-                      onClick={()=>handleDelete(RankInfo[0].ID)}
-                    >
-                      刪除此評論
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
-              </Group>
-              <Rating value={RankInfo[0].Rank} fractions={10} readOnly />
-              <Text ml={'xl'} mt={'md'} style={{whiteSpace: 'pre-wrap'}}>{RankInfo[0].Comment}</Text>
-            </Paper>
-          </>
-        }{EditStatus == 1 &&
-          <Edit data={RankInfo[0]} set_edit={set_edit} refresh={refresh} id={id}></Edit>
-        }
-        <ShowAllRank allRank={allRank} refreshAllRank={refreshRank}></ShowAllRank>
-        {infoError instanceof HTTPError && infoError.response.status === 404 &&
-          <Alert variant="light" color="red" my="md">
-            錯誤：PAGE NOT FOUND
-          </Alert>
-        }
-        {infoError && (!(error instanceof HTTPError) || (infoError instanceof HTTPError && infoError.response.status !== 404)) &&
-          <Alert variant="light" color="red" my="md">
-            暫時無法取得資料
-          </Alert>
-        }
+                  <Menu withinPortal position="bottom-end" shadow="sm">
+                    <Menu.Target>
+                      <ActionIcon variant="subtle" color="gray">
+                        <IconDots style={{ width: rem(16), height: rem(16) }} />
+                      </ActionIcon>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item
+                        leftSection={<IconEdit style={{ width: rem(14), height: rem(14) }} />}
+                        color="black"
+                        onClick={()=>set_edit(1)}
+                      >
+                        編輯此評論
+                      </Menu.Item>
+                      <Menu.Item
+                        leftSection={<IconTrash style={{ width: rem(14), height: rem(14) }} />}
+                        color="red"
+                        onClick={()=>handleDelete(RankInfo[0].ID)}
+                      >
+                        刪除此評論
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </Group>
+                <Rating value={RankInfo[0].Rank} fractions={10} readOnly />
+                <Text ml={'xl'} mt={'md'} style={{whiteSpace: 'pre-wrap'}}>{RankInfo[0].Comment}</Text>
+              </Paper>
+            </>
+          }{EditStatus == 1 &&
+            <Edit data={RankInfo[0]} set_edit={set_edit} refresh={refresh} id={id}></Edit>
+          }
+          <ShowAllRank allRank={allRank} refreshAllRank={refreshRank}></ShowAllRank>
+          {infoError instanceof HTTPError && infoError.response.status === 404 &&
+            <Alert variant="light" color="red" my="md">
+              錯誤：PAGE NOT FOUND
+            </Alert>
+          }
+          {infoError && (!(error instanceof HTTPError) || (infoError instanceof HTTPError && infoError.response.status !== 404)) &&
+            <Alert variant="light" color="red" my="md">
+              暫時無法取得資料
+            </Alert>
+          }
+        </Container>
       </main>
     </>
   );

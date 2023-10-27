@@ -117,6 +117,8 @@ type Map = {
   Latitude: number;
   Longitude: number;
   Address: string;
+  OpenTime: string;
+  Close: string;
   Url: string;
   Phone: string;
   Renew: string;
