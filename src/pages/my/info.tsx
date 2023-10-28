@@ -6,11 +6,11 @@ import {
   Alert,
   Box,
   Button,
-  Checkbox,
+  Checkbox, ComboboxItem, ComboboxItemGroup,
   Container,
   Flex, MultiSelect, NumberInput, NumberInputHandlers,
   rem, Select,
-  Space,
+  Space, Switch,
   Text,
   TextInput,
 } from '@mantine/core';
@@ -20,14 +20,116 @@ import { IconArrowRight, IconCheck, IconChevronLeft, IconForms } from '@tabler/i
 import { notifications } from '@mantine/notifications';
 import { Group } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { util } from 'zod';
-import { isNanValue } from 'react-number-format/types/utils';
 import { DatePickerInput } from '@mantine/dates';
+import useSWR from 'swr';
+import { green } from 'next/dist/lib/picocolors';
+import { modals } from '@mantine/modals';
+
+type cityData =
+{
+  Id: number,
+  name: string,
+}
+
+type districtData =
+{
+  city_id: number,
+  zipcode: number,
+  d_name: string,
+  d_id: number
+}
+function SelectAreaPage( {formValues, switchOn, setSwitchOn, mainCity, setMainCity, secondaryCity, setSecondaryCity}: any )
+{
+  let { data: cities} = useSWR<cityData[]>(['map/cities', { throwHttpErrors: true }]);
+
+  let { data: districts } = useSWR<districtData[]>(['map/districts', { throwHttpErrors: false }]);
+
+  let selectCitiesData;
+  if (cities) {
+    selectCitiesData = cities.map(({ Id, name }) => ({ value: Id.toString(), label: name }));
+  }
+
+  let selectDistrictsData1, selectDistrictsData2;
+  if (districts && mainCity && secondaryCity) {
+    selectDistrictsData1 = districts.map(
+      function(obj){
+        let newObj;
+        if(obj.city_id === parseInt(mainCity) )
+        {
+          newObj = {value: obj.d_id.toString(), label: obj.zipcode+' '+obj.d_name}
+        }
+        return newObj;
+      });
+    selectDistrictsData2 = districts.map(
+      function(obj){
+        let newObj;
+        if(obj.city_id === parseInt(secondaryCity) )
+        {
+          newObj = {value: obj.d_id.toString(), label: obj.zipcode+' '+obj.d_name}
+        }
+        return newObj;
+      });
+    selectDistrictsData1 = selectDistrictsData1.filter( (item) => item );
+    selectDistrictsData2 = selectDistrictsData2.filter( (item) => item );
+  }
+
+  return (
+    <>
+      { !!selectCitiesData && !!selectCitiesData &&
+        <>
+          <Text mt={'xl'} size={'xl'} ta={'center'} fw={700}>平時生活區域</Text>
+          <Text mt={'sm'} mb={'xl'} size={'md'} ta={'center'} fw={500}>系統將參考此資訊推薦場館以及進行夥伴配對</Text>
+          <Group justify={'space-evenly'}>
+            <Text mt={'lg'} size={'lg'}>主要生活區域：</Text>
+            <Select
+              label={'城市：'} size={'md'} defaultValue={'1'} w={'30%'}
+              data={selectCitiesData} allowDeselect={false}
+              value={mainCity} withAsterisk
+              onChange={(value)=>{setMainCity(value); formValues.setFieldValue('mainArea', null)}}
+            ></Select>
+            <Select
+              label={'鄉鎮：'} size={'md'} w={'30%'} withAsterisk
+              data={selectDistrictsData1 as ComboboxItem[]}
+              {...formValues.getInputProps('mainArea')}
+            ></Select>
+          </Group>
+          <Space h={'3vh'}></Space>
+          <Group justify={'space-evenly'} mt={'lg'}>
+            <Flex justify={'flex-end'} direction={'column'}>
+              <Switch
+                label={'啟用欄位'} size={'sm'}
+                onLabel="ON" offLabel="OFF" color={'green'}
+                checked={switchOn} onChange={(event) => setSwitchOn(event.currentTarget.checked)}
+              ></Switch>
+              <Text size={'lg'} mt={'sm'}>次要生活區域：</Text>
+            </Flex>
+            <Select
+              label={'城市：'} size={'md'} defaultValue={'1'} w={'30%'}
+              data={selectCitiesData} allowDeselect={false}
+              value={secondaryCity}
+              onChange={(value)=>{setSecondaryCity(value); formValues.setFieldValue('secondaryArea', null)} }
+              disabled={!switchOn} withAsterisk={switchOn}
+            ></Select>
+            <Select
+              label={'鄉鎮：'} size={'md'} w={'30%'}
+              data={selectDistrictsData2 as ComboboxItem[]}
+              {...formValues.getInputProps('secondaryArea')}
+              disabled={!switchOn} withAsterisk={switchOn}
+            ></Select>
+          </Group>
+        </>
+      }
+    </>
+  )
+}
 
 function SurveyPage()
 {
   const [qnum, setQnum] = useState(0);
   const [privacyCheck, setPrivacyCheck] = useState(false);
+  const [mainCity, setMainCity] = useState<string|null>('1');
+  const [secondaryCity, setSecondaryCity] = useState<string|null>('1')
+  const [switchOn, setSwitchOn] = useState(false);
 
   const formValues = useForm(
     {
@@ -42,7 +144,11 @@ function SurveyPage()
         interests: [],
         avgHours: 10 as any,
         regularTime: [],
-        level: [] as any
+        level: [] as any,
+        mainArea: null,
+        secondaryArea: null,
+        difficulties: [false, false, false, false, false],
+        other: ''
       }
     }
   )
@@ -179,6 +285,51 @@ function SurveyPage()
           });
           return;
         }
+        break;
+      case 5:
+        console.log(f.mainArea);
+        if( !f.mainArea )
+        {
+          notifications.show({
+            color: 'red',
+            title: '尚未填寫主要生活區域！',
+            message: ''
+          });
+          return;
+        }
+        else if(switchOn && !f.secondaryArea)
+        {
+          notifications.show({
+            color: 'red',
+            title: '尚未填寫次要生活區域！',
+            message: '如不需此欄位，可以點擊開關停用'
+          });
+          return;
+        }
+        else if(switchOn && f.mainArea === f.secondaryArea)
+        {
+          notifications.show({
+            color: 'red',
+            title: '主要生活區域與次要生活區域不可相同！',
+            message: ''
+          });
+          return;
+        }
+        break;
+      case 6:
+      {
+        modals.openConfirmModal({
+          title: '要現在送出表單嗎？',
+          centered: true,
+          children:(
+            <Text size="sm">
+              如果確定都填寫正確，就要幫您送出資料囉！
+            </Text>
+          ),
+          labels: { confirm: '是的，我確定', cancel: "不，請返回" },
+          confirmProps: { color: 'red' }
+        });
+      }
     }
     if( qnum < 6)  setQnum(qnum+1);
   }
@@ -311,17 +462,52 @@ function SurveyPage()
                     withAsterisk allowDeselect={false}
                     mt={'md'} size={'md'} data={levelOption}
                     label={<>對於{ sports.find( (value) => (value.value === item))?.label }，您認為您：</>}
-                    {...formValues.getInputProps('level.'+index) }
+                    { ...formValues.getInputProps('level.'+index) }
                   ></Select>
                 </>)
               )}
             </>
           }
           { qnum === 5 &&
-            <Text mt={'xl'} size={'xl'} ta={'center'} fw={700}>平時生活區域</Text>
+            <SelectAreaPage
+              formValues={formValues}
+              switchOn={switchOn}
+              setSwitchOn={setSwitchOn}
+              mainCity={mainCity}
+              setMainCity={setMainCity}
+              secondaryCity={secondaryCity}
+              setSecondaryCity={setSecondaryCity}
+            />
           }
           { qnum === 6 &&
-            <Text mt={'xl'} size={'xl'} ta={'center'} fw={700}>在運動方面，曾經遇過的困難點</Text>
+            <>
+              <Text mt={'xl'} size={'xl'} ta={'center'} fw={700}>在運動方面，曾經遇過的困難點</Text>
+              <Text mt={'sm'} mb={'xl'} size={'md'} ta={'center'} fw={500}>
+                我們將量化分析大眾在運動方面曾經遭遇的不便之處<br />
+                了解大眾需求，作為平台未來改進之參考，推動運動的普及和發展
+              </Text>
+              <Box mt={'xl'} ml={'md'}>
+                <Text fw={700} size={'lg'}>曾經遇到的困難點：</Text>
+                { ['沒有一個統整運動場館資訊的平台',
+                  '沒有方便瀏覽運動活動的平台，或是活動資訊常不完整',
+                  '想問運動相關的問題但不敢開口',
+                  '想運動但找不到夥伴一起，而打消念頭',
+                  '運動場館都離我好遠，認為應該增設場館'
+                ].map( (label: string, index: number)=>(
+                  <Checkbox key={index}
+                    size={'md'} mt={'lg'} ml={'md'}
+                    label={label} checked={formValues.values.difficulties[index]}
+                    { ...formValues.getInputProps('difficulties.'+index) }
+                  />
+                  ))
+                }
+                <TextInput
+                  size={'md'} mt={'lg'} ml={'md'}
+                  label={'其他困擾描述：'}
+                  { ...formValues.getInputProps('other') }
+                />
+              </Box>
+            </>
           }
           <Group justify="space-evenly" mt="xl">
             <Button
