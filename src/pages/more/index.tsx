@@ -4,12 +4,46 @@ import { Button, Card, Container, Divider, Flex, Group, rem, Space, Text } from 
 import { IconChevronRight, IconMessage, IconShield, IconUser,  IconId    } from '@tabler/icons-react';
 import Head from 'next/head';
 import Link from 'next/link';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { modals } from '@mantine/modals';
+import { notifications } from '@mantine/notifications';
+import { useRouter } from 'next/router';
 
 export default function MorePage() {
   const title = '數據與更多';
+  const router = useRouter();
   useNavbarTitle(title);
   const { user, mutate: refreshUser } = useUser();
+
+  useEffect(() => {
+    refreshUser()
+  }, [router.query.slug])
+
+  if(user && !user?.profileCompleted)
+  {
+    modals.openConfirmModal({
+      title: '您尚未設定個人資料及填寫註冊問卷！',
+      centered: true,
+      children:(
+        <Text size="sm">
+          請花一點時間填寫一下吧～
+        </Text>
+      ),
+      labels: { confirm: '馬上前往', cancel: "下一次再提醒我" },
+      confirmProps: { color: 'green' },
+      onConfirm:  ()=> {
+        router.replace('/my/info');
+        modals.closeAll();
+      },
+      onCancel() {
+        modals.closeAll();
+      }
+    });
+  }
+  else if(user?.profileCompleted)
+  {
+    modals.closeAll();
+  }
 
   return (
     <>
