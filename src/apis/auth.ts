@@ -73,3 +73,18 @@ export async function resetPasswordWithEmailSession(newPassword: string) {
     },
   });
 }
+
+export async function saveSurveyData(formData: any)
+{
+  let obj = Object.assign({},formData);
+
+  let d = obj.difficulties, arr = [];
+  for(let n = 0; n < d.length; ++n)
+  {
+    if(d[n]) arr.push(n+1);
+  }
+  obj.difficulties = arr;
+  obj.birthday = obj.birthday.getTime();
+  console.log(obj);
+  return await client.post('auth/userSurvey', { json: obj } );
+}

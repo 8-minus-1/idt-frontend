@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useNavbarTitle, useUser } from '@/hooks';
+import { useAsyncFunction, useNavbarTitle, useUser } from '@/hooks';
 import Head from 'next/head';
 import React from 'react';
 import {
@@ -24,6 +24,8 @@ import { DatePickerInput } from '@mantine/dates';
 import useSWR from 'swr';
 import { green } from 'next/dist/lib/picocolors';
 import { modals } from '@mantine/modals';
+import { saveSurveyData } from '@/apis/auth';
+import { useRouter } from 'next/router';
 
 type cityData =
 {
@@ -125,6 +127,7 @@ function SelectAreaPage( {formValues, switchOn, setSwitchOn, mainCity, setMainCi
 
 function SurveyPage()
 {
+  const router = useRouter();
   const [qnum, setQnum] = useState(0);
   const [privacyCheck, setPrivacyCheck] = useState(false);
   const [mainCity, setMainCity] = useState<string|null>('1');
@@ -194,6 +197,7 @@ function SurveyPage()
     { value: "15", label: "其他" },
   ];
 
+  let {trigger, error, loading} = useAsyncFunction(saveSurveyData);
 
   function handleNextQ()
   {
@@ -235,6 +239,15 @@ function SurveyPage()
             color: 'red',
             title: '手機號碼不正確！',
             message: '請再檢查一次您的手機號碼'
+          });
+          return;
+        }
+        else if(f.nickname.length > 16)
+        {
+          notifications.show({
+            color: 'red',
+            title: '暱稱太長了！',
+            message: '再縮短一點你的暱稱吧！最多32個字元'
           });
           return;
         }
@@ -315,6 +328,8 @@ function SurveyPage()
           });
           return;
         }
+
+        if(!switchOn) formValues.values.secondaryArea = null;
         break;
       case 6:
       {
@@ -327,7 +342,21 @@ function SurveyPage()
             </Text>
           ),
           labels: { confirm: '是的，我確定', cancel: "不，請返回" },
-          confirmProps: { color: 'red' }
+          confirmProps: { color: 'red' },
+          onConfirm: async ()=>{
+            if(loading) return;
+            let { error } = await trigger(formValues.values);
+            if(error) console.log(error);
+            else
+            {
+              notifications.show({
+                color: "green",
+                title: '以成功填寫問卷！',
+                message: '感謝您的耐心填寫～'
+              })
+              router.replace('/more');
+            }
+          }
         });
       }
     }
@@ -395,7 +424,7 @@ function SurveyPage()
               <Select mt={'md'}
                       label={'生理性別：'} withAsterisk
                       size={'md'} description={'將用於夥伴配對、數據分析'}
-                      data={['男', '女']} allowDeselect={false}
+                      data={[{value: "1", label: "男"},{value: "2", label: "女"}]} allowDeselect={false}
                       {...formValues.getInputProps('gender')}
               ></Select>
             </>
@@ -407,7 +436,7 @@ function SurveyPage()
                 radius={'md'} valueFormat={'YYYY / MM / DD'}
                 required mt={'md'}
                 size={'md'} dropdownType={'modal'}
-                label={'出生年月日：'}
+                label={'出生年月日：'} maxDate={new Date()}
                 {...formValues.getInputProps('birthday')}
               ></DatePickerInput>
               <NumberInput
@@ -489,7 +518,7 @@ function SurveyPage()
               <Box mt={'xl'} ml={'md'}>
                 <Text fw={700} size={'lg'}>曾經遇到的困難點：</Text>
                 { ['沒有一個統整運動場館資訊的平台',
-                  '沒有方便瀏覽運動活動的平台，或是活動資訊常不完整',
+                  '沒有方便瀏覽運動活動的平台，或是活動資訊經常不完整',
                   '想問運動相關的問題但不敢開口',
                   '想運動但找不到夥伴一起，而打消念頭',
                   '運動場館都離我好遠，認為應該增設場館'
