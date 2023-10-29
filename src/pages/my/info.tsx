@@ -210,7 +210,7 @@ function SurveyPage()
         {
           notifications.show({
             color: "red",
-            title: '請詳閱隱私群政策！',
+            title: '請詳閱隱私權政策！',
             message: '閱讀完記得勾選方框表示同意喔～'
           })
           return;
@@ -351,7 +351,7 @@ function SurveyPage()
             {
               notifications.show({
                 color: "green",
-                title: '以成功填寫問卷！',
+                title: '已成功填寫問卷！',
                 message: '感謝您的耐心填寫～'
               })
               router.replace('/more');
