@@ -32,18 +32,19 @@ import { Router, useRouter } from 'next/router';
 import { HTTPError } from 'ky';
 
 type Contests = {
-User_id: number,
-Name: string,
-Organizer: string,
-Place: string,
-Content: string,
-sp_type: number,
-StartDate: any,
-EndDate: any,
-Deadline: any,
-Url: string,
-Other: string,
-c_id: number
+  User_id: number,
+  Name: string,
+  Organizer: string,
+  Place: string,
+  Content: string,
+  sp_type: number,
+  StartDate: any,
+  EndDate: any,
+  Deadline: any,
+  Url: string,
+  Other: string,
+  c_id: number,
+  nickname: string
 }
 
 export default function EventsPage() {
@@ -101,7 +102,7 @@ export default function EventsPage() {
                 <Group justify='space-between'>
                   <Group>
                     <IconUser />
-                    <Text fw={500} >User{contest.User_id}</Text>
+                    <Text fw={700} pt={rem(5)} >{contest.nickname}</Text>
                   </Group>
                 </Group>
                 <Text size="xl" ml={'lg'} mt='lg' fw='600'>{'【 '+sports[contest.sp_type].label+' 】' + contest.Name}</Text>

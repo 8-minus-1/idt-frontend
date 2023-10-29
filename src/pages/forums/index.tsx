@@ -46,7 +46,8 @@ type q = {
   q_content: string,
   timestamp: bigint,
   last_edit: bigint,
-  q_id: number
+  q_id: number,
+  nickname: string
 }
 
 function QListPage()
@@ -56,8 +57,6 @@ function QListPage()
   let { data, error } = useSWR(['qa/questions?sp_type='+sp_type, { throwHttpErrors: true }]);
   //if(data && data.length) console.log(data[0].q_title);
   if(error) console.log("error: ",error);
-
-  console.log(sp_type);
 
   const sports = [
     { value: "0", label: "顯示全部問題" },
@@ -103,7 +102,7 @@ function QListPage()
                 <Group justify='space-between'>
                   <Group>
                     <IconUser />
-                    <Text fw={500}>User{question.user_id}</Text>
+                    <Text fw={700} pt={rem(5)}>{question.nickname}</Text>
                   </Group>
                 </Group>
                 <Text size="lg" m='md' fw='600'>Q: {question.q_title}</Text>

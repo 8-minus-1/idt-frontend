@@ -37,6 +37,8 @@ import { notifications } from '@mantine/notifications';
 import { getPlaceByID } from '@/apis/map';
 import invalid = Simulate.invalid;
 import { Public_Sans } from 'next/dist/compiled/@next/font/dist/google';
+import { modals } from '@mantine/modals';
+import { useRouter } from 'next/router';
 
 type m = {
   "User_id": number,
@@ -47,6 +49,7 @@ type m = {
   "Time": string,
   "Other": string,
   "i_id": number,
+  nickname: string
 }
 
 type searchData = {
@@ -88,7 +91,7 @@ function PublicPage( { sp_type, sports }: any )
               <Group justify='space-between'>
                 <Group>
                   <IconUser/>
-                  <Text fw={500}>User{invite.User_id}</Text>
+                  <Text fw={700} pt={rem(5)}>{invite.nickname}</Text>
                 </Group>
               </Group>
               <Text size="lg" mx={'lg'} mt='lg' mb={'sm'} fw='600'>{'【 '+sports[invite.sp_type].label+' 】' + invite.Name }</Text>
@@ -199,7 +202,7 @@ function MListPage()
 }
 
 function PostInvite({setDisplayState, refreshInvite}:any){
-  const {user, mutate: refreshUser}=useUser();
+  const {user, mutate: refreshUser} = useUser();
   let {trigger, error, loading} = useAsyncFunction(addInvite);
   const [sp_type, set_sp_type] = useState<string|null>(null);
   const [Name, set_Name] = useState("");
@@ -409,6 +412,8 @@ function PostInvite({setDisplayState, refreshInvite}:any){
 
 export default function MatchPage() {
   const [displayState, setDisplayState] = useState(0);
+  let {user} = useUser();
+  const router = useRouter();
   const title = '夥伴配對';
   let {mutate: refreshInvite}=useSWR(['invite/invitation',{ throwHttpErrors: true }])
 
@@ -426,7 +431,33 @@ export default function MatchPage() {
             <MListPage/>
             { fabContainer && createPortal(
               <Button leftSection={<IconUsersGroup size={20} />} mr={'xl'} mb='xl'
-                      style={({ boxShadow: 'silver 2px 2px 20px', })} size={'lg'} radius={'xl'} c={"black"} color={'#F8D6D8'} onClick={() => (setDisplayState(1))}>
+                      style={({ boxShadow: 'silver 2px 2px 20px', })} size={'lg'} radius={'xl'} c={"black"} color={'#F8D6D8'}
+                      onClick={() => {
+                        if(user && !user?.profileCompleted)
+                        {
+                          modals.openConfirmModal({
+                            title: '您尚未設定個人資料及填寫註冊問卷！',
+                            centered: true,
+                            children:(
+                              <Text size="sm">
+                                建議先填寫再建立公開邀請～大家才可以查看您的個人資訊！
+                              </Text>
+                            ),
+                            labels: { confirm: '馬上前往', cancel: "下一次再提醒我" },
+                            confirmProps: { color: 'green' },
+                            onConfirm:  ()=> {
+                              router.replace('/my/info');
+                              modals.closeAll();
+                            },
+                            onCancel() {
+                              modals.closeAll();
+                              setDisplayState(1);
+                            }
+                          });
+                        }
+                        else
+                          setDisplayState(1);
+                      }}>
                 建立配對邀請
               </Button>, fabContainer)}
           </>

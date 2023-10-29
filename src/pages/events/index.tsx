@@ -238,25 +238,28 @@ function AddContestPage({ setFormToShow }: any) {
               }}
               value={placeValue} onChange={(value: string) => setPlaceValue((value) ? value : '')}
             />
-            <DatePickerInput size={'md'}
-              mt="md" required
-              clearable
+            <DatePickerInput
+              mt="md" required size={'md'}
+              clearable dropdownType={'modal'}
+              minDate={new Date(Date.now())}
               valueFormat="YYYY/MM/DD"
               label="報名截止日期"
               placeholder="請選擇報名截止日期"
               {...form.getInputProps('Deadline')}
             />
-            <DatePickerInput size={'md'}
-              mt="md"
-              clearable required
+            <DatePickerInput
+              mt="md" size={'md'}
+              clearable required dropdownType={'modal'}
+              minDate={new Date(Date.now())}
               valueFormat="YYYY/MM/DD"
               label="活動開始日期"
               placeholder="請選擇活動開始日期"
               {...form.getInputProps('StartDate')}
             />
-            <DatePickerInput size={'md'}
-              mt="md" required
-              clearable
+            <DatePickerInput
+              mt="md" required size={'md'}
+              clearable dropdownType={'modal'}
+              minDate={new Date(Date.now())}
               valueFormat="YYYY/MM/DD"
               label="活動結束日期"
               placeholder="請選擇活動結束日期"
@@ -345,7 +348,8 @@ type Contests = {
   Deadline: any,
   Url: string,
   Other: string,
-  c_id: number
+  c_id: number,
+  nickname: string
 }
 
 function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
@@ -416,7 +420,7 @@ function ListContestPage({ displayByc_id, setFormToShow }: ListContestPage) {
                 <Group justify='space-between'>
                   <Group>
                     <IconUser />
-                    <Text fw={500} >User{contest.User_id}</Text>
+                    <Text fw={700} pt={rem(5)}>{contest.nickname}</Text>
                   </Group>
                 </Group>
                 <Text size="xl" ml={'lg'} mt='lg' fw='600'>{'【 ' + sports[contest.sp_type].label + ' 】' + contest.Name}</Text>

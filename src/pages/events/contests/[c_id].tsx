@@ -54,7 +54,8 @@ type Contests = {
   Deadline: string,
   Url: string,
   Other: string,
-  c_id: number
+  c_id: number,
+  nickname: string
 }
 
 type ModifyContestPage = {
@@ -437,7 +438,7 @@ export default function ContestPage(){
                     <Group justify='space-between'>
                     <Group>
                         <IconUser />
-                        <Text fw={500}>User{data[0].User_id}</Text>
+                        <Text fw={700} pt={rem(5)}>{data[0].nickname}</Text>
                     </Group>
                     { data[0].User_id == user?.id &&
                     <Menu withinPortal position="bottom-end" shadow="sm">

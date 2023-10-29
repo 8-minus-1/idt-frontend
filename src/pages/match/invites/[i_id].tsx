@@ -60,6 +60,7 @@ type s =
   timestamp: number,
   approved: number,
   s_id: number
+  nickname: string
 }
 
 function InviteCard({invite, setPageStatus}: any)
@@ -130,33 +131,51 @@ function InviteCard({invite, setPageStatus}: any)
   let {data: signupStatus, mutate: refreshStatus} = useSWR(['invite/signup/status/'+invite.i_id, { throwHttpErrors: false }])
 
   let {data: signupList, mutate: refreshList} = useSWR([ (invite.User_id === user?.id)? 'invite/signupList/'+invite.i_id : null, { throwHttpErrors: false }]);
+
   async function handleSignup()
   {
     if(signupLoading) return;
     else {
       modals.openConfirmModal({
-        title: '您確定要報名這則邀約嗎？',
+        title: '您尚未設定個人資料及填寫註冊問卷！',
         centered: true,
         children:(
           <Text size="sm">
-            請注意，報名後無法收回，必須準時赴約
+            建議先填寫再報名公開邀請～對方才能查看您的個人資訊喔！
           </Text>
         ),
-        labels: { confirm: '是的，我非常確定', cancel: "不，請返回" },
-        confirmProps: { color: 'red' },
-        onConfirm: async () => {
-          let {error} = await signup(invite.i_id);
-          if(error) console.log(error);
-          else
-          {
-            notifications.show({
-              color: "green",
-              title: '已成功報名這個公開邀請～',
-              message: '待對方同意後就算配對成功囉！',
-            });
-            refreshStatus();
-          }
+        labels: { confirm: '馬上前往', cancel: "下一次再提醒我" },
+        confirmProps: { color: 'green' },
+        onConfirm:  ()=> {
+          router.replace('/my/info');
+          modals.closeAll();
         },
+        onCancel() {
+          modals.openConfirmModal({
+            title: '您確定要報名這則邀約嗎？',
+            centered: true,
+            children:(
+              <Text size="sm">
+                請注意，報名後無法收回，必須準時赴約
+              </Text>
+            ),
+            labels: { confirm: '是的，我非常確定', cancel: "不，請返回" },
+            confirmProps: { color: 'red' },
+            onConfirm: async () => {
+              let {error} = await signup(invite.i_id);
+              if(error) console.log(error);
+              else
+              {
+                notifications.show({
+                  color: "green",
+                  title: '已成功報名這個公開邀請～',
+                  message: '待對方同意後就算配對成功囉！',
+                });
+                refreshStatus();
+              }
+            },
+          });
+        }
       });
     }
   }
@@ -222,7 +241,7 @@ function InviteCard({invite, setPageStatus}: any)
           notifications.show({
             color: "red",
             title: '已刪除此報名請求～',
-            message: '緣分已盡，沒有辦法強求：）',
+            message: '緣分已盡，沒有辦法強求QQ',
           });
           refreshList();
         }
@@ -236,7 +255,7 @@ function InviteCard({invite, setPageStatus}: any)
       <Group justify='space-between'>
         <Group>
           <IconUser/>
-          <Text fw={500}>User{invite.User_id}</Text>
+          <Text fw={700} pt={rem(5)}>{invite.nickname}</Text>
         </Group>
 
         { invite.User_id === user?.id &&
@@ -347,7 +366,7 @@ function InviteCard({invite, setPageStatus}: any)
                         <Flex justify='space-between'>
                           <Group>
                             <IconUser />
-                            <Text fw={500}>User{record.user_id}</Text>
+                            <Text fw={700} pt={rem(5)}>{record.nickname}</Text>
                           </Group>
                           <Text>{new Date(record.timestamp).toLocaleDateString()} {new Date(record.timestamp).toLocaleTimeString()}</Text>
                         </Flex>
@@ -363,7 +382,7 @@ function InviteCard({invite, setPageStatus}: any)
                             <Button
                               onClick={()=>disapproveSignupHandler(record.s_id)} //(setPageStatus(0))
                               leftSection={<IconTrash />}
-                              w={"48%"} radius={'md'} loading={disapproveLoading}
+                              w={"50%"} radius={'md'} loading={disapproveLoading}
                               color={'red.5'}
                             >
                               不同意並刪除
@@ -372,7 +391,7 @@ function InviteCard({invite, setPageStatus}: any)
                               onClick={()=>approveSignupHandler(record.s_id)}
                               color={'green.6'}
                               rightSection={<IconCheck />}
-                              w={"48%"} loading={approveLoading} radius={'md'}
+                              w={"40%"} loading={approveLoading} radius={'md'}
                             >
                               同意
                             </Button>

@@ -33,7 +33,8 @@ type q = {
   q_content: string,
   timestamp: bigint,
   last_edit: bigint,
-  q_id: number
+  q_id: number,
+  nickname: string
 }
 
 type a = {
@@ -43,6 +44,7 @@ type a = {
   a_content: string,
   timestamp: bigint,
   last_edit: bigint,
+  nickname: string
 }
 
 type questionCardProps = {
@@ -98,7 +100,7 @@ function ShowAnswers({answers, refreshAnswer}:any)
             <Group justify='space-between'>
               <Group>
                 <IconUser />
-                <Text fw={500}>User{answer.user_id}</Text>
+                <Text fw={700} pt={rem(5)}>{answer.nickname}</Text>
               </Group>
 
               { answer.user_id === user?.id &&
@@ -229,7 +231,7 @@ function QuestionCard({question}: questionCardProps)
       <Group justify='space-between'>
         <Group>
           <IconUser />
-          <Text fw={500}>User{question.user_id}</Text>
+          <Text fw={700} pt={rem(5)}>{question.nickname}</Text>
         </Group>
 
         { question.user_id === user?.id &&
