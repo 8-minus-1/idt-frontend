@@ -82,7 +82,7 @@ function SelectAreaPage( {formValues, switchOn, setSwitchOn, mainCity, setMainCi
           <Text mt={'xl'} size={'xl'} ta={'center'} fw={700}>平時生活區域</Text>
           <Text mt={'sm'} mb={'xl'} size={'md'} ta={'center'} fw={500}>系統將參考此資訊推薦場館以及進行夥伴配對</Text>
           <Group justify={'space-evenly'}>
-            <Text mt={'lg'} size={'lg'}>主要生活區域：</Text>
+            <Text mt={'lg'} size={'lg'}>主要區域：</Text>
             <Select
               label={'城市：'} size={'md'} defaultValue={'1'} w={'30%'}
               data={selectCitiesData} allowDeselect={false}
@@ -99,11 +99,11 @@ function SelectAreaPage( {formValues, switchOn, setSwitchOn, mainCity, setMainCi
           <Group justify={'space-evenly'} mt={'lg'}>
             <Flex justify={'flex-end'} direction={'column'}>
               <Switch
-                label={'啟用欄位'} size={'sm'}
+                label={'啟用'} size={'sm'}
                 onLabel="ON" offLabel="OFF" color={'green'}
                 checked={switchOn} onChange={(event) => setSwitchOn(event.currentTarget.checked)}
               ></Switch>
-              <Text size={'lg'} mt={'sm'}>次要生活區域：</Text>
+              <Text size={'lg'} mt={'sm'}>次要區域：</Text>
             </Flex>
             <Select
               label={'城市：'} size={'md'} defaultValue={'1'} w={'30%'}
@@ -378,9 +378,9 @@ function SurveyPage()
         }}>
           <Text size={'xl'} fw={'1000'}>使用者個人資料設定及註冊問卷</Text>
           <Space h={'lg'}></Space>
-          <Text fw={700}>此問卷資料攸關本平台後續各項功能運行之準確性</Text>
-          <Text fw={700}>也會用於數據分析、改善平台功能等目的</Text>
-          <Text fw={700}>請您如實填寫，謝謝！</Text>
+          <Text fw={700} ta={'center'}>此問卷資料攸關本平台後續各項功能運行之準確性</Text>
+          <Text fw={700} ta={'center'}>也會用於數據分析、改善平台功能等目的</Text>
+          <Text fw={700} ta={'center'}>請您如實填寫，謝謝！</Text>
           <Space h={'xl'}></Space>
           <Checkbox
             checked={privacyCheck} onChange={(event)=>setPrivacyCheck(event.currentTarget.checked)}
@@ -450,7 +450,7 @@ function SurveyPage()
                  radius={'md'} allowDecimal={false}
                  required mt={'md'}
                  size={'md'} allowNegative={false}
-                 label={'體重：'}
+                 label={'體重：'} type={'tel'}
                  {...formValues.getInputProps('weight')}
               ></NumberInput>
             </>

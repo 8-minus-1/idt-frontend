@@ -271,13 +271,14 @@ function MapPageInner() {
                 <Text fw="700" size="xl">
                   {selectedPlace.Name}
                 </Text>
-                <Text>地址 : {selectedPlace.Address}</Text>
-                <Text>聯繫方式 : {selectedPlace.Phone}</Text>
-                <Text>
-                  網站連結 :{' '}
-                  <Link href={selectedPlace.Url} style = {{'wordBreak': 'break-all'}}>{selectedPlace.Url}</Link>
-                </Text>
-                <Text>更新時間 : {selectedPlace.Renew}</Text>
+                <Text>地址：{selectedPlace.Address}</Text>
+                <Text>聯絡電話：{selectedPlace.Phone}</Text>
+                {
+                  //TODO: 待新增欄位後，在Card顯示此場館提供什麼運動
+                  //TODO: 有幾個人評價
+                  //TODO: 是否營業中？
+                  //TODO: 是否免費
+                }
                 <Group>
                   {selectedPlace.Rank === 0 && <Text>尚未有評價！</Text>}
                   {selectedPlace.Rank != 0 && <>

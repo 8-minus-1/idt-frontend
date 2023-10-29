@@ -247,43 +247,43 @@ export default function PlaceInfoPage() {
       <main>
         <Container p='lg'>
           {data &&
-            < Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='md' shadow='sm'>
-              <Text size="xl" ml={'lg'} mt='lg' fw='700'>
+            < Card padding="md" bg="#D6EAF8" radius="lg" mb='md' shadow='sm'>
+              <Text size="xl" ml={'sm'} mt='sm' fw='700'>
                 {data.Name}
               </Text>
-              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+              <Flex ml={'md'} mt='md' justify={'flex-start'}>
                 <IconMap />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>地址：{data.Address}</Text>
               </Flex>
-              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+              <Flex ml={'md'} mt='md' justify={'flex-start'}>
                 <IconClock />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
                   營業時間：
                   {(data.OpenTime).split(':')[0] + ':' + (data.OpenTime).split(':')[1] } ~ {(data.CloseTime).split(':')[0] + ':' + (data.CloseTime).split(':')[1] }
                 </Text>
               </Flex>
-              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+              <Flex ml={'md'} mt='md' justify={'flex-start'}>
                 <IconReportMoney />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>價格：{data.Price}</Text>
               </Flex>
-              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+              <Flex ml={'md'} mt='md' justify={'flex-start'}>
                 <IconMap2 />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>停車資訊：{data.Parking}</Text>
               </Flex>
-              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+              <Flex ml={'md'} mt='md' justify={'flex-start'}>
                 <IconFileDescription />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
                   官方網址：
                 </Text>
               </Flex>
-              <Text mt={'xs'} ml={'xl'} mr={'xl'} pl={'xl'} size='md' fw={700} style={{wordBreak: 'break-all'}}>
-                <Link href={data.Url}>{data.Url}</Link>
+              <Text mt={'xs'} mr={'xl'} ml={'sm'} pl={'xl'} size='sm' fw={700} style={{wordBreak: 'break-all'}}>
+                <Link target={'_blank'} href={data.Url}>{data.Url}</Link>
               </Text>
-              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+              <Flex ml={'md'} mt='md' justify={'flex-start'}>
                 <IconPhone />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>聯絡資訊：{data.Phone}</Text>
               </Flex>
-              <Flex ml={'xl'} mt='md' justify={'flex-start'}>
+              <Flex ml={'md'} mt='md' justify={'flex-start'}>
                 <IconPencil />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>由User{data.User}在{data.Renew}更新</Text>
               </Flex>
