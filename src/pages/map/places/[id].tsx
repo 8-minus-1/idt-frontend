@@ -51,11 +51,12 @@ import {
   IconRun,
   IconCup,
   IconTrophy,
+  IconChevronDown,
 } from '@tabler/icons-react';
 import { IconExternalLink } from '@tabler/icons-react';
 import { Alert } from '@mantine/core';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
-import React, { useContext, useState } from 'react';
+import React, { Fragment, useContext, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { deletePosition } from '@/apis/map';
 import { modals } from '@mantine/modals';
@@ -176,6 +177,7 @@ export default function PlaceInfoPage() {
   const [Comment, setComment] = useState('');
   const [RankState,setRankState] = useState(0);
   const [EditStatus, set_edit] = useState(0);
+  const [TimeStatus, setTime] = useState(0);
   const id = query.id;
   console.log(id)
   let { data, error:infoError } = useSWR(['map/getInfo?id='+id, { throwHttpErrors: true }]);
@@ -183,6 +185,8 @@ export default function PlaceInfoPage() {
   let { data:RankInfo, error:rankError, mutate: refresh } = useSWR(['map/RankByUser?id='+id, { throwHttpErrors: true }]);
 
   let { data:allRank, error:allRankError, mutate: refreshRank } = useSWR(['map/RankByPlace?id='+id, { throwHttpErrors: true }]);
+
+  let{ data:OpenTime, error:OpenTimeError} = useSWR(['map/getInfo/OpenTime?id='+id, { throwHttpErrors: true }]);
   //if(RankInfo)set_Ranked(1);
   useNavbarTitle('場館資訊');
   const { user, mutate: refreshUser } = useUser();
@@ -246,6 +250,12 @@ export default function PlaceInfoPage() {
     });
   }
 
+  let getTimeNum = 0;
+  if (TimeStatus == 0)
+    getTimeNum = 1;
+  else if (TimeStatus == 1)
+    getTimeNum = 0;
+
   return (
     <>
       <Head>
@@ -253,7 +263,7 @@ export default function PlaceInfoPage() {
       </Head>
       <main>
         <Container p='lg'>
-          {data &&
+          {data && OpenTime &&
             < Card padding="md" bg="#D6EAF8" radius="lg" mb='md' shadow='sm'>
               <Text size="xl" ml={'sm'} mt='sm' fw='700'>
                 {data.Name}
@@ -266,9 +276,48 @@ export default function PlaceInfoPage() {
                 <IconClock />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
                   營業時間：
-                  {(data.OpenTime).split(':')[0] + ':' + (data.OpenTime).split(':')[1] } ~ {(data.CloseTime).split(':')[0] + ':' + (data.CloseTime).split(':')[1] }
                 </Text>
               </Flex>
+              <Flex mt={'xs'} onClick={()=>setTime(getTimeNum)}>
+                <Text ml={'sm'} pl={'xl'} size='md' fw={700} >
+                  星期一 {(OpenTime.Mon_OpenTime).split(':')[0]+':'+(OpenTime.Mon_OpenTime).split(':')[1]} ~ {(OpenTime.Mon_CloseTime).split(':')[0] + ':' + (OpenTime.Mon_CloseTime).split(':')[1] }
+                </Text>
+                <IconChevronDown/>
+              </Flex>
+              {TimeStatus === 1 &&
+                <>
+                  <Flex mt={rem(6)}>
+                    <Text ml={'sm'} pl={'xl'} size='md' fw={700}>
+                      星期二 {(OpenTime.Tue_OpenTime).split(':')[0]+':'+(OpenTime.Tue_OpenTime).split(':')[1]} ~ {(OpenTime.Tue_CloseTime).split(':')[0] + ':' + (OpenTime.Tue_CloseTime).split(':')[1] }
+                    </Text>
+                  </Flex>
+                  <Flex mt={rem(6)}>
+                    <Text ml={'sm'} pl={'xl'} size='md' fw={700}>
+                      星期三 {(OpenTime.Wed_OpenTime).split(':')[0]+':'+(OpenTime.Wed_OpenTime).split(':')[1]} ~ {(OpenTime.Wed_CloseTime).split(':')[0] + ':' + (OpenTime.Wed_CloseTime).split(':')[1] }
+                    </Text>
+                  </Flex>
+                  <Flex mt={rem(6)}>
+                    <Text ml={'sm'} pl={'xl'} size='md' fw={700}>
+                      星期四 {(OpenTime.Thu_OpenTime).split(':')[0]+':'+(OpenTime.Thu_OpenTime).split(':')[1]} ~ {(OpenTime.Thu_CloseTime).split(':')[0] + ':' + (OpenTime.Thu_CloseTime).split(':')[1] }
+                    </Text>
+                  </Flex>
+                  <Flex mt={rem(6)}>
+                    <Text ml={'sm'} pl={'xl'} size='md' fw={700}>
+                      星期五 {(OpenTime.Fri_OpenTime).split(':')[0]+':'+(OpenTime.Fri_OpenTime).split(':')[1]} ~ {(OpenTime.Fri_CloseTime).split(':')[0] + ':' + (OpenTime.Fri_CloseTime).split(':')[1] }
+                    </Text>
+                  </Flex>
+                  <Flex mt={rem(6)}>
+                    <Text ml={'sm'} pl={'xl'} size='md' fw={700}>
+                      星期六 {(OpenTime.Sat_OpenTime).split(':')[0]+':'+(OpenTime.Sat_OpenTime).split(':')[1]} ~ {(OpenTime.Sat_CloseTime).split(':')[0] + ':' + (OpenTime.Sat_CloseTime).split(':')[1] }
+                    </Text>
+                  </Flex>
+                  <Flex mt={rem(6)}>
+                    <Text ml={'sm'} pl={'xl'} size='md' fw={700}>
+                      星期日 {(OpenTime.Sun_OpenTime).split(':')[0]+':'+(OpenTime.Sun_OpenTime).split(':')[1]} ~ {(OpenTime.Sun_CloseTime).split(':')[0] + ':' + (OpenTime.Sun_CloseTime).split(':')[1] }
+                    </Text>
+                  </Flex>
+                </>
+              }
               <Flex ml={'md'} mt='md' justify={'flex-start'}>
                 <IconReportMoney />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>價格：{data.Price}</Text>
