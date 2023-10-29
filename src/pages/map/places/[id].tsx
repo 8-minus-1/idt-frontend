@@ -43,7 +43,14 @@ import {
   IconReportMoney,
   IconPhone,
   IconClock,
-  IconPencil, IconChevronLeft, IconSend,
+  IconPencil,
+  IconChevronLeft,
+  IconSend,
+  IconFriends,
+  IconHeartHandshake,
+  IconRun,
+  IconCup,
+  IconTrophy,
 } from '@tabler/icons-react';
 import { IconExternalLink } from '@tabler/icons-react';
 import { Alert } from '@mantine/core';
@@ -287,11 +294,27 @@ export default function PlaceInfoPage() {
                 <IconPencil />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>由User{data.User}在{data.Renew}更新</Text>
               </Flex>
-              <Flex c="blue" mt="md" justify="right">
-                <Text fw={600} size="md">
-                  <Link href={`/events/place/`+data.ID}>查看場館活動</Link>
-                </Text>
-                <IconChevronRight />
+              <Flex mt={'lg'} mb={'sm'} justify={'center'}>
+                <Group justify={'space-evenly'}>
+                  <Link href={`/match/place/`+data.ID} >
+                    <Button
+                      variant="gradient" w={'100%'}
+                      gradient={{ from: 'blue.3', to: 'blue.6', deg: 90 }}
+                      leftSection={<IconHeartHandshake/>}
+                    >
+                      場館公開邀請
+                    </Button>
+                  </Link>
+                  <Link href={`/events/place/`+data.ID}>
+                    <Button
+                      variant="gradient" w={'100%'}
+                      gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
+                      leftSection={<IconTrophy />}
+                    >
+                      場館活動列表
+                    </Button>
+                  </Link>
+                </Group>
               </Flex>
             </Card>
           }
