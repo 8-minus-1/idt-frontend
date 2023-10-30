@@ -1,6 +1,7 @@
+import { useUser } from '@/hooks';
 import styles from '@/styles/app.module.css';
-import { UnstyledButton } from '@mantine/core';
-import { IconArrowLeft } from '@tabler/icons-react';
+import { Flex, UnstyledButton } from '@mantine/core';
+import { IconArrowLeft, IconMessage2 } from '@tabler/icons-react';
 import { useRouter } from 'next/router';
 import { createContext, useContext } from 'react';
 
@@ -26,6 +27,13 @@ export default function TopNavbar({ rightSlot }: { rightSlot: React.JSX.Element 
     else router.push('/');
   }
 
+  function handleNavigateToChats() {
+    router.push('/match/chats');
+  }
+
+  const { user } = useUser();
+  const shouldShowChatsButton = user && !router.pathname.startsWith('/match/chats');
+
   return (
     <nav className={styles.topNav}>
       <div className={styles.backButtonContainer}>
@@ -36,7 +44,14 @@ export default function TopNavbar({ rightSlot }: { rightSlot: React.JSX.Element 
         )}
       </div>
       <div>{title}</div>
-      {rightSlot}
+      <Flex style={{ height: '100%' }} justify="flex-end">
+        {rightSlot}
+        {shouldShowChatsButton && (
+          <UnstyledButton px="sm" lh="1" display="block" h="100%" onClick={handleNavigateToChats}>
+            <IconMessage2 />
+          </UnstyledButton>
+        )}
+      </Flex>
     </nav>
   );
 }
