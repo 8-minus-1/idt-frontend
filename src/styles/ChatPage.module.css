@@ -77,3 +77,14 @@
   border-right: 1px solid #eee;
   outline: none;
 }
+
+.invitationInfo {
+  background: white;
+  position: sticky;
+  top: 56px;
+  padding: 4px 16px;
+  margin: 0 16px;
+  border-radius: 8px;
+  box-shadow: 1px 1px 3px 1px rgb(0 0 0 / 5%);
+  color: inherit;
+}

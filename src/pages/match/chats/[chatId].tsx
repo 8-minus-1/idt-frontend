@@ -1,6 +1,6 @@
 import { client } from '@/apis/common';
 import { useNavbarTitle, useUser } from '@/hooks';
-import { Alert, Center, Flex, UnstyledButton } from '@mantine/core';
+import { Alert, Center, Flex, Stack, Text, UnstyledButton } from '@mantine/core';
 import { IconSend } from '@tabler/icons-react';
 import { HTTPError } from 'ky';
 import Head from 'next/head';
@@ -12,6 +12,7 @@ import classNames from 'classnames';
 import { useWindowScroll } from '@mantine/hooks';
 import { MessageType } from '@/constants';
 import React from 'react';
+import Link from 'next/link';
 
 type Message = {
   id: number;
@@ -27,12 +28,26 @@ type Message = {
 type Invitation = {
   User_id: number;
   Name: string;
-  Place: string;
+  Place: number;
   sp_type: number;
-  DateTime: string;
-  Time: string;
+  DateTime: number;
   Other: string;
   i_id: number;
+};
+
+type Place = {
+  ID: number;
+  Name: string;
+  Latitude: number;
+  Longitude: number;
+  Address: string;
+  OpenTime: string;
+  Close: string;
+  Url: string;
+  Phone: string;
+  Renew: string;
+  User: number;
+  Rank: number;
 };
 
 function formatTime(time: number) {
@@ -62,6 +77,10 @@ function formatDate(d: Date) {
   let today = new Date();
   let y = sameYear(d, today) ? '' : `${d.getFullYear()}/`;
   return `${y}${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+function formatDateTime(d: number) {
+  return formatDate(new Date(d)) + ' ' + formatTime(d);
 }
 
 function getDateHeaders(messages: Message[]) {
@@ -140,7 +159,7 @@ export default function ChatPage() {
   const { data: invitationInfo } = useSWR<Invitation[]>(
     chatId ? `invite/invitation/${chatId}` : null
   );
-  const { data: place } = useSWR(
+  const { data: place } = useSWR<Place>(
     invitationInfo ? `map/getInfo?id=${invitationInfo[0].Place}` : null
   );
   const { messages, isLoading, error, reload } = useMessages(chatId as string);
@@ -228,6 +247,14 @@ export default function ChatPage() {
       </Head>
       <div className={styles.container}>
         <div className={styles.messages}>
+          {invitationInfo && place && (
+            <Link className={styles.invitationInfo} href={`/match/invites/${invitationInfo[0].i_id}`}>
+              <Stack gap="0">
+                <Text size="sm">時間：{formatDateTime(invitationInfo[0].DateTime)}</Text>
+                <Text size="sm">地點：{place.Name}</Text>
+              </Stack>
+            </Link>
+          )}
           {!messages && !isLoading && error && (
             <Center style={{ flex: '1' }}>
               <Alert variant="light" color="red" fw="500">
