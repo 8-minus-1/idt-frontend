@@ -50,12 +50,16 @@
   font-size: 0.8rem;
 }
 
-.serviceMessage {
+.serviceMessage, .date {
   background: #e7e7e7;
   font-size: 0.8rem;
   text-align: center;
   padding: 8px;
   border-radius: 8px;
+}
+
+.date {
+  border-radius: 16px;
 }
 
 .messageInput {

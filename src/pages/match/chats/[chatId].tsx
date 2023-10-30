@@ -11,6 +11,7 @@ import styles from '@/styles/ChatPage.module.css';
 import classNames from 'classnames';
 import { useWindowScroll } from '@mantine/hooks';
 import { MessageType } from '@/constants';
+import React from 'react';
 
 type Message = {
   id: number;
@@ -51,6 +52,29 @@ function formatServiceMessage(m: Message) {
   if (m.type === MessageType.UserJoined) {
     return m.from.nickname + '已加入邀約';
   }
+}
+
+function sameYear(date: Date, other: Date) {
+  return date.getFullYear() === other.getFullYear();
+}
+
+function formatDate(d: Date) {
+  let today = new Date();
+  let y = sameYear(d, today) ? '' : `${d.getFullYear()}/`;
+  return `${y}${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+function getDateHeaders(messages: Message[]) {
+  const headers: Record<string, string> = {};
+  let lastDate = '';
+  messages.forEach((m, i) => {
+    let date = formatDate(new Date(m.createdAt));
+    if (date !== lastDate) {
+      lastDate = date;
+      headers[i] = date;
+    }
+  });
+  return headers;
 }
 
 function useMessages(chatId: string) {
@@ -121,6 +145,7 @@ export default function ChatPage() {
   );
   const { messages, isLoading, error, reload } = useMessages(chatId as string);
   const lastMessageId = messages?.length ? messages[messages.length - 1].id : 0;
+  const dateHeaders = messages ? getDateHeaders(messages) : {};
 
   const [composingMessage, setComposingMessage] = useState('');
 
@@ -218,35 +243,41 @@ export default function ChatPage() {
             </Center>
           )}
           {messages &&
-            messages.map((m) => {
+            messages.map((m, i) => {
               let isSelf = m.from.id === user?.id;
               let isService = m.type !== 0;
               return (
-                <div
-                  key={m.id}
-                  className={classNames(
-                    styles.message,
-                    isSelf && styles.self,
-                    isService && styles.service
+                <React.Fragment key={m.id}>
+                  {dateHeaders[i] && (
+                    <Center py="lg">
+                      <div className={styles.date}>{dateHeaders[i]}</div>
+                    </Center>
                   )}
-                >
-                  {!isService && (
-                    <>
-                      <div className={styles.bubbleWrapper}>
-                        {!isSelf && <div className={styles.name}>{m.from.nickname}</div>}
-                        <div className={styles.bubble}>{m.content}</div>
+                  <div
+                    className={classNames(
+                      styles.message,
+                      isSelf && styles.self,
+                      isService && styles.service
+                    )}
+                  >
+                    {!isService && (
+                      <>
+                        <div className={styles.bubbleWrapper}>
+                          {!isSelf && <div className={styles.name}>{m.from.nickname}</div>}
+                          <div className={styles.bubble}>{m.content}</div>
+                        </div>
+                        <div className={styles.time}>{formatTime(m.createdAt)}</div>
+                      </>
+                    )}
+                    {isService && (
+                      <div className={styles.serviceMessage}>
+                        {formatServiceMessage(m)}
+                        <br />
+                        {formatTime(m.createdAt)}
                       </div>
-                      <div className={styles.time}>{formatTime(m.createdAt)}</div>
-                    </>
-                  )}
-                  {isService && (
-                    <div className={styles.serviceMessage}>
-                      {formatServiceMessage(m)}
-                      <br />
-                      {formatTime(m.createdAt)}
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                </React.Fragment>
               );
             })}
         </div>
