@@ -1,3 +1,4 @@
+import { MessageType } from '@/constants';
 import { useNavbarTitle, useUser } from '@/hooks';
 import { Alert, Card, Center, Divider, Group, Stack, Text } from '@mantine/core';
 import Head from 'next/head';
@@ -14,12 +15,6 @@ type Chat = {
     content: string | null;
     createdAt: number;
   };
-};
-
-const MessageType = {
-  Message: 0,
-  InviteCreated: 1,
-  UserJoined: 2,
 };
 
 function formatMessage(type: number, content: string | null) {

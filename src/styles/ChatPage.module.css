@@ -1,0 +1,75 @@
+.container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 16px 0;
+}
+
+.message {
+  display: flex;
+  align-items: flex-end;
+  padding: 4px 16px;
+}
+
+.message.self {
+  /* justify-content: flex; */
+  flex-direction: row-reverse;
+}
+
+.message.service {
+  justify-content: center;
+}
+
+.bubbleWrapper {
+  max-width: 70%;
+}
+
+.name {
+  font-size: 0.8rem;
+}
+
+.bubble {
+  background: #e0e5e8;
+  padding: 8px 16px;
+  border-radius: 16px;
+  word-wrap: break-word;
+}
+
+.message.self .bubble {
+  background: #cae2ed;
+}
+
+.time {
+  padding: 0 8px;
+  font-size: 0.8rem;
+}
+
+.serviceMessage {
+  background: #e7e7e7;
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.messageInput {
+  position: sticky;
+  bottom: 64px;
+  z-index: 100;
+}
+
+.messageInput input {
+  width: 100%;
+  padding-left: 16px;
+  border-radius: 0;
+  background: white;
+  border: none;
+  border-right: 1px solid #eee;
+  outline: none;
+}
