@@ -58,7 +58,7 @@ function formatTime(time: number) {
     if (h === 0) h = 12;
     return `${amPm} ${h}:${String(m).padStart(2, '0')}`;
   }
-  let y = sameYear(d, today) ? '': `${d.getFullYear()}/`;
+  let y = sameYear(d, today) ? '' : `${d.getFullYear()}/`;
   return `${y}${d.getMonth() + 1}/${d.getDate()}`;
 }
 
@@ -110,7 +110,14 @@ export default function ChatListPage() {
           </Alert>
         </Center>
       )}
-      {chats && (
+      {chats && !chats.length && (
+        <Center style={{ flex: 1 }}>
+          <Alert color="blue" fw="500">
+            加入邀約後就能聊天囉！
+          </Alert>
+        </Center>
+      )}
+      {chats && !!chats.length && (
         <main>
           {chats.map((chat, i) => (
             <React.Fragment key={chat.id}>
@@ -125,7 +132,9 @@ export default function ChatListPage() {
                         {formatMessage(chat.lastMessage.type, chat.lastMessage.content)}
                       </Text>
                     </Stack>
-                    <Text size="sm" style={{ flexShrink: 0 }}>{formatTime(chat.lastMessage.createdAt)}</Text>
+                    <Text size="sm" style={{ flexShrink: 0 }}>
+                      {formatTime(chat.lastMessage.createdAt)}
+                    </Text>
                   </Group>
                 </Card>
               </Link>
