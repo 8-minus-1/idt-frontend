@@ -37,6 +37,7 @@ import { notifications } from '@mantine/notifications';
 import { getPlaceByID } from '@/apis/map';
 import invalid = Simulate.invalid;
 import { Public_Sans } from 'next/dist/compiled/@next/font/dist/google';
+import { useRouter } from 'next/router';
 
 type m = {
   "User_id": number,
@@ -47,6 +48,7 @@ type m = {
   "Time": string,
   "Other": string,
   "i_id": number,
+  nickname: string
 }
 
 type searchData = {
@@ -55,9 +57,11 @@ type searchData = {
   ID: number
 }
 
-function PublicPage( { sp_type, sports }: any )
+function PublicPage( { sports }: any )
 {
-  let { data, error }  = useSWR(['invite/invitation/InviteType?sp_type='+sp_type, { throwHttpErrors: true }]);
+  const router = useRouter();
+  let p_id = router.query.p_id;
+  let { data, error }  = useSWR(['invite/place/'+p_id, { throwHttpErrors: true }]);
   if(error) console.log("error: ",error);
 
   const [placeNames, setPlaceNames] = useState<any[]|null>(null);
@@ -83,12 +87,12 @@ function PublicPage( { sp_type, sports }: any )
       }
       {!!data && !!placeNames && (data.length == placeNames.length) &&
         data.map((invite:m, index:number)=>
-          <Link href={"match/invites/"+invite.i_id} key={invite.i_id}>
+          <Link href={"/match/invites/"+invite.i_id} key={invite.i_id}>
             <Card padding="lg" pb='xl' bg="#D6EAF8" radius="lg" mb='xl' shadow='sm'>
               <Group justify='space-between'>
                 <Group>
                   <IconUser/>
-                  <Text fw={500}>User{invite.User_id}</Text>
+                  <Text fw={700} pt={rem(5)}>{invite.nickname}</Text>
                 </Group>
               </Group>
               <Text size="lg" mx={'lg'} mt='lg' mb={'sm'} fw='600'>{'【 '+sports[invite.sp_type].label+' 】' + invite.Name }</Text>
@@ -126,17 +130,8 @@ function PublicPage( { sp_type, sports }: any )
   )
 }
 
-function PrivatePage()
-{
-  return(
-    <>私人配對</>
-  )
-}
-
 function MListPage()
 {
-  const [sp_type, setSp_type] = useState<string>('0');
-
   const method =[
     { value: "0", label: "公開邀請" },
     { value: "1", label: "私人配對" },
@@ -160,38 +155,11 @@ function MListPage()
     { value: "15", label: "其他" },
   ];
 
-
-  const [methodValue, setMethod] = useState('0');
-
   return(
     <>
       <main>
-        <Container>
-          <Group mt="md">
-            <Select
-              label="配對方式"
-              data={method} allowDeselect={false}
-              defaultValue={method[0].value}
-              pb='xl'
-              w={"30%"}
-              value={methodValue} onChange={(value:string)=>(setMethod(value))}
-            />
-            <Select
-              label="運動類別篩選"
-              data={sports} allowDeselect={false}
-              defaultValue={sports[0].value}
-              pb='xl'
-              w={"30%"}
-              value={sp_type}
-              onChange={(value:string)=>(setSp_type(value))}
-            />
-          </Group>
-          { methodValue === '0' &&
-            <PublicPage sp_type={sp_type} sports={sports}></PublicPage>
-          }
-          { methodValue === '1' &&
-            <PrivatePage></PrivatePage>
-          }
+        <Container mt='lg'>
+          <PublicPage sports={sports}></PublicPage>
         </Container>
       </main>
     </>
