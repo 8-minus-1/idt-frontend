@@ -1,34 +1,17 @@
-import { useAsyncFunction, useNavbarTitle, useUser } from '@/hooks';
+import { useNavbarTitle } from '@/hooks';
 import Head from 'next/head';
-import React, { useContext, useState } from 'react';
-import {
-Card,
-Container,
-Text,
-Menu,
-Group,
-ActionIcon,
-rem,
-Flex,
-Box,
-Button
-} from '@mantine/core';
+import { Alert, Card, Container, Flex, Group, rem, Text } from '@mantine/core';
 import Link from 'next/link';
 import {
-IconDots,
-IconUser,
-IconPlus,
-IconBallBasketball,
-IconChevronRight,
-IconCalendarOff,
-IconCalendarCheck,
-IconCalendarX, IconMap2, IconScoreboard,
+  IconCalendarCheck,
+  IconCalendarOff,
+  IconChevronRight,
+  IconMap2,
+  IconScoreboard,
+  IconUser,
 } from '@tabler/icons-react';
 import useSWR from 'swr';
-import { Alert } from '@mantine/core';
-import { FABContainerContext } from '@/contexts/FABContainerContext';
-import { createPortal } from 'react-dom';
-import { Router, useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 import { HTTPError } from 'ky';
 
 type Contests = {

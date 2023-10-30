@@ -1,12 +1,11 @@
 import { signOut } from '@/apis/auth';
 import { useNavbarTitle, useUser } from '@/hooks';
 import { Button, Card, Container, Divider, Flex, Group, rem, Space, Text } from '@mantine/core';
-import { IconChevronRight, IconMessage, IconShield, IconUser,  IconId    } from '@tabler/icons-react';
+import { IconChevronRight, IconId, IconMessage, IconShield, IconUser } from '@tabler/icons-react';
 import Head from 'next/head';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { modals } from '@mantine/modals';
-import { notifications } from '@mantine/notifications';
 import { useRouter } from 'next/router';
 
 export default function MorePage() {

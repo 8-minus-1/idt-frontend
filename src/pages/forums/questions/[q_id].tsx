@@ -2,21 +2,21 @@ import { useAsyncFunction, useNavbarTitle, useUser } from '@/hooks';
 import Head from 'next/head';
 import React, { useState } from 'react';
 import {
+  ActionIcon,
+  Alert,
+  Button,
   Card,
   Container,
-  Text,
-  Menu,
   Group,
-  ActionIcon,
+  Menu,
+  Paper,
   rem,
-  Flex,
-  Box,
-  Select, Paper, Button, Textarea,
+  Text,
+  Textarea,
 } from '@mantine/core';
 import Link from 'next/link';
-import { IconDots, IconUser, IconTrash, IconChevronLeft, IconSend } from '@tabler/icons-react';
+import { IconChevronLeft, IconDots, IconSend, IconTrash, IconUser } from '@tabler/icons-react';
 import useSWR from 'swr';
-import { Alert } from '@mantine/core';
 import { useRouter } from 'next/router';
 import { HTTPError } from 'ky';
 import { addAnswer, deleteAnswer, deleteQuestion } from '@/apis/qa';

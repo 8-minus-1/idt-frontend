@@ -1,35 +1,31 @@
 import { useAsyncFunction, useNavbarTitle, useUser } from '@/hooks';
 import Head from 'next/head';
-import React, { useState, useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import {
+  Alert,
+  Box,
+  Button,
   Card,
   Container,
-  Text,
-  Menu,
-  Group,
-  ActionIcon,
-  rem,
   Flex,
-  Box,
-  Select, Button, Textarea, TextInput,
+  Group,
+  rem,
+  Select,
+  Text,
+  Textarea,
 } from '@mantine/core';
 import Link from 'next/link';
 import {
-  IconDots,
-  IconUser,
-  IconTrash,
+  IconCheck,
+  IconChevronLeft,
   IconChevronRight,
   IconEdit,
-  IconChevronLeft,
-  IconCheck, IconSend,
+  IconUser,
 } from '@tabler/icons-react';
 import useSWR from 'swr';
-import { Alert } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { addAnswer, addQuestion } from '@/apis/qa';
+import { addQuestion } from '@/apis/qa';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
-import { router } from 'next/client';
 import { notifications } from '@mantine/notifications';
 
 // mantine: xs, sm, md, lg, xl

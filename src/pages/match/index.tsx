@@ -2,41 +2,36 @@ import { useAsyncFunction, useNavbarTitle, useUser } from '@/hooks';
 import Head from 'next/head';
 import '@mantine/dates/styles.css';
 import {
+  Alert,
+  Box,
+  Button,
   Card,
   Container,
   Flex,
   Group,
+  rem,
   Select,
   Text,
-  Alert,
-  rem,
-  Button,
-  Box,
   Textarea,
 } from '@mantine/core';
 import React, { useContext, useState } from 'react';
-import { Simulate } from 'react-dom/test-utils';
-import error = Simulate.error;
 import useSWR from 'swr';
 import Link from 'next/link';
 import {
   IconCalendarCheck,
   IconCheck,
   IconChevronLeft,
-  IconChevronRight, IconMap2,
+  IconChevronRight,
+  IconMap2,
   IconUser,
   IconUsersGroup,
 } from '@tabler/icons-react';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
 import { DateTimePicker } from '@mantine/dates';
-import { addQuestion } from '@/apis/qa';
 import { addInvite } from '@/apis/invite';
-import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { getPlaceByID } from '@/apis/map';
-import invalid = Simulate.invalid;
-import { Public_Sans } from 'next/dist/compiled/@next/font/dist/google';
 import { modals } from '@mantine/modals';
 import { useRouter } from 'next/router';
 

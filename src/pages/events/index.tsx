@@ -1,52 +1,41 @@
 import { useAsyncFunction, useNavbarTitle, useUser } from '@/hooks';
 import '@mantine/dates/styles.css';
 import Head from 'next/head';
-import { addContest, deleteContest, editContest } from '@/apis/cont';
-import { tryParse } from '@/utils';
+import { addContest } from '@/apis/cont';
 import {
   Alert,
   Box,
   Button,
-  Container,
-  rem,
-  Text,
-  TextInput,
-  Group,
-  Select,
   Card,
+  Container,
   Flex,
+  Group,
+  rem,
+  Select,
+  Text,
   Textarea,
+  TextInput,
 } from '@mantine/core';
-import { isEmail, useForm } from '@mantine/form';
-import { DateInput, DateInputProps, DatePickerInput } from '@mantine/dates';
-import { HTTPError } from 'ky';
+import { useForm } from '@mantine/form';
+import { DatePickerInput } from '@mantine/dates';
 import Link from 'next/link';
 import React, { useContext, useState } from 'react';
 import useSWR from 'swr';
 import {
-  IconDots,
-  IconUser,
-  IconTrash,
-  IconChevronRight,
-  IconEdit,
-  IconAdjustments,
-  IconPlus,
-  IconChevronLeft,
-  IconSend,
   IconCalendarCheck,
-  IconCalendarX,
   IconCalendarOff,
-  IconPinnedFilled,
-  IconBallBasketball,
-  IconFileDescription, IconScoreboard, IconMap2,
+  IconChevronLeft,
+  IconChevronRight,
+  IconMap2,
+  IconPlus,
+  IconScoreboard,
+  IconSend,
+  IconUser,
 } from '@tabler/icons-react';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
-import { Simulate } from 'react-dom/test-utils';
-import submit = Simulate.submit;
-import { notifications } from "@mantine/notifications";
-import isUrl from "is-url";
-import { modals } from '@mantine/modals';
+import { notifications } from '@mantine/notifications';
+import isUrl from 'is-url';
 import { getPlaceByID } from '@/apis/map';
 
 type searchData = {
@@ -100,13 +89,6 @@ function AddContestPage({ setFormToShow }: any) {
       Other: ''
     },
   });
-
-  const dateParser: DateInputProps['dateParser'] = (input) => {
-    if (input === 'WW2') {
-      return new Date(1939, 8, 1);
-    }
-    return new Date(input);
-  };
 
   async function handleSubmit(values: any) {
     if (values.sp_type == '') {
