@@ -5,23 +5,29 @@ import { useRouter } from 'next/router';
 import useSWR from 'swr';
 import { HTTPError } from 'ky';
 import {
+  ActionIcon,
+  Alert,
+  Box,
+  Button,
   Card,
   Container,
-  Group,
-  Text,
-  Alert,
   Flex,
-  rem,
+  Group,
   Menu,
-  ActionIcon,
-  Button,
-  Box, Select, Textarea, Paper,
+  Paper,
+  rem,
+  Select,
+  Text,
+  Textarea,
 } from '@mantine/core';
 import {
   IconBulb,
-  IconCalendarCheck, IconCheck, IconChevronLeft,
-  IconDots, IconEdit,
-  IconMap2, IconSend,
+  IconCalendarCheck,
+  IconCheck,
+  IconChevronLeft,
+  IconDots,
+  IconEdit,
+  IconMap2,
   IconTrash,
   IconUser,
 } from '@tabler/icons-react';
@@ -135,7 +141,7 @@ function InviteCard({invite, setPageStatus}: any)
   async function handleSignup()
   {
     if(signupLoading) return;
-    else {
+    else if(user && !user.profileCompleted){
       modals.openConfirmModal({
         title: '您尚未設定個人資料及填寫註冊問卷！',
         centered: true,
@@ -176,6 +182,33 @@ function InviteCard({invite, setPageStatus}: any)
             },
           });
         }
+      });
+    }
+    else
+    {
+      modals.openConfirmModal({
+        title: '您確定要報名這則邀約嗎？',
+        centered: true,
+        children:(
+          <Text size="sm">
+            請注意，報名後無法收回，必須準時赴約
+          </Text>
+        ),
+        labels: { confirm: '是的，我非常確定', cancel: "不，請返回" },
+        confirmProps: { color: 'red' },
+        onConfirm: async () => {
+          let {error} = await signup(invite.i_id);
+          if(error) console.log(error);
+          else
+          {
+            notifications.show({
+              color: "green",
+              title: '已成功報名這個公開邀請～',
+              message: '待對方同意後就算配對成功囉！',
+            });
+            refreshStatus();
+          }
+        },
       });
     }
   }
