@@ -13,13 +13,9 @@
 
 .message {
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  align-items: flex-start;
   padding: 4px 16px;
-}
-
-.message.self {
-  /* justify-content: flex; */
-  flex-direction: row-reverse;
 }
 
 .message.service {
@@ -28,10 +24,22 @@
 
 .bubbleWrapper {
   max-width: 70%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.message.self,
+.message.self .bubbleWrapper {
+  flex-direction: row-reverse;
 }
 
 .name {
   font-size: 0.8rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 60%;
+  -webkit-line-clamp: 1;
+  white-space: nowrap;
 }
 
 .bubble {
@@ -39,6 +47,7 @@
   padding: 8px 16px;
   border-radius: 16px;
   word-wrap: break-word;
+  min-width: 0;
 }
 
 .message.self .bubble {
@@ -50,7 +59,8 @@
   font-size: 0.8rem;
 }
 
-.serviceMessage, .date {
+.serviceMessage,
+.date {
   background: #e7e7e7;
   font-size: 0.8rem;
   text-align: center;

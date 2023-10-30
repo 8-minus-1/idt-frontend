@@ -248,7 +248,10 @@ export default function ChatPage() {
       <div className={styles.container}>
         <div className={styles.messages}>
           {invitationInfo && place && (
-            <Link className={styles.invitationInfo} href={`/match/invites/${invitationInfo[0].i_id}`}>
+            <Link
+              className={styles.invitationInfo}
+              href={`/match/invites/${invitationInfo[0].i_id}`}
+            >
               <Stack gap="0">
                 <Text size="sm">時間：{formatDateTime(invitationInfo[0].DateTime)}</Text>
                 <Text size="sm">地點：{place.Name}</Text>
@@ -289,11 +292,11 @@ export default function ChatPage() {
                   >
                     {!isService && (
                       <>
+                        {!isSelf && <div className={styles.name}>{m.from.nickname}</div>}
                         <div className={styles.bubbleWrapper}>
-                          {!isSelf && <div className={styles.name}>{m.from.nickname}</div>}
                           <div className={styles.bubble}>{m.content}</div>
+                          <div className={styles.time}>{formatTime(m.createdAt)}</div>
                         </div>
-                        <div className={styles.time}>{formatTime(m.createdAt)}</div>
                       </>
                     )}
                     {isService && (
