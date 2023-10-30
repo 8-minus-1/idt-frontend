@@ -5,11 +5,11 @@ import { IconSend } from '@tabler/icons-react';
 import { HTTPError } from 'ky';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
 import styles from '@/styles/ChatPage.module.css';
 import classNames from 'classnames';
-import { useWindowScroll } from '@mantine/hooks';
+import { useViewportSize, useWindowScroll } from '@mantine/hooks';
 import { MessageType } from '@/constants';
 import React from 'react';
 import Link from 'next/link';
@@ -182,8 +182,10 @@ export default function ChatPage() {
   const [firstScroll, setFirstScroll] = useState(true);
   const scrollEl = typeof window !== 'undefined' ? document.scrollingElement : null;
   const [pos] = useWindowScroll();
+  const { height } = useViewportSize();
   const [autoScroll, setAutoScroll] = useState(true);
   const [lastAutoScrolledMessageId, setLastAutoScrolledMessageId] = useState(-1);
+  const rememberedRemainingScrollTop = useRef(0);
 
   useEffect(() => {
     if (!firstScroll) return;
@@ -199,6 +201,7 @@ export default function ChatPage() {
     if (!scrollEl) return;
     const maxScrollTop = scrollEl.scrollHeight - scrollEl.clientHeight;
     setAutoScroll(maxScrollTop - scrollEl.scrollTop < 64);
+    rememberedRemainingScrollTop.current = maxScrollTop - scrollEl.scrollTop;
   }, [pos]);
 
   useEffect(() => {
@@ -209,6 +212,13 @@ export default function ChatPage() {
     const maxScrollTop = scrollEl.scrollHeight - scrollEl.clientHeight;
     window.scrollTo({ top: maxScrollTop });
   }, [lastMessageId, autoScroll, lastAutoScrolledMessageId]);
+
+  useEffect(() => {
+    if (!scrollEl) return;
+    const maxScrollTop = scrollEl.scrollHeight - scrollEl.clientHeight;
+    const r = autoScroll ? 0 : rememberedRemainingScrollTop.current;
+    window.scrollTo({ top: maxScrollTop - r });
+  }, [height]);
 
   const [isSendingMessage, setIsSendingMessage] = useState(false);
 
@@ -313,7 +323,6 @@ export default function ChatPage() {
         </div>
         <Flex h="48px" className={styles.messageInput}>
           <input
-            disabled={isSendingMessage}
             value={composingMessage}
             onInput={(e) => setComposingMessage(e.currentTarget.value)}
             onKeyDown={(e) => handleKeyDown(e)}
