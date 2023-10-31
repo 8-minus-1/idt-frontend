@@ -378,7 +378,7 @@ function InviteCard({invite, setPageStatus}: any)
                           <Text>{new Date(record.timestamp).toLocaleDateString()} {new Date(record.timestamp).toLocaleTimeString()}</Text>
                         </Flex>
                         <Button mt={'lg'}
-                                variant="gradient"
+                                variant="gradient" onClick={() => ( router.replace('/match/'+invite.i_id+'/signup/'+record.s_id+'/user') )}
                                 gradient={{ from: 'blue.3', to: 'blue.6', deg: 90 }}
                                 fullWidth radius={'md'}
                         >

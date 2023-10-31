@@ -2,41 +2,37 @@ import { useAsyncFunction, useNavbarTitle, useUser } from '@/hooks';
 import Head from 'next/head';
 import '@mantine/dates/styles.css';
 import {
+  Alert,
+  Box,
+  Button,
   Card,
   Container,
   Flex,
   Group,
+  rem,
   Select,
   Text,
-  Alert,
-  rem,
-  Button,
-  Box,
   Textarea,
 } from '@mantine/core';
 import React, { useContext, useState } from 'react';
 import { Simulate } from 'react-dom/test-utils';
-import error = Simulate.error;
 import useSWR from 'swr';
 import Link from 'next/link';
 import {
   IconCalendarCheck,
   IconCheck,
   IconChevronLeft,
-  IconChevronRight, IconMap2,
+  IconChevronRight,
+  IconMap2,
   IconUser,
   IconUsersGroup,
 } from '@tabler/icons-react';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
 import { DateTimePicker } from '@mantine/dates';
-import { addQuestion } from '@/apis/qa';
 import { addInvite } from '@/apis/invite';
-import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { getPlaceByID } from '@/apis/map';
-import invalid = Simulate.invalid;
-import { Public_Sans } from 'next/dist/compiled/@next/font/dist/google';
 
 type m = {
   User_id: number,
@@ -47,7 +43,8 @@ type m = {
   Time: string,
   Other: string,
   i_id: number,
-  signupCount: number
+  signupCount: number,
+  expired: boolean
 }
 
 type searchData = {
@@ -75,6 +72,7 @@ function MListPage()
     console.log('callback')
   }
 
+  let {user} = useUser();
 
   const sports = [
     { value: "0", label: "顯示全部邀請" },
@@ -112,7 +110,7 @@ function MListPage()
                     <Group justify='space-between'>
                       <Group>
                         <IconUser/>
-                        <Text fw={500}>User{invite.User_id}</Text>
+                        <Text fw={500}>{user?.nickname}</Text>
                       </Group>
                     </Group>
                     <Text size="lg" mx={'lg'} mt='lg' mb={'sm'} fw='600'>{'【 '+sports[invite.sp_type].label+' 】' + invite.Name }</Text>
@@ -134,7 +132,10 @@ function MListPage()
                       <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>邀約地點：{placeNames[index].Name}</Text>
                     </Flex>
                     <Flex c={'blue'} mt='md' justify='right'>
-                      <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>目前有 {invite.signupCount} 人報名</Text>
+                      <Text style={{textDecoration: "underline", textDecorationThickness: rem(2)}} fw={600} size='md'>
+                        { !!invite.expired && <>此邀約已經過期</> }
+                        { !invite.expired && <>目前有 {invite.signupCount} 人報名</> }
+                      </Text>
                       <IconChevronRight/>
                     </Flex>
                   </Card>
