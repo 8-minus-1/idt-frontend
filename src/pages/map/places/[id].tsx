@@ -52,6 +52,7 @@ import {
   IconCup,
   IconTrophy,
   IconChevronDown,
+  IconCaretDown,
 } from '@tabler/icons-react';
 import { IconExternalLink } from '@tabler/icons-react';
 import { Alert } from '@mantine/core';
@@ -179,7 +180,7 @@ export default function PlaceInfoPage() {
   const [EditStatus, set_edit] = useState(0);
   const [TimeStatus, setTime] = useState(0);
   const id = query.id;
-  console.log(id)
+  //console.log(id)
   let { data, error:infoError } = useSWR(['map/getInfo?id='+id, { throwHttpErrors: true }]);
   let fabContainer = useContext(FABContainerContext);
   let { data:RankInfo, error:rankError, mutate: refresh } = useSWR(['map/RankByUser?id='+id, { throwHttpErrors: true }]);
@@ -256,6 +257,27 @@ export default function PlaceInfoPage() {
   else if (TimeStatus == 1)
     getTimeNum = 0;
 
+  let getOpen = 0;
+  let Now = new Date().getDay();
+  let NowTime = new Date(new Date(Date.now()).toString());
+  if(OpenTime)
+  {
+    let open_str = OpenTime[(Now*2-1)+''].split(':');
+    let close_str = OpenTime[(Now*2)+''].split(':');
+    let open = new Date();
+    let close=new Date();
+    open.setHours(parseInt(open_str[0]), parseInt(open_str[1]),parseInt(open_str[2]));
+    close.setHours(parseInt(close_str[0]), parseInt(close_str[1]),parseInt(close_str[2]));
+
+    console.log(open);
+    console.log(close);
+    if(open > NowTime || close < NowTime)
+      getOpen = 0;//close
+    else if(open < NowTime && close > NowTime)
+      getOpen = 1;//open
+    console.log(getOpen);
+  }
+
   return (
     <>
       <Head>
@@ -272,48 +294,56 @@ export default function PlaceInfoPage() {
                 <IconMap />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>地址：{data.Address}</Text>
               </Flex>
-              <Flex ml={'md'} mt='md' justify={'flex-start'}>
+              <Flex ml={'md'} mt='md' justify={'flex-start'} onClick={()=>setTime(getTimeNum)}>
                 <IconClock />
-                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700} >
                   營業時間：
+                  {getOpen === 0 &&
+                    <>
+                      已打烊
+                    </>
+                  }
+                  {getOpen === 1 &&
+                    <>營業中</>
+                  }
                 </Text>
-              </Flex>
-              <Flex mt={'xs'} onClick={()=>setTime(getTimeNum)}>
-                <Text ml={'sm'} pl={'xl'} size='md' fw={700} >
-                  星期一 {(OpenTime.Mon_OpenTime).split(':')[0]+':'+(OpenTime.Mon_OpenTime).split(':')[1]} ~ {(OpenTime.Mon_CloseTime).split(':')[0] + ':' + (OpenTime.Mon_CloseTime).split(':')[1] }
-                </Text>
-                <IconChevronDown/>
+                <IconCaretDown/>
               </Flex>
               {TimeStatus === 1 &&
                 <>
                   <Flex mt={rem(6)}>
-                    <Text ml={'sm'} pl={'xl'} size='md' fw={700}>
-                      星期二 {(OpenTime.Tue_OpenTime).split(':')[0]+':'+(OpenTime.Tue_OpenTime).split(':')[1]} ~ {(OpenTime.Tue_CloseTime).split(':')[0] + ':' + (OpenTime.Tue_CloseTime).split(':')[1] }
+                    <Text ml={'sm'} pl={'xl'} size='md' fw={700} >
+                      星期一 {(OpenTime["1"]).split(':')[0]+':'+(OpenTime["1"]).split(':')[1]} ~ {(OpenTime["2"]).split(':')[0] + ':' + (OpenTime["2"]).split(':')[1] }
                     </Text>
                   </Flex>
                   <Flex mt={rem(6)}>
                     <Text ml={'sm'} pl={'xl'} size='md' fw={700}>
-                      星期三 {(OpenTime.Wed_OpenTime).split(':')[0]+':'+(OpenTime.Wed_OpenTime).split(':')[1]} ~ {(OpenTime.Wed_CloseTime).split(':')[0] + ':' + (OpenTime.Wed_CloseTime).split(':')[1] }
+                      星期二 {(OpenTime["3"]).split(':')[0]+':'+(OpenTime["3"]).split(':')[1]} ~ {(OpenTime["4"]).split(':')[0] + ':' + (OpenTime["4"]).split(':')[1] }
                     </Text>
                   </Flex>
                   <Flex mt={rem(6)}>
                     <Text ml={'sm'} pl={'xl'} size='md' fw={700}>
-                      星期四 {(OpenTime.Thu_OpenTime).split(':')[0]+':'+(OpenTime.Thu_OpenTime).split(':')[1]} ~ {(OpenTime.Thu_CloseTime).split(':')[0] + ':' + (OpenTime.Thu_CloseTime).split(':')[1] }
+                      星期三 {(OpenTime["5"]).split(':')[0]+':'+(OpenTime["5"]).split(':')[1]} ~ {(OpenTime["6"]).split(':')[0] + ':' + (OpenTime["6"]).split(':')[1] }
                     </Text>
                   </Flex>
                   <Flex mt={rem(6)}>
                     <Text ml={'sm'} pl={'xl'} size='md' fw={700}>
-                      星期五 {(OpenTime.Fri_OpenTime).split(':')[0]+':'+(OpenTime.Fri_OpenTime).split(':')[1]} ~ {(OpenTime.Fri_CloseTime).split(':')[0] + ':' + (OpenTime.Fri_CloseTime).split(':')[1] }
+                      星期四 {(OpenTime["7"]).split(':')[0]+':'+(OpenTime["7"]).split(':')[1]} ~ {(OpenTime["8"]).split(':')[0] + ':' + (OpenTime["8"]).split(':')[1] }
                     </Text>
                   </Flex>
                   <Flex mt={rem(6)}>
                     <Text ml={'sm'} pl={'xl'} size='md' fw={700}>
-                      星期六 {(OpenTime.Sat_OpenTime).split(':')[0]+':'+(OpenTime.Sat_OpenTime).split(':')[1]} ~ {(OpenTime.Sat_CloseTime).split(':')[0] + ':' + (OpenTime.Sat_CloseTime).split(':')[1] }
+                      星期五 {(OpenTime["9"]).split(':')[0]+':'+(OpenTime["9"]).split(':')[1]} ~ {(OpenTime["10"]).split(':')[0] + ':' + (OpenTime["10"]).split(':')[1] }
                     </Text>
                   </Flex>
                   <Flex mt={rem(6)}>
                     <Text ml={'sm'} pl={'xl'} size='md' fw={700}>
-                      星期日 {(OpenTime.Sun_OpenTime).split(':')[0]+':'+(OpenTime.Sun_OpenTime).split(':')[1]} ~ {(OpenTime.Sun_CloseTime).split(':')[0] + ':' + (OpenTime.Sun_CloseTime).split(':')[1] }
+                      星期六 {(OpenTime["11"]).split(':')[0]+':'+(OpenTime["11"]).split(':')[1]} ~ {(OpenTime["12"]).split(':')[0] + ':' + (OpenTime["12"]).split(':')[1] }
+                    </Text>
+                  </Flex>
+                  <Flex mt={rem(6)}>
+                    <Text ml={'sm'} pl={'xl'} size='md' fw={700}>
+                      星期日 {(OpenTime["13"]).split(':')[0]+':'+(OpenTime["13"]).split(':')[1]} ~ {(OpenTime["14"]).split(':')[0] + ':' + (OpenTime["14"]).split(':')[1] }
                     </Text>
                   </Flex>
                 </>
