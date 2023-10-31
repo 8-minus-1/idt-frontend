@@ -435,10 +435,10 @@ export default function MatchPage() {
                             centered: true,
                             children:(
                               <Text size="sm">
-                                建議先填寫再建立公開邀請～大家才可以查看您的個人資訊！
+                                必須先填寫再建立公開邀請～大家才可以查看您的個人資訊！
                               </Text>
                             ),
-                            labels: { confirm: '馬上前往', cancel: "下一次再提醒我" },
+                            labels: { confirm: '馬上前往', cancel: "再考慮一下" },
                             confirmProps: { color: 'green' },
                             onConfirm:  ()=> {
                               router.replace('/my/info');
@@ -446,7 +446,6 @@ export default function MatchPage() {
                             },
                             onCancel() {
                               modals.closeAll();
-                              setDisplayState(1);
                             }
                           });
                         }

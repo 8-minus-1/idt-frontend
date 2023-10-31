@@ -147,40 +147,14 @@ function InviteCard({invite, setPageStatus}: any)
         centered: true,
         children:(
           <Text size="sm">
-            建議先填寫再報名公開邀請～對方才能查看您的個人資訊喔！
+            必須先填寫再報名公開邀請～對方才能查看您的個人資訊喔！
           </Text>
         ),
-        labels: { confirm: '馬上前往', cancel: "下一次再提醒我" },
+        labels: { confirm: '馬上前往', cancel: "再考慮一下" },
         confirmProps: { color: 'green' },
         onConfirm:  ()=> {
           router.replace('/my/info');
           modals.closeAll();
-        },
-        onCancel() {
-          modals.openConfirmModal({
-            title: '您確定要報名這則邀約嗎？',
-            centered: true,
-            children:(
-              <Text size="sm">
-                請注意，報名後無法收回，必須準時赴約
-              </Text>
-            ),
-            labels: { confirm: '是的，我非常確定', cancel: "不，請返回" },
-            confirmProps: { color: 'red' },
-            onConfirm: async () => {
-              let {error} = await signup(invite.i_id);
-              if(error) console.log(error);
-              else
-              {
-                notifications.show({
-                  color: "green",
-                  title: '已成功報名這個公開邀請～',
-                  message: '待對方同意後就算配對成功囉！',
-                });
-                refreshStatus();
-              }
-            },
-          });
         }
       });
     }
