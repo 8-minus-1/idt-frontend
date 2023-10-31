@@ -127,7 +127,7 @@ function PublicPage( { sp_type, sports }: any )
 function PrivatePage()
 {
     return(
-      <>私人配對</>
+      <>工程師正在努力開發了～敬請期待！</>
     )
 }
 

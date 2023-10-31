@@ -331,7 +331,7 @@ function InviteCard({invite, setPageStatus}: any)
         {user.id !== invite.User_id &&
           <>
             <Button mt={'md'}
-                    variant="gradient"
+                    variant="gradient" onClick={()=>(router.replace('/match/'+invite.i_id+'/user'))}
                     gradient={{ from: 'blue.3', to: 'blue.6', deg: 90 }}
                     fullWidth radius={'md'}
             >
@@ -641,6 +641,11 @@ export default function InvitePage() {
       </Head>
       <main>
         <Container p='lg'>
+          { error instanceof HTTPError && error.response.status === 403 &&
+            <Alert variant="light" color="red" my="md">
+              錯誤：沒有權限瀏覽此資料（邀約可能已經過期）
+            </Alert>
+          }
           { error &&
             <Alert variant="light" color="red" my="md">
               暫時無法取得資料
