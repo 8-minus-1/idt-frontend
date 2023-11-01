@@ -31,7 +31,8 @@ import {
   IconHeartHandshake,
   IconKarate,
   IconMap,
-  IconMap2, IconMessageQuestion,
+  IconMap2,
+  IconMessageQuestion,
   IconPencil,
   IconPhone,
   IconPingPong,
@@ -316,10 +317,10 @@ export default function PlaceInfoPage() {
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700} >
                   營業時間：今天 {(OpenTime[(Now*2-1)+'']).split(':')[0]+':'+(OpenTime[(Now*2-1)+'']).split(':')[1]} ~ {(OpenTime[(Now*2)+'']).split(':')[0] + ':' + (OpenTime[(Now*2)+'']).split(':')[1] }
                   {getOpen === 0 &&
-                    <>（已打烊）</>
+                    <Text c={'red'} display={'inline-block'}>（已打烊）</Text>
                   }
                   {getOpen === 1 &&
-                    <>（營業中）</>
+                    <Text c={'green'} display={'inline-block'}>（營業中）</Text>
                   }
                 </Text>
                 <Flex align={'center'} c={'blue.8'}>

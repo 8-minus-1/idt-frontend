@@ -332,10 +332,10 @@ function MapPageInner() {
                 <Text size='sm' >
                   營業時間：今天 {(selectedPlace.opentime[(Now*2-1)+'']).split(':')[0]+':'+(selectedPlace.opentime[(Now*2-1)+'']).split(':')[1]} ~ {(selectedPlace.opentime[(Now*2)+'']).split(':')[0] + ':' + (selectedPlace.opentime[(Now*2)+'']).split(':')[1] }
                   {getOpen === 0 &&
-                    <>（已打烊）</>
+                    <Text c={'red'} display={'inline-block'}>（已打烊）</Text>
                   }
                   {getOpen === 1 &&
-                    <>（營業中）</>
+                    <Text c={'green'} display={'inline-block'}>（營業中）</Text>
                   }
                 </Text>
                 <Flex mt={'xs'}>
