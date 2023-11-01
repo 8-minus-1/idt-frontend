@@ -1,5 +1,5 @@
 import { useOs, useViewportSize } from '@mantine/hooks';
-import { ActionIcon, Card, Flex, Text, Rating, Group, UnstyledButton, rem, Container } from '@mantine/core';
+import { ActionIcon, Card, Flex, Group, Rating, Text, UnstyledButton } from '@mantine/core';
 import React, { useContext, useEffect, useState } from 'react';
 import {
   MapContainer,
@@ -10,11 +10,16 @@ import {
   useMap,
   useMapEvents,
 } from 'react-leaflet';
-import { Icon, Control } from 'leaflet';
+import { Control, Icon } from 'leaflet';
 import {
   IconChevronRight,
   IconCurrentLocation,
+  IconKarate,
   IconLocation,
+  IconMap,
+  IconPhone,
+  IconPingPong,
+  IconRun,
   IconSearch,
 } from '@tabler/icons-react';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
@@ -31,6 +36,20 @@ import Link from 'next/link';
 import { notifications } from '@mantine/notifications';
 import useSWR from 'swr';
 import { NavbarRightSlotContext } from '@/contexts/NavbarRightSlotContext';
+import {
+  Badminton,
+  BaseballBat,
+  Basketball,
+  Bowling,
+  Football,
+  PlayBasketball,
+  Rollerskates,
+  Soccer,
+  Softball,
+  SwimmingPool,
+  Tennis,
+  Volleyball,
+} from '@icon-park/react';
 
 Icon.Default.prototype.options.iconUrl = LeafletMarker.src;
 Icon.Default.prototype.options.iconRetinaUrl = LeafletMarker2x.src;
@@ -117,13 +136,14 @@ type Map = {
   Latitude: number;
   Longitude: number;
   Address: string;
-  OpenTime: string;
   Close: string;
   Url: string;
   Phone: string;
   Renew: string;
   User: number;
   Rank: number;
+  sports: any[],
+  opentime: any
 };
 
 function MapPageInner() {
@@ -212,6 +232,24 @@ function MapPageInner() {
 
   const selectedPlace = selectedPlaceId !== null && places?.find(place => place.ID === selectedPlaceId);
 
+  const icons = [
+    <></>,
+    <Basketball theme="outline" size="24" fill="#333" key={1}/>,
+    <Volleyball theme="outline" size="24" fill="#333" key={2}/>,
+    <Badminton theme="outline" size="24" fill="#333" key={3}/>,
+    <Tennis theme="outline" size="24" fill="#333" key={4}/>,
+    <SwimmingPool theme="outline" size="24" fill="#333" key={5}/>,
+    <Rollerskates theme="outline" size="24" fill="#333" key={6}/>,
+    <Football theme="outline" size="24" fill="#333" key={7}/>,
+    <IconPingPong key={8}/>,
+    <BaseballBat theme="outline" size="24" fill="#333" key={9}/>,
+    <Softball theme="outline" size="24" fill="#333" key={10} />,
+    <PlayBasketball theme="outline" size="24" fill="#333" key={11}/>,
+    <IconKarate key={12}/>,
+    <Soccer theme="outline" size="24" fill="#333" key={13}/>,
+    <Bowling theme="outline" size="24" fill="#333" key={14}/>
+  ]
+
   return (
     <>
       {navbarRightSlot &&
@@ -271,15 +309,32 @@ function MapPageInner() {
                 <Text fw="700" size="xl">
                   {selectedPlace.Name}
                 </Text>
-                <Text>地址：{selectedPlace.Address}</Text>
-                <Text>聯絡電話：{selectedPlace.Phone}</Text>
+                <Flex mt={'xs'}>
+                  <IconMap />
+                  <Text>地址：{selectedPlace.Address}</Text>
+                </Flex>
+                <Flex mt={'xs'}>
+                  <IconPhone />
+                  <Text>聯絡電話：{selectedPlace.Phone}</Text>
+                </Flex>
+                <Flex mt={'xs'}>
+                  <IconRun />
+                  <Text>提供運動：</Text>
+                  {selectedPlace.sports.map( (item:any, index: number) => (
+                    <Flex ml={'xs'} key={index} >
+                      { index !== 0 && '、'}
+                      {icons[item.sp_type]}
+                      <Text ml={'xs'} size={'md'}>{item.sp_name}</Text>
+                    </Flex>
+                  ))}
+                </Flex>
                 {
                   //TODO: 待新增欄位後，在Card顯示此場館提供什麼運動
                   //TODO: 有幾個人評價
                   //TODO: 是否營業中？
                   //TODO: 是否免費
                 }
-                <Group>
+                <Group mt={'xs'}>
                   {selectedPlace.Rank === 0 && <Text>尚未有評價！</Text>}
                   {selectedPlace.Rank != 0 && <>
                     {selectedPlace.Rank}

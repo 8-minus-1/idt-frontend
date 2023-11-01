@@ -5,71 +5,70 @@ import '@mantine/dates/styles.css';
 import useSWR from 'swr';
 import { addRank, deleteRank, editRank } from '@/apis/rank';
 import {
+  ActionIcon,
+  Alert,
+  Button,
   Card,
   Container,
-  Text,
-  Menu,
-  Group,
-  ActionIcon,
-  rem,
   Flex,
-  Box,
-  Button,
-  Textarea,
+  Group,
+  Menu,
+  Paper,
   Rating,
-  Center,
-  Space, Paper,
+  rem,
+  Text,
+  Textarea,
 } from '@mantine/core';
 import Link from 'next/link';
 import {
-  IconDots,
-  IconUser,
-  IconPlus,
-  IconBallBasketball,
-  IconChevronRight,
-  IconCalendarOff,
-  IconCalendarCheck,
-  IconCalendarX,
-  IconCheck,
-  IconMap2,
-  IconEdit,
-  IconTrash,
-  IconScoreboard,
-  IconFileDescription,
-  IconBulb,
-  IconMap,
-  IconHome,
-  IconCalendar,
-  IconReportMoney,
-  IconPhone,
-  IconClock,
-  IconPencil,
-  IconChevronLeft,
-  IconSend,
-  IconFriends,
-  IconHeartHandshake,
-  IconRun,
-  IconCup,
-  IconTrophy,
-  IconChevronDown,
   IconCaretDown,
+  IconCheck,
+  IconChevronLeft,
+  IconClock,
+  IconDots,
+  IconEdit,
+  IconFileDescription,
+  IconHeartHandshake,
+  IconKarate,
+  IconMap,
+  IconMap2,
+  IconPencil,
+  IconPhone,
+  IconPingPong,
+  IconReportMoney,
+  IconRun,
+  IconSend,
+  IconTrash,
+  IconTrophy,
+  IconUser,
 } from '@tabler/icons-react';
-import { IconExternalLink } from '@tabler/icons-react';
-import { Alert } from '@mantine/core';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import React, { Fragment, useContext, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { deletePosition } from '@/apis/map';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { HTTPError } from 'ky';
 import { useForm } from '@mantine/form';
+import {
+  Badminton,
+  BaseballBat,
+  Basketball,
+  Bowling,
+  Football,
+  PlayBasketball,
+  Rollerskates,
+  Soccer,
+  Softball,
+  SwimmingPool,
+  Tennis,
+  Volleyball,
+} from '@icon-park/react';
 
 type r = {
   Rank:number,
   Comment:string,
   User:number
 }
+
 function ShowAllRank({allRank,refreshAllRank}:any){
   let {user} = useUser();
   let count =1;
@@ -194,7 +193,6 @@ export default function PlaceInfoPage() {
   let { trigger, error, loading } = useAsyncFunction(addRank);
   let { trigger:Dtrigger, error:Derror, loading:Dloading } = useAsyncFunction(deleteRank);
 
-
   async function handlePostRank() {
     if (StarValue == 0) {
       console.log("error: 沒有填些星級")
@@ -278,6 +276,24 @@ export default function PlaceInfoPage() {
     console.log(getOpen);
   }
 
+  const icons = [
+    <></>,
+    <Basketball theme="outline" size="24" fill="#333" key={1}/>,
+    <Volleyball theme="outline" size="24" fill="#333" key={2}/>,
+    <Badminton theme="outline" size="24" fill="#333" key={3}/>,
+    <Tennis theme="outline" size="24" fill="#333" key={4}/>,
+    <SwimmingPool theme="outline" size="24" fill="#333" key={5}/>,
+    <Rollerskates theme="outline" size="24" fill="#333" key={6}/>,
+    <Football theme="outline" size="24" fill="#333" key={7}/>,
+    <IconPingPong key={8}/>,
+    <BaseballBat theme="outline" size="24" fill="#333" key={9}/>,
+    <Softball theme="outline" size="24" fill="#333" key={10} />,
+    <PlayBasketball theme="outline" size="24" fill="#333" key={11}/>,
+    <IconKarate key={12}/>,
+    <Soccer theme="outline" size="24" fill="#333" key={13}/>,
+    <Bowling theme="outline" size="24" fill="#333" key={14}/>
+  ]
+
   return (
     <>
       <Head>
@@ -297,14 +313,12 @@ export default function PlaceInfoPage() {
               <Flex ml={'md'} mt='md' justify={'flex-start'} onClick={()=>setTime(getTimeNum)}>
                 <IconClock />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700} >
-                  營業時間：
+                  營業時間：今天 {(OpenTime[(Now*2-1)+'']).split(':')[0]+':'+(OpenTime[(Now*2-1)+'']).split(':')[1]} ~ {(OpenTime[(Now*2)+'']).split(':')[0] + ':' + (OpenTime[(Now*2)+'']).split(':')[1] }
                   {getOpen === 0 &&
-                    <>
-                      已打烊
-                    </>
+                    <>（已打烊）</>
                   }
                   {getOpen === 1 &&
-                    <>營業中</>
+                    <>（營業中）</>
                   }
                 </Text>
                 <IconCaretDown/>
@@ -348,6 +362,17 @@ export default function PlaceInfoPage() {
                   </Flex>
                 </>
               }
+              <Flex ml={'md'} mt='md' justify={'flex-start'}>
+                <IconRun />
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>提供運動：</Text>
+                {data.sports.map( (item:any, index: number) => (
+                  <Flex ml={'xs'} key={index}>
+                    { index !== 0 && '、'}
+                    {icons[item.sp_type]}
+                    <Text fw={700} ml={'xs'} pt={rem(2)} size={'md'}>{item.sp_name}</Text>
+                  </Flex>
+                ))}
+              </Flex>
               <Flex ml={'md'} mt='md' justify={'flex-start'}>
                 <IconReportMoney />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>價格：{data.Price}</Text>
