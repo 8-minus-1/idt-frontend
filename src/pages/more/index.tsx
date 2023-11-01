@@ -15,34 +15,29 @@ export default function MorePage() {
   const { user, mutate: refreshUser } = useUser();
 
   useEffect(() => {
-    refreshUser()
-  }, [router.query.slug])
-
-  if(user && !user?.profileCompleted)
-  {
-    modals.openConfirmModal({
-      title: '您尚未設定個人資料及填寫註冊問卷！',
-      centered: true,
-      children:(
-        <Text size="sm">
-          請花一點時間填寫一下吧～
-        </Text>
-      ),
-      labels: { confirm: '馬上前往', cancel: "下一次再提醒我" },
-      confirmProps: { color: 'green' },
-      onConfirm:  ()=> {
-        router.replace('/my/info');
-        modals.closeAll();
-      },
-      onCancel() {
+    (async () => {
+      let newUser = await refreshUser();
+      if (!newUser) return;
+      if (!newUser.profileCompleted) {
+        modals.openConfirmModal({
+          title: '您尚未設定個人資料及填寫註冊問卷！',
+          centered: true,
+          children: <Text size="sm">請花一點時間填寫一下吧～</Text>,
+          labels: { confirm: '馬上前往', cancel: '下一次再提醒我' },
+          confirmProps: { color: 'green' },
+          onConfirm: () => {
+            router.replace('/my/info');
+            modals.closeAll();
+          },
+          onCancel() {
+            modals.closeAll();
+          },
+        });
+      } else {
         modals.closeAll();
       }
-    });
-  }
-  else if(user?.profileCompleted)
-  {
-    modals.closeAll();
-  }
+    })();
+  }, []);
 
   return (
     <>

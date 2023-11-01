@@ -18,7 +18,7 @@ export type User = {
   nickname?: string;
 };
 
-export function useUser(): { user: User | null; mutate: () => void } {
+export function useUser(): { user: User | null; mutate: () => Promise<User | null> } {
   let { data: user, mutate } = useSWR(['auth/status', { throwHttpErrors: false }]);
   return { user, mutate };
 }
