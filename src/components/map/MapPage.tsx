@@ -1,5 +1,5 @@
 import { useOs, useViewportSize } from '@mantine/hooks';
-import { ActionIcon, Card, Flex, Group, Rating, Text, UnstyledButton } from '@mantine/core';
+import { ActionIcon, Card, Flex, Rating, rem, Text, UnstyledButton } from '@mantine/core';
 import React, { useContext, useEffect, useState } from 'react';
 import {
   MapContainer,
@@ -136,7 +136,6 @@ type Map = {
   Latitude: number;
   Longitude: number;
   Address: string;
-  Close: string;
   Url: string;
   Phone: string;
   Renew: string;
@@ -250,6 +249,27 @@ function MapPageInner() {
     <Bowling theme="outline" size="24" fill="#333" key={14}/>
   ]
 
+  let getOpen = 0;
+  let Now = new Date().getDay();
+  let NowTime = new Date(new Date(Date.now()).toString());
+  if(selectedPlace)
+  {
+    let open_str = selectedPlace.opentime[(Now*2-1)+''].split(':');
+    let close_str = selectedPlace.opentime[(Now*2)+''].split(':');
+    let open = new Date();
+    let close=new Date();
+    open.setHours(parseInt(open_str[0]), parseInt(open_str[1]),parseInt(open_str[2]));
+    close.setHours(parseInt(close_str[0]), parseInt(close_str[1]),parseInt(close_str[2]));
+
+    console.log(open);
+    console.log(close);
+    if(open > NowTime || close < NowTime)
+      getOpen = 0;//close
+    else if(open < NowTime && close > NowTime)
+      getOpen = 1;//open
+    console.log(getOpen);
+  }
+
   return (
     <>
       {navbarRightSlot &&
@@ -309,17 +329,26 @@ function MapPageInner() {
                 <Text fw="700" size="xl">
                   {selectedPlace.Name}
                 </Text>
+                <Text size='sm' >
+                  營業時間：今天 {(selectedPlace.opentime[(Now*2-1)+'']).split(':')[0]+':'+(selectedPlace.opentime[(Now*2-1)+'']).split(':')[1]} ~ {(selectedPlace.opentime[(Now*2)+'']).split(':')[0] + ':' + (selectedPlace.opentime[(Now*2)+'']).split(':')[1] }
+                  {getOpen === 0 &&
+                    <>（已打烊）</>
+                  }
+                  {getOpen === 1 &&
+                    <>（營業中）</>
+                  }
+                </Text>
                 <Flex mt={'xs'}>
                   <IconMap />
-                  <Text>地址：{selectedPlace.Address}</Text>
+                  <Text ml={'xs'}>地址：{selectedPlace.Address}</Text>
                 </Flex>
                 <Flex mt={'xs'}>
                   <IconPhone />
-                  <Text>聯絡電話：{selectedPlace.Phone}</Text>
+                  <Text ml={'xs'}>聯絡電話：{selectedPlace.Phone}</Text>
                 </Flex>
                 <Flex mt={'xs'}>
                   <IconRun />
-                  <Text>提供運動：</Text>
+                  <Text ml={'xs'}>提供運動：</Text>
                   {selectedPlace.sports.map( (item:any, index: number) => (
                     <Flex ml={'xs'} key={index} >
                       { index !== 0 && '、'}
@@ -329,24 +358,24 @@ function MapPageInner() {
                   ))}
                 </Flex>
                 {
-                  //TODO: 待新增欄位後，在Card顯示此場館提供什麼運動
                   //TODO: 有幾個人評價
-                  //TODO: 是否營業中？
                   //TODO: 是否免費
                 }
-                <Group mt={'xs'}>
-                  {selectedPlace.Rank === 0 && <Text>尚未有評價！</Text>}
-                  {selectedPlace.Rank != 0 && <>
-                    {selectedPlace.Rank}
-                    <Rating value={selectedPlace.Rank} fractions={10} readOnly /></>
-                  }
-                </Group>
 
-                <Flex c="blue" mt="md" justify="right">
-                  <Text fw={600} size="md">
-                    <Link href={`/map/places/${selectedPlaceId}`}>查看詳細內容</Link>
-                  </Text>
-                  <IconChevronRight />
+                <Flex mt="md" justify="space-between">
+                  <Flex>
+                    {selectedPlace.Rank === 0 && <Text>尚未有評價！</Text>}
+                    {selectedPlace.Rank != 0 && <>
+                      {selectedPlace.Rank}
+                      <Rating ml={'xs'} pt={rem(2)} value={selectedPlace.Rank} fractions={10} readOnly /></>
+                    }
+                  </Flex>
+                  <Flex mt={rem(2)}>
+                    <Text c="blue" fw={600} size="md">
+                      <Link href={`/map/places/${selectedPlaceId}`}>查看詳細內容</Link>
+                    </Text>
+                    <IconChevronRight color={'blue'}/>
+                  </Flex>
                 </Flex>
               </Card>
             )}

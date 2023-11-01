@@ -321,7 +321,10 @@ export default function PlaceInfoPage() {
                     <>（營業中）</>
                   }
                 </Text>
-                <IconCaretDown/>
+                <Flex align={'center'} c={'blue.8'}>
+                  <Text size={'sm'} pt={rem(1)}>點擊展開</Text>
+                  <IconCaretDown />
+                </Flex>
               </Flex>
               {TimeStatus === 1 &&
                 <>
