@@ -407,8 +407,11 @@ export default function PlaceInfoPage() {
               </Flex>
               <Flex ml={'md'} mt='md' justify={'flex-start'}>
                 <IconMessageQuestion/>
-                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>其他：{data.Other}</Text>
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>其他：</Text>
               </Flex>
+              <Text mr={'xl'} ml={'sm'} pl={'xl'} size='md' fw={700} style={{whiteSpace: 'pre-wrap'}}>
+                {data.Other}
+              </Text>
               <Flex ml={'md'} mt='md' justify={'flex-start'}>
                 <IconPencil />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>由User{data.User}在{data.Renew}更新</Text>
