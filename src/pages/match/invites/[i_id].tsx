@@ -330,22 +330,27 @@ function InviteCard({invite, setPageStatus}: any)
       <>
         {user.id !== invite.User_id &&
           <>
-            <Button mt={'md'}
-                    variant="gradient" onClick={()=>(router.replace('/match/'+invite.i_id+'/user'))}
-                    gradient={{ from: 'blue.3', to: 'blue.6', deg: 90 }}
-                    fullWidth radius={'md'}
-            >
-              查看發起者基本資料
-            </Button>
+            {!invite.expired && (
+              <Button mt={'md'}
+                      variant="gradient" onClick={()=>(router.replace('/match/'+invite.i_id+'/user'))}
+                      gradient={{ from: 'blue.3', to: 'blue.6', deg: 90 }}
+                      fullWidth radius={'md'}
+              >
+                查看發起者基本資料
+              </Button>
+            )}
             {!!signupStatus &&
-              <Button mt={'xs'} disabled={signupStatus.status}
+              <Button mt={'xs'} disabled={signupStatus.status || invite.expired}
               variant="gradient" loading={signupLoading}
               gradient={{ from: 'yellow', to: 'orange', deg: 90 }}
               fullWidth radius={'md'} onClick={handleSignup}
               >
-                { signupStatus.status === 0 &&
-                  <>送出報名請求</>
-                }
+                { signupStatus.status === 0 && (
+                  <>
+                    {!invite.expired && '送出報名請求'}
+                    {!!invite.expired && '此邀約已過期'}
+                  </>
+                )}
                 { signupStatus.status === -1 &&
                   <>您已經報名過了～等待對方同意吧！</>
                 }
