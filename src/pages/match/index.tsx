@@ -158,7 +158,7 @@ function PrivatePage()
           </Group>
         </Link>
         <Title order={4} mb="md">你的配對候選</Title>
-        <Flex align="flex-start" gap="sm" mb="xl">
+        <Flex align="flex-start" justify="center" gap="sm" mb="xl">
           <Stack gap="0">
             <Card px="0" py="md" bg="#FDEBD0" radius="lg" mb='md' shadow='sm'>
               <Stack gap="lg" mx="auto" px="xs" align="center">
