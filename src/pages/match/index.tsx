@@ -3,28 +3,39 @@ import Head from 'next/head';
 import '@mantine/dates/styles.css';
 import {
   Alert,
+  Avatar,
   Box,
   Button,
   Card,
+  Center,
   Container,
   Flex,
   Group,
+  Paper,
   rem,
   Select,
+  Stack,
   Text,
   Textarea,
+  Title,
 } from '@mantine/core';
 import React, { useContext, useState } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 import {
+  IconArrowRight,
+  IconCake,
   IconCalendarCheck,
   IconCheck,
   IconChevronLeft,
   IconChevronRight,
+  IconClock,
+  IconFriends,
   IconMap2,
+  IconMapPinStar,
   IconUser,
   IconUsersGroup,
+  IconX,
 } from '@tabler/icons-react';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { createPortal } from 'react-dom';
@@ -34,6 +45,7 @@ import { notifications } from '@mantine/notifications';
 import { getPlaceByID } from '@/apis/map';
 import { modals } from '@mantine/modals';
 import { useRouter } from 'next/router';
+import { Volleyball } from '@icon-park/react';
 
 type m = {
   "User_id": number,
@@ -126,16 +138,129 @@ function PublicPage( { sp_type, sports }: any )
 
 function PrivatePage()
 {
-    return(
-      <>工程師正在努力開發了～敬請期待！</>
-    )
+  const [shouldShowExample, setShouldShowExample] = useState(false);
+  const [selectedPersonIndex, setSelectedPersonIndex] = useState(0);
+  const people = [
+    { name: '亦努馬奇・托癸', dob: '2001/10/23' },
+    { name: '果久・薩托陸', dob: '1989/12/7' },
+  ];
+  const person = people[selectedPersonIndex];
+
+  if (shouldShowExample) {
+    return (
+      <>
+        <Link href="#" onClick={(ev) => {
+          ev.preventDefault();
+          setShouldShowExample(false);
+        }}>
+          <Group gap="4px" display="inline-flex" py="xs">
+            <IconX /><Text size="sm">關閉預覽</Text>
+          </Group>
+        </Link>
+        <Title order={4} mb="md">你的配對候選</Title>
+        <Flex align="flex-start" gap="sm" mb="xl">
+          <Stack gap="0">
+            <Card px="0" py="md" bg="#FDEBD0" radius="lg" mb='md' shadow='sm'>
+              <Stack gap="lg" mx="auto" px="xs" align="center">
+                <Avatar size="lg" color="gray" />
+                <Flex direction="column" justify="center">
+                  <Text fw={700} size="xl">{person.name}</Text>
+                </Flex>
+              </Stack>
+              <Flex mt="md" mx="sm">
+                <IconCake style={{ flexShrink: 0 }} />
+                <Flex ml="xs" pt={rem(2)} columnGap="xs" align="baseline" wrap="wrap">
+                  <Text fw={700}>出生日期</Text>
+                  {person.dob}
+                </Flex>
+              </Flex>
+              <Flex mt="sm" mx="sm">
+                <IconFriends style={{ flexShrink: 0 }} />
+                <Flex ml="xs" pt={rem(2)} columnGap="xs" align="baseline" wrap="wrap">
+                  <Text fw={700}>生理性別</Text>
+                  男
+                </Flex>
+              </Flex>
+              <Flex mt="sm" mx="sm" >
+                <IconMapPinStar style={{ flexShrink: 0 }} />
+                <Flex ml="xs" pt={rem(2)} columnGap="xs" align="baseline" wrap="wrap">
+                  <Text fw={700}>生活地區</Text>
+                  台中市北屯區
+                </Flex>
+              </Flex>
+            </Card>
+            <Group justify="center">
+              <Button>拒絕</Button>
+              <Button>接受</Button>
+            </Group>
+          </Stack>
+          <Stack gap="0">
+            <Paper p="lg">
+              <Text fw={700} mb="xs">有興趣的運動：</Text>
+              <Flex mt="xs" ml="xs">
+                <Volleyball theme="outline" size="24" fill="#333" />
+                <Text fw={700} ml="xs" pt={rem(2)}>排球（自評：技巧中規中矩）</Text>
+              </Flex>
+            </Paper>
+            <Paper p="lg" mt="md">
+              <Text fw={700} mb="xs">習慣的運動時段：</Text>
+              <Flex mt="xs" ml="xs">
+                <IconClock />
+                <Text fw={700} ml="xs" pt={rem(2)}>下午2:00 ～ 下午4:00</Text>
+              </Flex>
+              <Flex mt="xs" ml="xs">
+                <IconClock />
+                <Text fw={700} ml="xs" pt={rem(2)}>上午2:00 ～ 上午4:00</Text>
+              </Flex>
+            </Paper>
+            <Paper p="lg" mt="md">
+              <Text fw={700} mb="xs">平台配對戰績：</Text>
+              <Flex mt="xs" ml="xs">
+                <IconX />
+                <Text fw={700} ml="xs" pt={rem(2)}>目前沒有資料</Text>
+              </Flex>
+            </Paper>
+          </Stack>
+        </Flex>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Center>
+        <Stack mt="6rem">
+          <Text size="md">目前還沒有配對候選，過一陣子再來看看吧！</Text>
+          <Alert mt="lg">
+            好奇出現配對候選會是什麼樣子嗎？<br />
+            <Flex w="100%" justify="flex-end">
+              <Link href="#" onClick={(ev) => {
+                ev.preventDefault();
+                setSelectedPersonIndex(Math.floor(Math.random() * people.length));
+                setShouldShowExample(true);
+              }}>
+                <Group gap="xs" mt="md">
+                  <IconArrowRight />點選預覽
+                </Group>
+              </Link>
+            </Flex>
+          </Alert>
+        </Stack>
+      </Center>
+    </>
+  )
 }
 
-function MListPage()
+function MListPage({
+  method, setMethod,
+}: {
+  method: string;
+  setMethod: (m: string) => void;
+})
 {
   const [sp_type, setSp_type] = useState<string>('0');
 
-  const method =[
+  const methods =[
     { value: "0", label: "公開邀請" },
     { value: "1", label: "私人配對" },
   ];
@@ -159,8 +284,6 @@ function MListPage()
   ];
 
 
-  const [methodValue, setMethod] = useState('0');
-
   return(
     <>
       <main>
@@ -168,26 +291,28 @@ function MListPage()
           <Group mt="md">
             <Select
               label="配對方式"
-              data={method} allowDeselect={false}
-              defaultValue={method[0].value}
+              data={methods} allowDeselect={false}
+              defaultValue={methods[0].value}
               pb='xl'
               w={"30%"}
-              value={methodValue} onChange={(value:string)=>(setMethod(value))}
+              value={method} onChange={(value:string)=>(setMethod(value))}
             />
-            <Select
-              label="運動類別篩選"
-              data={sports} allowDeselect={false}
-              defaultValue={sports[0].value}
-              pb='xl'
-              w={"30%"}
-              value={sp_type}
-              onChange={(value:string)=>(setSp_type(value))}
-            />
+            { method === '0' && (
+              <Select
+                label="運動類別篩選"
+                data={sports} allowDeselect={false}
+                defaultValue={sports[0].value}
+                pb='xl'
+                w={"30%"}
+                value={sp_type}
+                onChange={(value:string)=>(setSp_type(value))}
+              />
+            )}
           </Group>
-          { methodValue === '0' &&
+          { method === '0' &&
             <PublicPage sp_type={sp_type} sports={sports}></PublicPage>
           }
-          { methodValue === '1' &&
+          { method === '1' &&
             <PrivatePage></PrivatePage>
           }
         </Container>
@@ -407,6 +532,8 @@ function PostInvite({setDisplayState, refreshInvite}:any){
 
 export default function MatchPage() {
   const [displayState, setDisplayState] = useState(0);
+  const [method, setMethod] = useState('0');
+
   let {user} = useUser();
   const router = useRouter();
   const title = '夥伴配對';
@@ -423,8 +550,8 @@ export default function MatchPage() {
       <main>
         {displayState === 0 &&
           <>
-            <MListPage/>
-            { fabContainer && createPortal(
+            <MListPage {...{method, setMethod}}/>
+            { fabContainer && method === '0' && createPortal(
               <Button leftSection={<IconUsersGroup size={20} />} mr={'xl'} mb='xl'
                       style={({ boxShadow: 'silver 2px 2px 20px', })} size={'lg'} radius={'xl'} c={"black"} color={'#F8D6D8'}
                       onClick={() => {
