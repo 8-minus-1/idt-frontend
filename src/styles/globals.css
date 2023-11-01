@@ -39,3 +39,7 @@ a:not(:focus) {
 #__next {
   height: 100%;
 }
+
+.grecaptcha-badge {
+  visibility: hidden;
+}

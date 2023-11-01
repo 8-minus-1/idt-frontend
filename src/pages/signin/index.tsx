@@ -1,6 +1,6 @@
 import { isEmailRegistered, sendVerficationEmail, signIn } from '@/apis/auth';
 import { useAsyncFunction, useNavbarTitle } from '@/hooks';
-import { tryParse } from '@/utils';
+import { getRecaptchaToken, tryParse } from '@/utils';
 import { Alert, Box, Button, Code, PasswordInput, Text, TextInput } from '@mantine/core';
 import { isEmail, useForm } from '@mantine/form';
 import { HTTPError } from 'ky';
@@ -48,8 +48,13 @@ function EmailForm({ setRegisteredEmail, setUnregisteredEmail }: EmailFormProps)
         withAsterisk={false}
         {...emailForm.getInputProps('email')}
       />
-      <Text size="sm" my="md">
+      <Text size="sm" my="md" mb="0">
         繼續操作即表示你已詳閱且同意遵守<Link href="/privacy">服務條款與隱私權政策</Link>。
+      </Text>
+      <Text size="sm" my="md" mt="xs">
+        本服務使用 reCAPTCHA 技術。繼續操作即表示你同意 Google 的
+        <a target="_blank" href="https://policies.google.com/terms">服務條款</a>與
+        <a target="_blank" href="https://policies.google.com/privacy">隱私權政策</a>。
       </Text>
       {error && (
         <Alert variant="light" color="red" my="md">
@@ -75,15 +80,20 @@ function SignUpForm({ email, onChangeEmail }: SignUpFormProps) {
 
   async function handleSendEmail() {
     if (loading) return;
-    let { error } = await trigger(email, 'recaptcha');
+    let token = await getRecaptchaToken();
+    if (!token) return;
+    let { error } = await trigger(email, token);
     if (error) return console.error(error);
     setEmailSent(true);
   }
 
   let rateLimited = error instanceof HTTPError && error.response.status === 429;
+  let recaptchaError = error instanceof HTTPError && error.response.status === 403;
   let errorMessage = rateLimited
     ? '驗證信寄送太過頻繁，請稍後再試。'
-    : '無法與伺服器聯繫，請稍後再試。';
+    : recaptchaError
+      ? 'reCAPTCHA 驗證失敗，請再試一次。'
+      : '無法與伺服器聯繫，請稍後再試。';
 
   return (
     <Box m="xl">
@@ -145,13 +155,19 @@ function SignInForm({ email, onChangeEmail, showResetPasswordForm }: SignInFormP
     if (loading) return;
     setErrorMessage(null);
     let { password } = form.values;
-    let { error } = await trigger(email, password, 'recaptcha');
+    let token = await getRecaptchaToken();
+    if (!token) return setErrorMessage('無法與伺服器聯繫，請稍後再試。');
+    let { error } = await trigger(email, password, token);
     if (error) {
       if (error instanceof HTTPError && error.response.status === 403) {
         let parsed = tryParse(await error.response.text());
         if (parsed && parsed.error) {
           if (parsed.error === 'invalidCredentials') {
             form.setFieldError('password', '密碼錯誤');
+            return;
+          }
+          if (parsed.error === 'recaptchaError') {
+            setErrorMessage('reCAPTCHA 驗證失敗，請再試一次。');
             return;
           }
         }
@@ -204,7 +220,9 @@ function ResetPasswordForm({ email, onChangeEmail }: ResetPasswordFormProps) {
 
   async function handleSendEmail() {
     if (loading) return;
-    let { error } = await trigger(email, 'recaptcha');
+    let token = await getRecaptchaToken();
+    if (!token) return;
+    let { error } = await trigger(email, token);
     if (error) return console.error(error);
     setEmailSent(true);
   }

@@ -16,6 +16,8 @@ import { Options as KyOptions } from 'ky';
 import { useUser } from '@/hooks';
 import { FABContainerContext } from '@/contexts/FABContainerContext';
 import { NavbarRightSlotContext } from '@/contexts/NavbarRightSlotContext';
+import Script from 'next/script';
+import { RecaptchaSiteKey } from '@/constants';
 
 const theme = createTheme({});
 
@@ -62,6 +64,7 @@ function AppInner({ Component, pageProps }: AppProps) {
 export default function App(appProps: AppProps) {
   return (
     <>
+      <Script src={`https://www.google.com/recaptcha/api.js?render=${RecaptchaSiteKey}`} />
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
       </Head>
