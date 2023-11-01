@@ -31,13 +31,14 @@ import {
   IconHeartHandshake,
   IconKarate,
   IconMap,
-  IconMap2,
+  IconMap2, IconMessageQuestion,
   IconPencil,
   IconPhone,
   IconPingPong,
   IconReportMoney,
   IconRun,
   IconSend,
+  IconShirtSport,
   IconTrash,
   IconTrophy,
   IconUser,
@@ -377,6 +378,13 @@ export default function PlaceInfoPage() {
                 ))}
               </Flex>
               <Flex ml={'md'} mt='md' justify={'flex-start'}>
+                <IconShirtSport/>
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>提供設備：</Text>
+              </Flex>
+              <Text mr={'xl'} ml={'sm'} pl={'xl'} size='md' fw={700} style={{whiteSpace: 'pre-wrap'}}>
+                {data.Sport}
+              </Text>
+              <Flex ml={'md'} mt='md' justify={'flex-start'}>
                 <IconReportMoney />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>價格：{data.Price}</Text>
               </Flex>
@@ -396,6 +404,10 @@ export default function PlaceInfoPage() {
               <Flex ml={'md'} mt='md' justify={'flex-start'}>
                 <IconPhone />
                 <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>聯絡資訊：{data.Phone}</Text>
+              </Flex>
+              <Flex ml={'md'} mt='md' justify={'flex-start'}>
+                <IconMessageQuestion/>
+                <Text ml={rem(2)} pt={rem(2)} size='md' fw={700}>其他：{data.Other}</Text>
               </Flex>
               <Flex ml={'md'} mt='md' justify={'flex-start'}>
                 <IconPencil />
