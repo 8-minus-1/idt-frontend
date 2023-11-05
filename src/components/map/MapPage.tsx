@@ -254,6 +254,7 @@ function MapPageInner() {
   let NowTime = new Date(new Date(Date.now()).toString());
   if(selectedPlace)
   {
+    if(Now === 0) Now = 7;
     let open_str = selectedPlace.opentime[(Now*2-1)+''].split(':');
     let close_str = selectedPlace.opentime[(Now*2)+''].split(':');
     let open = new Date();

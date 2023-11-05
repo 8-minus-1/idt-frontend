@@ -262,6 +262,7 @@ export default function PlaceInfoPage() {
   let NowTime = new Date(new Date(Date.now()).toString());
   if(OpenTime)
   {
+    if(Now === 0) Now = 7;
     let open_str = OpenTime[(Now*2-1)+''].split(':');
     let close_str = OpenTime[(Now*2)+''].split(':');
     let open = new Date();
